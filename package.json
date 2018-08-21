@@ -1,0 +1,6 @@
+{
+  "name": "js-frp",
+  "scripts": {
+    "example": "node ./example.js"
+  }
+}
