@@ -1,17 +1,15 @@
-const freeze = (object) => {
-  const type = typeof object;
-  if (type === 'string' || type === 'number' || type === 'boolean') {
-    return object;
+const freeze = (value) => {
+  if (typeof value !== 'object' || value === null) {
+    return value;
   }
-  return new Proxy(object, {
+  return new Proxy(value, {
     setPrototypeOf: () => false,
     isExtensible: () => false,
     preventExtensions: () => true,
     set: () => false,
     get: (target, property) => {
       const type = typeof target[property];
-      if (type === 'object' || type === 'function') return freeze(target[property]);
-      return target[property];
+      return freeze(target[property]);
     },
     deleteProperty: () => false,
   });

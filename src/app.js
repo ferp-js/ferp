@@ -1,38 +1,50 @@
-const { freeze } = require('./freeze');
+const { freeze } = require('./freeze.js');
+const { Message } = require('./types/message.js');
+const { Effect } = require('./types/effect.js');
 
 const app = ({
   subscriptions = [],
-  initialState = null,
-  initialEffect = null,
+  init = null,
   update,
+  middleware = [],
 }) => {
   let state = null;
   let subscriptionState = [];
 
-  const updateState = (newState) => {
+  const updateWithMiddleware = (middleware || []).reduce((all, method) => {
+    return method(all);
+  }, update);
+
+  function updateState(newState) {
     if (newState === undefined) return;
     state = freeze(newState);
   }
 
-  const runEffect = (effect) => {
-    if (effect instanceof Promise) {
-      effect
+  function runEffect(effect) {
+    if (effect instanceof Effect) {
+      return effect
         .then(dispatch)
         .catch((err) => {
           console.log('error', err);
         });
+    } else if (typeof effect === 'function') {
+      return effect(dispatch);
     }
+    return Promise.resolve();
   };
 
-  const dispatch = (message) => {
-    const [newState, effect] = update(message, state);
+  function handleUpdate([newState, effect]) {
     updateState(newState);
-    runEffect(effect);
+    return runEffect(effect);
+  }
+
+  function dispatch(message) {
+    return handleUpdate(updateWithMiddleware(message, state));
   };
 
-  updateState(initialState);
-  runEffect(initialEffect);
-  dispatch(null);
+  if (typeof init === 'function') {
+    handleUpdate(init());
+  }
 
   const unsubs = subscriptions.map(sub => sub(dispatch));
 

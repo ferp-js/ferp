@@ -1,30 +1,36 @@
-const { app, Message, subscriptions } = require('../src/frp.js');
+const frp = require('../src/frp.js');
+const { Message, Effect } = frp.types;
+const { every } = frp.subscriptions;
 
 class IncrementBy extends Message {
   constructor(value = 1) {
     super();
     this.value = value;
   }
+
+  static integrate(message, state) {
+    return [
+      state + message.value,
+      Effect.none(),
+    ];
+  }
 }
 
-const log = next => (message, state) => {
-  const result = next(message, state);
-  console.log(...result);
-  return result;
-};
+const detach = frp.app({
+  init: () => [
+    0,
+    Effect.none(),
+  ],
 
-const detach = app({
-  initialState: 0,
-
-  update: log(Message.process([
-    [IncrementBy, (message, state) => [
-      state + message.value,
-    ]],
-  ])),
+  update: Message.process([
+    IncrementBy
+  ]),
 
   subscriptions: [
-    subscriptions.every.milliseconds(100, () => new IncrementBy(1))
+    every.milliseconds(100, () => new IncrementBy(1))
   ],
+
+  middleware: [frp.middleware.logger()],
 });
 
 setTimeout(detach, 5000);
