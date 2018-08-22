@@ -1,32 +1,44 @@
-const app = ({ initialState = {}, update, events = {} }) => {
-  /*
-   * initialState - a variable representing the current app state
-   * update - user supplied method to deal with update messages
-   * afterUpdate - method called after one or more updates have been applied
-   *
-   */
-  let state = initialState;
+const { freeze } = require('./freeze');
 
-  const dispatch = (message) => {
-    const [newState, effect] = update(message, state);
-    state = newState;
-    event('update');
+const app = ({
+  subscriptions = [],
+  initialState = null,
+  initialEffect = null,
+  update,
+}) => {
+  let state = null;
+  let subscriptionState = [];
 
+  const updateState = (newState) => {
+    if (newState === undefined) return;
+    state = freeze(newState);
+  }
+
+  const runEffect = (effect) => {
     if (effect instanceof Promise) {
       effect
         .then(dispatch)
         .catch((err) => {
-          event('error', err);
+          console.log('error', err);
         });
     }
   };
 
-  const event = (type, params) => {
-    if (typeof events[type] !== 'function') return;
-    return events[type]({ state, params, dispatch });
+  const dispatch = (message) => {
+    const [newState, effect] = update(message, state);
+    updateState(newState);
+    runEffect(effect);
   };
 
-  return event('create');
+  updateState(initialState);
+  runEffect(initialEffect);
+  dispatch(null);
+
+  const unsubs = subscriptions.map(sub => sub(dispatch));
+
+  return () => {
+    unsubs.forEach(unsub => unsub());
+  };
 };
 
 module.exports = {
