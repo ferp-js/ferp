@@ -1,4 +1,4 @@
-class Effect {
+class Effect extends Promise {
   static none() {
     return undefined;
   }

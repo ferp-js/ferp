@@ -3,13 +3,13 @@ const { Message } = require('./types/message.js');
 const { Effect } = require('./types/effect.js');
 
 const app = ({
-  subscriptions = [],
-  init = null,
+  init,
   update,
+  subscriptions = [],
   middleware = [],
 }) => {
   let state = null;
-  let subscriptionState = [];
+  let killSwitch = false;
 
   const updateWithMiddleware = (middleware || []).reduce((all, method) => {
     return method(all);
@@ -18,9 +18,12 @@ const app = ({
   function updateState(newState) {
     if (newState === undefined) return;
     state = freeze(newState);
+    subscriptions.forEach(sub => sub.setState(state));
   }
 
   function runEffect(effect) {
+    if (killSwitch) return;
+
     if (effect instanceof Effect) {
       return effect
         .then(dispatch)
@@ -42,14 +45,13 @@ const app = ({
     return handleUpdate(updateWithMiddleware(message, state));
   };
 
-  if (typeof init === 'function') {
-    handleUpdate(init());
-  }
+  handleUpdate(init());
+  subscriptions.forEach(sub => sub.connect(dispatch, state));
 
-  const unsubs = subscriptions.map(sub => sub(dispatch));
 
   return () => {
-    unsubs.forEach(unsub => unsub());
+    killSwitch = true;
+    subscriptions.forEach(sub => sub.onDetach());
   };
 };
 

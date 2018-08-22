@@ -37,7 +37,7 @@ frp.app({
     {
       fileContents: Result.idle(),
     },
-    readFile(path.resolve(__dirname, './02-file-reader-node.txt'), FileContents),
+    readFile(path.resolve(__dirname, './hello-world.txt'), FileContents),
   ],
 
   update: Message.process([
