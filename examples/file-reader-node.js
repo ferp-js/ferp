@@ -27,7 +27,7 @@ class FileContents extends Message {
       {
         fileContents: message.contents,
       },
-      Effect.none,
+      Effect.none(),
     ]
   }
 }
