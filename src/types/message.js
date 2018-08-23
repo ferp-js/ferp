@@ -1,6 +1,8 @@
+const { Effect } = require('./effect.js');
+
 class Message {
   static integrate(message, state) {
-    return [state];
+    return [state, Effect.none()];
   }
 
   static isMessage(message) {
@@ -21,9 +23,9 @@ class Message {
 
   static process(types) {
     return (message, state) => {
-      if (!Message.isMessage(message)) return [state];
+      if (!Message.isMessage(message)) return [state, Effect.none()];
       const Type = types.find(Klass => Message.matchType(Klass, message));
-      if (!Type) return [state];
+      if (!Type) return [state, Effect.none()];
       return Message.integrateMessage(Type, message, state);
     };
   }
