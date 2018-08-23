@@ -4,7 +4,11 @@ const replacer = (key, value) => {
   if (value && typeof value.serialize === 'function') {
     return value.serialize();
   }
-  return value;
+  try {
+    return value;
+  } catch(err) {
+    return `<${value.constructor.name}>`;
+  }
 };
 
 const logger = (spacing) => (next) => (message, state) => {
