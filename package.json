@@ -1,0 +1,34 @@
+{
+  "name": "ferp",
+  "main": "ferp.js",
+  "description": "Build functional and pure applications in NodeJS and the Browser!",
+  "version": "0.0.1",
+  "directories": {
+    "example": "examples"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mrozbarry/ferp.git"
+  },
+  "keywords": [
+    "function",
+    "reactive",
+    "programming",
+    "frp",
+    "framework",
+    "elm-like",
+    "application"
+  ],
+  "author": "Alex Barry",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/mrozbarry/ferp/issues"
+  },
+  "homepage": "https://github.com/mrozbarry/ferp#readme",
+  "scripts": {
+    "test": "test"
+  },
+  "devDependencies": {
+    "ava": "^1.0.0-beta.7"
+  }
+}

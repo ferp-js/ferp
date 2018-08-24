@@ -1,18 +1,20 @@
-const frp = require('../src/frp.js');
-const { Message } = frp.types;
+const ferp = require('../src/ferp.js');
+const { Message } = ferp.types;
+const { logger } = ferp.middleware;
+const { delay } = ferp.effects;
 
-const detach = frp.app({
+const detach = ferp.app({
   init: () => [
     0,
-    frp.effects.delay(1000, Message),
+    delay(1000, Message),
   ],
 
   update: (message, state) => [
     state + 1,
-    frp.effects.delay(1000, Message),
+    delay(1000, Message),
   ],
 
-  middleware: [frp.middleware.logger()],
+  middleware: [logger()],
 });
 
 setTimeout(detach, 5000);

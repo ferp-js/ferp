@@ -1,8 +1,8 @@
-const frp = require('../src/frp.js');
-const { Message, Effect } = frp.types;
-const { Every } = frp.subscriptions;
+const ferp = require('../src/ferp.js');
+const { Message, Effect } = ferp.types;
+const { Every } = ferp.subscriptions;
 
-const detach = frp.app({
+const detach = ferp.app({
   init: () => [
     0,
     Effect.none(),
@@ -17,7 +17,7 @@ const detach = frp.app({
     Every.second(Message),
   ],
 
-  middleware: [frp.middleware.logger()],
+  middleware: [ferp.middleware.logger()],
 });
 
 setTimeout(detach, 5000);

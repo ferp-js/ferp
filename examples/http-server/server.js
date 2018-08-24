@@ -1,10 +1,10 @@
-const frp = require('../../src/frp.js');
+const ferp = require('../../src/ferp.js');
 const { ServerSubscription } = require('./subscription.js');
 const url = require('url');
 
 
 
-class Routable extends frp.types.Message {
+class Routable extends ferp.types.Message {
   constructor(request, response) {
     super();
     this.request = request;
@@ -23,7 +23,7 @@ class Welcome extends Routable {
   static integrate(message, state) {
     return [
       state,
-      new frp.types.Effect((done) => {
+      new ferp.types.Effect((done) => {
         message.response.writeHead(200, { 'Content-Type': 'application/json' });
         message.response.end(JSON.stringify({ hello: 'world' }), done);
       }),
@@ -35,7 +35,7 @@ class Logs extends Routable {
   static integrate(message, state) {
     return [
       state,
-      new frp.types.Effect((done) => {
+      new ferp.types.Effect((done) => {
         message.response.writeHead(200, { 'Content-Type': 'application/json' });
         message.response.end(JSON.stringify(state.logs), done);
       }),
@@ -49,7 +49,7 @@ class FourOhFour extends Routable {
 
     return [
       state,
-      new frp.types.Effect((done) => {
+      new ferp.types.Effect((done) => {
         message.response.writeHead(404, { 'Content-Type': 'application/json' });
         message.response.end(JSON.stringify({ error: 'page not found' }), done);
       }),
@@ -72,22 +72,22 @@ class Router extends Routable {
       {
         logs: [log].concat(state.logs),
       },
-      new frp.types.Effect((done) => done(new RouteMessage(message.request, message.response))),
+      new ferp.types.Effect((done) => done(new RouteMessage(message.request, message.response))),
     ]
   }
 
   static process(routes, Fallback) {
     const types = [Router].concat(Object.values(routes), Fallback);
     return (message, state) => {
-      if (!message instanceof Routable) return [state, frp.types.Effect.none()];
+      if (!message instanceof Routable) return [state, ferp.types.Effect.none()];
       const Type = types.find(Klass => message instanceof Klass);
-      if (!Type) return [state, frp.types.Effect.none()];
+      if (!Type) return [state, ferp.types.Effect.none()];
       return Type.integrate(message, state, routes);
     };
   }
 }
 
-frp.app({
+ferp.app({
   init: () => [
     {
       logs: [],
@@ -103,6 +103,6 @@ frp.app({
     new ServerSubscription(8080, Router)
   ],
 
-  middleware: [frp.middleware.logger(2)],
+  middleware: [ferp.middleware.logger(2)],
 });
 

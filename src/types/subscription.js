@@ -9,12 +9,17 @@ class Subscription {
   connect(dispatch, state) {
     this.dispatch = dispatch;
     this.state = state;
-    this.onAttach();
+    this.onAttach(state);
   }
 
   setState(state) {
+    const prevState = this.state;
     this.state = state;
-    this.onChange();
+    this.onChange(state, prevState);
+  }
+
+  cleanup() {
+    this.onDetach(this.state);
   }
 
   onAttach() {}

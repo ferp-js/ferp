@@ -1,9 +1,9 @@
-const frp = require('../src/frp.js');
-const { Message, Effect, Result } = frp.types;
+const ferp = require('../src/ferp.js');
+const { Message, Effect, Result } = ferp.types;
 const https = require('https');
 
 const request = (url, MessageClass) => Effect.map([
-  Promise.resolve(new MessageClass(Result.loading())),
+  Promise.resolve(new MessageClass(Result.pending())),
   new Effect((done) => {
     https.get(url, (response) => {
       let data = '';
@@ -32,10 +32,10 @@ class Receive extends Message {
   }
 }
 
-frp.app({
+ferp.app({
   init: () => [
     {
-      data: Result.idle(),
+      data: Result.nothing(),
     },
     request('https://jsonplaceholder.typicode.com/todos/1', Receive),
   ],
@@ -44,5 +44,5 @@ frp.app({
     Receive,
   ]),
 
-  middleware: [frp.middleware.logger(2)],
+  middleware: [ferp.middleware.logger(2)],
 });

@@ -1,8 +1,8 @@
-const frp = require('../../src/frp.js');
+const ferp = require('../../src/ferp.js');
 const http = require('http');
-const { Message, Effect, Result } = frp.types;
+const { Message, Effect, Result } = ferp.types;
 
-class ServerSubscription extends frp.types.Subscription {
+class ServerSubscription extends ferp.types.Subscription {
   constructor(port, RequestMessage) {
     super();
 

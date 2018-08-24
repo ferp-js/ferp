@@ -3,41 +3,19 @@ const errorKey = Symbol('error');
 const stateKey = Symbol('state');
 
 const states = {
-  idle: Symbol('idle'),
-  loading: Symbol('loading'),
+  nothing: Symbol('nothing'),
+  pending: Symbol('pending'),
   done: Symbol('done'),
   error: Symbol('error'),
 };
 
 class Result {
-  constructor(data, error, state) {
-    this[dataKey] = data;
-    this[errorKey] = error;
-    this[stateKey] = state;
+  static nothing() {
+    return new Result(null, null, states.nothing);
   }
 
-  serialize() {
-    switch(this[stateKey]) {
-      case states.idle:
-        return `Result Idle Nothing`;
-      case states.loading:
-        return `Result Loading Nothing`;
-      case states.done:
-        return `Result Done ${JSON.stringify(this[dataKey])}`;
-      case states.error:
-        return `Result Error ${this[errorKey]}`;
-
-      default:
-        throw new Error('Result state not valid');
-    }
-  }
-
-  static idle() {
-    return new Result(null, null, states.idle);
-  }
-
-  static loading() {
-    return new Result(null, null, states.loading);
+  static pending() {
+    return new Result(null, null, states.pending);
   }
 
   static done(data) {
@@ -48,17 +26,46 @@ class Result {
     return new Result(null, error, states.error);
   }
 
-  get(onIdle, onLoading, onDone, onError) {
+  constructor(data, error, state) {
+    this[dataKey] = data;
+    this[errorKey] = error;
+    this[stateKey] = state;
+  }
+
+  serialize() {
     switch(this[stateKey]) {
-      case states.idle:
-        return onIdle();
-      case states.loading:
-        return onLoading();
+      case states.nothing:
+        return `<Result Nothing>`;
+      case states.pending:
+        return `<Result Pending>`;
+      case states.done:
+        return `<Result Done ${JSON.stringify(this[dataKey])}>`;
+      case states.error:
+        return `<Result Error ${this[errorKey]}>`;
+    }
+    throw new Error('Result state not valid');
+  }
+
+  get(onNothing, onPending, onDone, onError) {
+    switch(this[stateKey]) {
+      case states.nothing:
+        return onNothing();
+      case states.pending:
+        return onPending();
       case states.done:
         return onDone(this[dataKey]);
       case states.error:
         return onError(this[errorKey]);
     }
+  }
+
+  getWithDefault(defaultValue) {
+    return this.get(
+      () => defaultValue,
+      () => defaultValue,
+      (data) => data,
+      () => defaultValue,
+    );
   }
 }
 

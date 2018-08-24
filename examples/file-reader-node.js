@@ -1,10 +1,10 @@
-const frp = require('../src/frp.js');
-const { Message, Effect, Result } = frp.types;
+const ferp = require('../src/ferp.js');
+const { Message, Effect, Result } = ferp.types;
 const fs = require('fs');
 const path = require('path');
 
 const readFile = (file, MessageClass) => Effect.map([
-  Promise.resolve(new MessageClass(Result.loading())),
+  Promise.resolve(new MessageClass(Result.pending())),
   new Promise((resolve) => {
     fs.readFile(file, { encoding: 'utf-8' }, (err, data) => {
       if (err) {
@@ -32,10 +32,10 @@ class FileContents extends Message {
   }
 }
 
-frp.app({
+ferp.app({
   init: () => [
     {
-      fileContents: Result.idle(),
+      fileContents: Result.nothing(),
     },
     readFile(path.resolve(__dirname, './hello-world.txt'), FileContents),
   ],
@@ -44,5 +44,5 @@ frp.app({
     FileContents,
   ]),
 
-  middleware: [frp.middleware.logger(2)],
+  middleware: [ferp.middleware.logger(2)],
 });
