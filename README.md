@@ -109,7 +109,7 @@ Since `Effect` extends the `Promise` class, they are not special, but I did add 
 | ------------------------------------------------- | --------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
 | Effect.none()                                     | An effect that does nothing                   | `return [state, Effect.none()]` |
 | Effect.map(effects)                               | A wrapper to return multiple effects.         | `return [state, Effect.map(Effect.immediate(new Message1()), new Effect(done => done(doWorkThenReturnMessageTyp(Message2)))] |
-| Effect.immediate()                                | A quick want to push another message through. | `return [state, Effect.immediate(new MessageType(params))]` |
+| Effect.immediate(message)                         | A quick want to push another message through. | `return [state, Effect.immediate(new MessageType(params))]` |
 
 ## Subscription
 

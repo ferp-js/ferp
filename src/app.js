@@ -48,10 +48,9 @@ const app = ({
   handleUpdate(init());
   subscriptions.forEach(sub => sub.connect(dispatch, state));
 
-
   return () => {
     killSwitch = true;
-    subscriptions.forEach(sub => sub.onDetach());
+    subscriptions.forEach(sub => sub.onDetach(state));
   };
 };
 
