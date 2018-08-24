@@ -8,7 +8,7 @@ class Effect extends Promise {
   }
 
   static immediate(message) {
-    return Promise.resolve(message);
+    return new Effect((done) => done(message));
   }
 }
 

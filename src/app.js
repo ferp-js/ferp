@@ -7,6 +7,7 @@ const app = ({
   update,
   subscriptions = [],
   middleware = [],
+  options = { immutableState: true },
 }) => {
   let state = null;
   let killSwitch = false;
@@ -17,7 +18,7 @@ const app = ({
 
   function updateState(newState) {
     if (newState === undefined) return;
-    state = freeze(newState);
+    state = options.immutableState ? freeze(newState) : newState;
     subscriptions.forEach(sub => sub.setState(state));
   }
 
