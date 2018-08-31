@@ -1,25 +1,57 @@
-const { freeze } = require('./freeze.js');
-const { Message } = require('./types/message.js');
 const { Effect } = require('./types/effect.js');
 
 const app = ({
   init,
   update,
-  subscriptions = [],
-  middleware = [],
-  options = { immutableState: true },
+  subscribe,
+  middleware,
 }) => {
   let state = null;
+  let subscriptions = [];
   let killSwitch = false;
 
   const updateWithMiddleware = (middleware || []).reduce((all, method) => {
     return method(all);
   }, update);
 
+  function isSubscription(subscription, id) {
+    return subscription.id === id;
+  }
+
+  function getSubscriptionDetach(previousSubscriptions, { id, method, params }) {
+    const sub = previousSubscriptions.find((sub) => isSubscription(sub, id));
+    if (sub && sub.detach) return sub.detach;
+    return method(...params)(dispatch);
+  }
+
+  function handleSubscriptions(previousSubscriptions, state) {
+    if (!subscribe) return [];
+
+    const nextSubscriptions = subscribe(state)
+      .filter(Array.isArray)
+      .map(([id, method, ...params]) => ({
+        id,
+        method,
+        params,
+        detach: getSubscriptionDetach(previousSubscriptions, { id, method, params }),
+      }));
+
+    previousSubscriptions
+      .filter((prevSub) => (
+        !nextSubscriptions.find((nextSub) => isSubscription(nextSub, prevSub.id))
+      ))
+      .forEach((removedSub) => {
+        removedSub.detach();
+      });
+
+    return nextSubscriptions;
+  }
+
   function updateState(newState) {
     if (newState === undefined) return;
-    state = options.immutableState ? freeze(newState) : newState;
-    subscriptions.forEach(sub => sub.setState(state));
+    subscriptions = handleSubscriptions(subscriptions, newState);
+
+    state = newState;
   }
 
   function runEffect(effect) {
@@ -47,11 +79,10 @@ const app = ({
   };
 
   handleUpdate(init());
-  subscriptions.forEach(sub => sub.connect(dispatch, state));
 
   return () => {
     killSwitch = true;
-    subscriptions.forEach(sub => sub.onDetach(state));
+    subscriptions.forEach((sub) => sub.detach());
   };
 };
 

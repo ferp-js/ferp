@@ -35,18 +35,3 @@ Since `Effect` extends the `Promise` class, they are not special, but I did add 
 | Effect.none()                                     | An effect that does nothing                   | `return [state, Effect.none()]` |
 | Effect.map(effects)                               | A wrapper to return multiple effects.         | `return [state, Effect.map(Effect.immediate(new Message1()), new Effect(done => done(doWorkThenReturnMessageTyp(Message2)))] |
 | Effect.immediate(message)                         | A quick want to push another message through. | `return [state, Effect.immediate(new MessageType(params))]` |
-
-## Subscription
-
-A subscription is like an app, in that it reads in your immutable state, and can pass messages into the app, but it does not require a message to trigger new messages.
-Another way to think of subscription is a long running effect that can return multiple messages over time, reacting to some external source (ie websocket, timer, interval, etc.).
-
-Subscriptions are self-contained classes that look like this:
-
-| Attribute                                         | Description                                                                     | Example
-| ------------------------------------------------- | ------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| Subscription#dispatch(message)                    | Call to pass a message into the app.                                            | `this.dispatch(new SomeMessage())` |
-| Subscription#onAttach(state)                      | Called when the subscription starts, recieves state. Override.                  | `onAttach(state) { this.interval = setInterval(this.dispatch, state.delay, new Message()) }` |
-| Subscription#onChange(state, prevState)           | Called when the app state changes, recieves state and previous state. Override. | `onChange(state, prevState) { if (state.delay === prevState.delay) { return; }; clearInterval(this.interval); this.interval = setInterval(this.dispatch, state.delay, new Message()) }` |
-| Subscription#onDetach(state)                      | Called when the subscription ends, recieves state. Override.                    | `onDetach(state) { if (this.interval) { clearInterval(this.interval); }; this.interval = null; }` |
-

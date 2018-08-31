@@ -1,48 +1,46 @@
 const ferp = require('../src/ferp.js');
-const { Message, Effect, Result } = ferp.types;
+const { Effect, Result } = ferp.types;
+const { Message } = ferp.extras.types;
+
 const fs = require('fs');
 const path = require('path');
 
-const readFile = (file, MessageClass) => Effect.map([
-  Promise.resolve(new MessageClass(Result.pending())),
-  new Promise((resolve) => {
+const SET_CONTENTS = 'SET_CONTENTS';
+const setContentsMessage = (contents) => ({ type: SET_CONTENTS, contents });
+
+const readFile = (file) => Effect.map([
+  Effect.immediate(setContentsMessage(Result.pending())),
+  new Effect((done) => {
     fs.readFile(file, { encoding: 'utf-8' }, (err, data) => {
       if (err) {
-        resolve(new MessageClass(Result.error(err)));
+        done(setContentsMessage(Result.error(err)));
       } else {
-        resolve(new MessageClass(Result.done(data)));
+        done(setContentsMessage(Result.done(data)));
       }
     });
   }),
 ]);
-
-class FileContents extends Message {
-  constructor(result) {
-    super();
-    this.contents = result;
-  }
-
-  static integrate(message, state) {
-    return [
-      {
-        fileContents: message.contents,
-      },
-      Effect.none(),
-    ]
-  }
-}
 
 ferp.app({
   init: () => [
     {
       fileContents: Result.nothing(),
     },
-    readFile(path.resolve(__dirname, './hello-world.txt'), FileContents),
+    readFile(path.resolve(__dirname, './hello-world.txt')),
   ],
 
-  update: Message.process([
-    FileContents,
-  ]),
+  update: (message, state) => {
+    switch (message.type) {
+      case SET_CONTENTS:
+        return [
+          { fileContents: message.contents },
+          Effect.none(),
+        ];
+
+      default:
+        return [state, Effect.none()];
+    }
+  },
 
   middleware: [ferp.middleware.logger(2)],
 });

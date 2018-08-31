@@ -1,4 +1,4 @@
-const { Effect } = require('./effect.js');
+const { Effect } = require('../../types/effect.js');
 
 class Message {
   static integrate(message, state) {
@@ -17,12 +17,13 @@ class Message {
   }
 
   static matchType(Type, message) {
-    if (typeof message === 'function') return Type.name === message.name;
     return message instanceof Type;
   }
 
   static process(types) {
+    console.log('process', types);
     return (message, state) => {
+      console.log('process.inner', message, state);
       if (!Message.isMessage(message)) return [state, Effect.none()];
       const Type = types.find(Klass => Message.matchType(Klass, message));
       if (!Type) return [state, Effect.none()];

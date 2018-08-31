@@ -1,5 +1,5 @@
 const ferp = require('../src/ferp.js');
-const { Message, Effect } = ferp.types;
+const { Effect } = ferp.types;
 const { Every } = ferp.subscriptions;
 
 const detach = ferp.app({
@@ -13,11 +13,11 @@ const detach = ferp.app({
     Effect.none(),
   ],
 
-  subscriptions: [
-    Every.second(Message),
-  ],
+  subscribe: (state) => {
+    return [
+      state < 5 && ['ticker', Every.second, 1],
+    ];
+  },
 
   middleware: [ferp.middleware.logger()],
 });
-
-setTimeout(detach, 5000);
