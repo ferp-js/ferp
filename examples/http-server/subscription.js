@@ -1,33 +1,23 @@
 const ferp = require('../../src/ferp.js');
 const http = require('http');
-const { Message, Effect, Result } = ferp.types;
+const { Effect, Result } = ferp.types;
 
-class ServerSubscription extends ferp.types.Subscription {
-  constructor(port, RequestMessage) {
-    super();
+const serverSubscription = (port, MessageClass) => (dispatch) => {
+  const server = http.createServer((request, response) => {
+    dispatch(new MessageClass(request, response));
+  });
 
-    this.port = port;
+  server.on('clientError', (err, socket) => {
+    socket.end('HTTP/1.1 400 Bad Request\r\n\r\n');
+  });
 
-    this.server = http.createServer((request, response) => {
-      if (this.dispatch) {
-        this.dispatch(new RequestMessage(request, response));
-      }
-    });
+  server.listen(port);
 
-    this.server.on('clientError', (err, socket) => {
-      socket.end('HTTP/1.1 400 Bad Request\r\n\r\n');
-    });
+  return () => {
+    server.close();
   }
-
-  onAttach() {
-    this.server.listen(this.port);
-  }
-
-  onDetach() {
-    this.server.close();
-  }
-}
+};
 
 module.exports = {
-  ServerSubscription,
+  serverSubscription,
 };

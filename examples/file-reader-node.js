@@ -5,17 +5,14 @@ const { Message } = ferp.extras.types;
 const fs = require('fs');
 const path = require('path');
 
-const SET_CONTENTS = 'SET_CONTENTS';
-const setContentsMessage = (contents) => ({ type: SET_CONTENTS, contents });
-
-const readFile = (file) => Effect.map([
-  Effect.immediate(setContentsMessage(Result.pending())),
+const readFile = (file, messageType) => Effect.map([
+  Effect.immediate({ type: messageType, data: Result.pending() }),
   new Effect((done) => {
     fs.readFile(file, { encoding: 'utf-8' }, (err, data) => {
       if (err) {
-        done(setContentsMessage(Result.error(err)));
+        done({ type: messageType, data: Result.error(err) });
       } else {
-        done(setContentsMessage(Result.done(data)));
+        done({ type: messageType, data: Result.done(data) });
       }
     });
   }),
@@ -24,16 +21,16 @@ const readFile = (file) => Effect.map([
 ferp.app({
   init: () => [
     {
-      fileContents: Result.nothing(),
+      data: Result.nothing(),
     },
-    readFile(path.resolve(__dirname, './hello-world.txt')),
+    readFile(path.resolve(__dirname, './hello-world.txt'), 'SET_CONTENTS'),
   ],
 
   update: (message, state) => {
     switch (message.type) {
-      case SET_CONTENTS:
+      case 'SET_CONTENTS':
         return [
-          { fileContents: message.contents },
+          { data: message.data },
           Effect.none(),
         ];
 

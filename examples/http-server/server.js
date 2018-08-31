@@ -1,10 +1,10 @@
 const ferp = require('../../src/ferp.js');
-const { ServerSubscription } = require('./subscription.js');
+const { serverSubscription } = require('./subscription.js');
 const url = require('url');
 
 
 
-class Routable extends ferp.types.Message {
+class Routable extends ferp.extras.types.Message {
   constructor(request, response) {
     super();
     this.request = request;
@@ -99,8 +99,8 @@ ferp.app({
     'GET /logs': Logs,
   }, FourOhFour),
 
-  subscriptions: [
-    new ServerSubscription(8080, Router)
+  subscribe: () => [
+    ['server', serverSubscription, 8080, Router],
   ],
 
   middleware: [ferp.middleware.logger(2)],
