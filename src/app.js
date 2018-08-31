@@ -75,7 +75,12 @@ const app = ({
   }
 
   function dispatch(message) {
-    if (!message) return Promise.resolve();
+    const isMessageEmpty = (
+      message === null
+      || typeof message === 'undefined'
+    );
+
+    if (isMessageEmpty) return Promise.resolve();
     return handleUpdate(updateWithMiddleware(message, state));
   };
 
