@@ -3,87 +3,34 @@ const { serverSubscription } = require('./subscription.js');
 const url = require('url');
 
 
+const responseEffect = ({ response }, status, json) => new ferp.types.Effect((done) => {
+  response.writeHead(status, { 'Content-Type': 'application/json' });
+  response.end(JSON.stringify(json), () => done(null));
+});
 
-class Routable extends ferp.extras.types.Message {
-  constructor(request, response) {
-    super();
-    this.request = request;
-    this.response = response;
-  }
+const welcome = (message, state, params) => [state, responseEffect(message, 200, { hello: 'world', params })];
+const logs = (message, state) => [state, responseEffect(message, 200, state.logs)];
+const fourOhFour = (message, state) => [state, responseEffect(message, 404, { error: 'not found' })];
 
-  toConnection() {
-    return {
-      request: this.request,
-      response: this.response,
-    }
-  }
-}
+const router = (routes) => (message, state) => {
+  switch (message.type) {
+    case 'ROUTE':
+      const parsed = url.parse(message.request.url);
+      const matcher = `${message.request.method.toUpperCase()} ${parsed.pathname}`;
+      const handler = routes[matcher] || routes['GET /not-found'];
+      if (handler) {
+        const log = {
+          date: (new Date()).toISOString(),
+          address: message.request.socket.address().address,
+          matcher,
+          parsed,
+        }
+        const nextState = { ...state, logs: [log].concat(state.logs) };
+        return handler(message, nextState, parsed);
+      }
 
-class Welcome extends Routable {
-  static integrate(message, state) {
-    return [
-      state,
-      new ferp.types.Effect((done) => {
-        message.response.writeHead(200, { 'Content-Type': 'application/json' });
-        message.response.end(JSON.stringify({ hello: 'world' }), done);
-      }),
-    ];
-  }
-}
-
-class Logs extends Routable {
-  static integrate(message, state) {
-    return [
-      state,
-      new ferp.types.Effect((done) => {
-        message.response.writeHead(200, { 'Content-Type': 'application/json' });
-        message.response.end(JSON.stringify(state.logs), done);
-      }),
-    ];
-  }
-}
-
-class FourOhFour extends Routable {
-  static integrate(message, state) {
-    const conn = message.toConnection();
-
-    return [
-      state,
-      new ferp.types.Effect((done) => {
-        message.response.writeHead(404, { 'Content-Type': 'application/json' });
-        message.response.end(JSON.stringify({ error: 'page not found' }), done);
-      }),
-    ];
-  }
-}
-
-class Router extends Routable {
-  static requestToRoute(request) {
-    const parsed = url.parse(request.url);
-    return `${request.method.toUpperCase()} ${parsed.pathname}`;
-  }
-
-  static integrate(message, state, routes) {
-    const route = Router.requestToRoute(message.request);
-    const RouteMessage = routes[route] || FourOhFour;
-    const log = `${(new Date()).toISOString()} ${message.request.socket.address().address} ${route} -> <${RouteMessage.name}>`;
-
-    return [
-      {
-        logs: [log].concat(state.logs),
-      },
-      new ferp.types.Effect((done) => done(new RouteMessage(message.request, message.response))),
-    ]
-  }
-
-  static process(routes, Fallback) {
-    const types = [Router].concat(Object.values(routes), Fallback);
-    return (message, state) => {
-      if (!message instanceof Routable) return [state, ferp.types.Effect.none()];
-      const Type = types.find(Klass => message instanceof Klass);
-      if (!Type) return [state, ferp.types.Effect.none()];
-      return Type.integrate(message, state, routes);
-    };
+    default:
+      return [state, ferp.types.Effect.none()];
   }
 }
 
@@ -94,13 +41,14 @@ ferp.app({
     },
   ],
 
-  update: Router.process({
-    'GET /': Welcome,
-    'GET /logs': Logs,
-  }, FourOhFour),
+  update: router({
+    'GET /': welcome,
+    'GET /logs': logs,
+    'GET /not-found': fourOhFour,
+  }),
 
   subscribe: () => [
-    ['server', serverSubscription, 8080, Router],
+    ['server', serverSubscription, 8080, 'ROUTE'],
   ],
 
   middleware: [ferp.middleware.logger(2)],

@@ -75,6 +75,7 @@ const app = ({
   }
 
   function dispatch(message) {
+    if (!message) return Promise.resolve();
     return handleUpdate(updateWithMiddleware(message, state));
   };
 
