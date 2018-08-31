@@ -1,6 +1,6 @@
 const ferp = require('../src/ferp.js');
 const { Effect } = ferp.types;
-const { logger } = ferp.middleware;
+const { logger, immutable } = ferp.middleware;
 const { delay } = ferp.effects;
 
 ferp.app({
@@ -17,5 +17,5 @@ ferp.app({
     ];
   },
 
-  middleware: [logger()],
+  middleware: [logger(), immutable()],
 });
