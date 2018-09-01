@@ -28,7 +28,7 @@ frp.app({
   update: (message, state) => {
     return [
       state + 1,
-      new ferp.types.Effect((done) => done(new ferp.types.message())),
+      ferp.types.Effect.immediate(true),
     ];
   },
   subscribe: () => [],
