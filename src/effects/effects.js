@@ -1,5 +1,5 @@
-const { delay } = require('./delay.js');
+const Delay = require('./delay.js');
 
 module.exports = {
-  delay,
+  Delay,
 };

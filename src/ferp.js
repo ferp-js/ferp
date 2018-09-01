@@ -1,19 +1,14 @@
 const { app } = require('./app.js');
-const { Result } = require('./types/result.js');
-const { Effect } = require('./types/effect.js');
+const types = require('./types/types.js');
 const effects = require('./effects/effects.js');
 const middleware = require('./middleware/middleware.js');
-const Every = require('./subscriptions/every.js');
+const subscriptions = require('./subscriptions/subscriptions.js');
+
 
 module.exports = {
   app,
-  types: {
-    Result,
-    Effect,
-  },
-  subscriptions: {
-    Every,
-  },
+  types,
   middleware,
   effects,
+  subscriptions,
 };

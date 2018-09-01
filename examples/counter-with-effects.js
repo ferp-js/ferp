@@ -1,19 +1,19 @@
 const ferp = require('../src/ferp.js');
 const { Effect } = ferp.types;
 const { logger, immutable } = ferp.middleware;
-const { delay } = ferp.effects;
+const { Delay } = ferp.effects;
 
 ferp.app({
   init: () => [
     0,
-    delay(1000),
+    Delay.second(1),
   ],
 
   update: (_, state) => {
     const nextState = state + 1;
     return [
       nextState,
-      nextState < 5 ? delay(1000) : Effect.none(),
+      nextState < 5 ? Delay.second(1) : Effect.none(),
     ];
   },
 

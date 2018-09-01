@@ -8,14 +8,22 @@ const detach = ferp.app({
     Effect.none(),
   ],
 
-  update: (_, state) => [
-    state + 1,
-    Effect.none(),
-  ],
+  update: (message, state) => {
+    switch (message.type) {
+      case 'INCREMENT':
+        return [
+          state + 1,
+          Effect.none(),
+        ];
+
+      default:
+        return [state, Effect.none()];
+    }
+  },
 
   subscribe: (state) => {
     return [
-      state < 5 && ['ticker', Every.second, 1],
+      state < 5 && ['ticker', Every.second, 1, 'INCREMENT'],
     ];
   },
 

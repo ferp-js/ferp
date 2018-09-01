@@ -1,6 +1,5 @@
 const ferp = require('../src/ferp.js');
 const { Effect, Result } = ferp.types;
-const { Message } = ferp.extras.types;
 
 const fs = require('fs');
 const path = require('path');
