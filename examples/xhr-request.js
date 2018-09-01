@@ -40,5 +40,5 @@ ferp.app({
     }
   },
 
-  middleware: [ferp.middleware.logger(2)],
+  middleware: [ferp.middleware.logger(2), ferp.middleware.immutable()],
 });

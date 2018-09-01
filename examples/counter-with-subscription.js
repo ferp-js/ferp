@@ -27,5 +27,5 @@ const detach = ferp.app({
     ];
   },
 
-  middleware: [ferp.middleware.logger()],
+  middleware: [ferp.middleware.logger(), ferp.middleware.immutable()],
 });

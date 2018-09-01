@@ -51,6 +51,6 @@ ferp.app({
     ['server', serverSubscription, 8080, 'ROUTE'],
   ],
 
-  middleware: [ferp.middleware.logger(2)],
+  middleware: [ferp.middleware.logger(2), ferp.middleware.immutable()],
 });
 
