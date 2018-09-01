@@ -32,7 +32,7 @@ frp.app({
     ];
   },
   subscribe: () => [],
-  middleware: [frp.middleware.logger],
+  middleware: [frp.middleware.logger()],
 });
 ```
 
