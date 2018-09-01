@@ -12,11 +12,7 @@ const logs = (message, state) => [state, responseEffect(message, 200, state.logs
 const fourOhFour = (message, state) => [state, responseEffect(message, 404, { error: 'not found' })];
 
 ferp.app({
-  init: () => [
-    {
-      logs: [],
-    },
-  ],
+  init: () => [{ logs: [] }, ferp.types.Effect.none()],
 
   update: router({
     'GET /': welcome,
