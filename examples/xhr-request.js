@@ -1,48 +1,44 @@
 const ferp = require('../src/ferp.js');
-const { Message, Effect, Result } = ferp.types;
+const { Effect, Result } = ferp.types;
 const https = require('https');
 
-const request = (url, MessageClass) => Effect.map([
-  Promise.resolve(new MessageClass(Result.pending())),
+const request = (url, messageType) => Effect.map([
+  Effect.immediate({ type: messageType, data: Result.pending() }),
   new Effect((done) => {
     https.get(url, (response) => {
       let data = '';
       response
         .on('data', (chunk) => { data += chunk })
-        .on('end', () => done(new MessageClass(Result.done(JSON.parse(data)))));
+        .on('end', () => done({ type: messageType, data: Result.done(JSON.parse(data)) }));
     })
-      .on('error', (err) => done(new MessageClass(Result.error(err))))
+      .on('error', (err) => done({ type: messageType, data: Result.error(err) }))
       .end();
   }),
 ]);
-
-class Receive extends Message {
-  constructor(result) {
-    super();
-    this.data = result;
-  }
-
-  static integrate(message, state) {
-    return [
-      {
-        data: message.data,
-      },
-      Effect.none(),
-    ]
-  }
-}
 
 ferp.app({
   init: () => [
     {
       data: Result.nothing(),
     },
-    request('https://jsonplaceholder.typicode.com/todos/1', Receive),
+    request('https://jsonplaceholder.typicode.com/todos/1', 'RECV'),
   ],
 
-  update: Message.process([
-    Receive,
-  ]),
+  update: (message, state) => {
+    switch (message.type) {
+      case 'RECV':
+        return [
+          { data: message.data },
+          Effect.none(),
+        ];
 
-  middleware: [ferp.middleware.logger(2)],
+      default:
+        return [
+          state,
+          Effect.none(),
+        ];
+    }
+  },
+
+  middleware: [ferp.middleware.logger(2), ferp.middleware.immutable()],
 });

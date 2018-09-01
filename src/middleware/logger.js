@@ -13,9 +13,7 @@ const replacer = (key, value) => {
 
 const logger = (spacing) => (next) => (message, state) => {
   const result = next(message, state);
-  setTimeout(() => {
-    console.log('[LOG]', JSON.stringify(result, replacer, spacing));
-  }, 0);
+  console.log('[LOG]', JSON.stringify(result, replacer, spacing));
   return result;
 };
 

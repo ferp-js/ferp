@@ -1,5 +1,5 @@
 const ferp = require('../src/ferp.js');
-const { Message, Effect } = ferp.types;
+const { Effect } = ferp.types;
 const { Every } = ferp.subscriptions;
 
 const detach = ferp.app({
@@ -8,16 +8,24 @@ const detach = ferp.app({
     Effect.none(),
   ],
 
-  update: (_, state) => [
-    state + 1,
-    Effect.none(),
-  ],
+  update: (message, state) => {
+    switch (message.type) {
+      case 'INCREMENT':
+        return [
+          state + 1,
+          Effect.none(),
+        ];
 
-  subscriptions: [
-    Every.second(Message),
-  ],
+      default:
+        return [state, Effect.none()];
+    }
+  },
 
-  middleware: [ferp.middleware.logger()],
+  subscribe: (state) => {
+    return [
+      state < 5 && ['ticker', Every.second, 1, 'INCREMENT'],
+    ];
+  },
+
+  middleware: [ferp.middleware.logger(), ferp.middleware.immutable()],
 });
-
-setTimeout(detach, 5000);

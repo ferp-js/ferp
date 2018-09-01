@@ -1,48 +1,20 @@
-const { Subscription } = require('../types/subscription.js');
+const millisecond = (milliseconds, messageType) => (dispatch) => {
+  const handle = setInterval(() => {
+    dispatch({ type: messageType });
+  }, milliseconds);
 
-class Every extends Subscription {
-  static seconds(seconds, MessageType) {
-    return new Every(seconds * 1000, MessageType);
-  }
+  return () => {
+    clearInterval(handle);
+  };
+};
 
-  static second(MessageType) {
-    return Every.seconds(1, MessageType);
-  }
-
-  static minutes(minutes, MessageType) {
-    return Every.seconds(minutes * 60, MessageType);
-  }
-
-  static minute(MessageType) {
-    return Every.minutes(1, MessageType);
-  }
-
-  static hours(hours, MessageType) {
-    return Every.seconds(hours * 60, MessageType);
-  }
-
-  static hour(MessageType) {
-    return Every.hours(1, MessageType);
-  }
-
-  constructor(milliseconds, MessageType) {
-    super();
-    this.milliseconds = milliseconds;
-    this.MessageType = MessageType;
-    this.interval = null;
-  }
-
-  onAttach() {
-    this.interval = setInterval(() => {
-      this.dispatch(new this.MessageType());
-    }, this.milliseconds);
-  }
-
-  onDetach() {
-    clearInterval(this.interval);
-  }
-}
+const second = (seconds, messageType) => millisecond(seconds * 1000, messageType);
+const minute = (minutes, messageType) => second(minutes * 60, messageType);
+const hour = (hours, messageType) => minute(hours * 60, messageType);
 
 module.exports = {
-  Every
+  millisecond,
+  second,
+  minute,
+  hour,
 };

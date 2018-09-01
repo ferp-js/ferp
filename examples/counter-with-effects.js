@@ -1,20 +1,21 @@
 const ferp = require('../src/ferp.js');
-const { Message } = ferp.types;
-const { logger } = ferp.middleware;
-const { delay } = ferp.effects;
+const { Effect } = ferp.types;
+const { logger, immutable } = ferp.middleware;
+const { Delay } = ferp.effects;
 
-const detach = ferp.app({
+ferp.app({
   init: () => [
     0,
-    delay(1000, Message),
+    Delay.second(1),
   ],
 
-  update: (message, state) => [
-    state + 1,
-    delay(1000, Message),
-  ],
+  update: (_, state) => {
+    const nextState = state + 1;
+    return [
+      nextState,
+      nextState < 5 ? Delay.second(1) : Effect.none(),
+    ];
+  },
 
-  middleware: [logger()],
+  middleware: [logger(), immutable()],
 });
-
-setTimeout(detach, 5000);

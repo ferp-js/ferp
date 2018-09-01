@@ -5,14 +5,20 @@ Build functional and pure applications in NodeJS and the Browser!
 ## But...what is it?
 
  - *Presentation Agnostic* - Tie this into your favorite front-end libraries like React or Vue. :fireworks:
- - *Functional* - Makes it easy to test :check:, control side effects :imp:, and keep things immutable. :zap:
+ - *Functional* - Makes it easy to test :heavy_check_mark:, control side effects :imp:, and keep things immutable. :zap:
  - *Simple* - Everything is standard javascript, there is no misdirection or magic. If you know javascript, you will know how to use frp-js. :smile:
+
+## Where did this come from
+
+Like any great idea, it's based on other (much smarter) people's work, namely
+[elm](https://elm-lang.org/), my first frp-love, and
+[hyperapp](https://github.com/hyperapp/hyperapp), a great functional alternative to react.
 
 ## Creating an app
 
 Here's an app that infinitely adds a counter, and logs it.
 
-```js
+```javascript
 const ferp = require('ferp');
 
 const initialState = 0;
@@ -25,7 +31,7 @@ frp.app({
       new ferp.types.Effect((done) => done(new ferp.types.message())),
     ];
   },
-  subscriptions: [],
+  subscribe: () => [],
   middleware: [frp.middleware.logger],
 });
 ```
@@ -56,11 +62,37 @@ An effect is just a promise that returns a message. Here are some convenience me
 
 | Param         | Type     | Required |
 | ------------- | -------- | -------- |
-| subscriptions | Array    | No       |
+| subscribe     | Function | No       |
 
-If you have some external source of data that will frequently update, maybe you want to use a subscription.
-Subscriptions should always extend from the `frp.types.Subscription` class, and can override `onAttach`, `onChange`, and `onDetach`.
-Think of subscriptions of mini apps that can react to state changes and send data into your real app.
+The `subscribe(state)` function describes which subscriptions are active and inactive.
+This function is run each update, and can and should react to the new state to turn on and off subscriptions.
+`subscribe` should return an array in the following format:
+
+```javascript
+subscribe: (state) => {
+  return [
+    ['unique-identifier', subscriptionMethod, param1, param2, param3, ...],
+    ['another-subscription-identifier', subMethod, param1, param2, param3, ...],
+    ...
+  ]
+}
+```
+
+Each subscription needs at least a unique identifier and a subscription method.
+
+Subscription methods should look like the following:
+
+```javascript
+const myCoolSubscription = (param1, param2, param3) => (dispatch) => {
+  // Start subscription here
+  // ...
+
+  return () => {
+    // Clean up subscription here
+    // ...
+  };
+};
+```
 
 ### Tracking changes through middleware
 
@@ -76,3 +108,6 @@ Be aware that long running middleware can greatly affect performance!
 ## More docs
 
  - [Types](./src/types/README.md)
+ - [Effects](./src/effects/README.md)
+ - [Subscriptions](./src/subscriptions/README.md)
+ - [Middleware](./src/middleware/README.md)
