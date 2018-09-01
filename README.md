@@ -5,14 +5,20 @@ Build functional and pure applications in NodeJS and the Browser!
 ## But...what is it?
 
  - *Presentation Agnostic* - Tie this into your favorite front-end libraries like React or Vue. :fireworks:
- - *Functional* - Makes it easy to test :check:, control side effects :imp:, and keep things immutable. :zap:
+ - *Functional* - Makes it easy to test :heavy_check_mark:, control side effects :imp:, and keep things immutable. :zap:
  - *Simple* - Everything is standard javascript, there is no misdirection or magic. If you know javascript, you will know how to use frp-js. :smile:
+
+## Where did this come from
+
+Like any great idea, it's based on other (much smarter) people's work, namely
+[elm](https://elm-lang.org/), my first frp-love, and
+[hyperapp](https://github.com/hyperapp/hyperapp), a great functional alternative to react.
 
 ## Creating an app
 
 Here's an app that infinitely adds a counter, and logs it.
 
-```js
+```javascript
 const ferp = require('ferp');
 
 const initialState = 0;
@@ -102,3 +108,6 @@ Be aware that long running middleware can greatly affect performance!
 ## More docs
 
  - [Types](./src/types/README.md)
+ - [Effects](./src/effects/README.md)
+ - [Subscriptions](./src/subscriptions/README.md)
+ - [Middleware](./src/middleware/README.md)
