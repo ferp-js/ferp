@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/mrozbarry/ferp.svg?branch=master)](https://travis-ci.org/mrozbarry/ferp)
+
 # ferp
 
 Build functional and pure applications in NodeJS and the Browser!
@@ -110,7 +112,7 @@ Be aware that long running middleware can greatly affect performance!
  - CLI Timer
    - [Using effects](./examples/timer-with-effects.js), `node ./examples/timer-with-effects.js`.
    - [Using subscriptions](./examples/timer-with-subscription), `node ./examples/timer-with-subscription.js`.
- - [CLI file reader](./examples/file-reader-node.js), `node ./examples/file-reader-node.js`. 
+ - [CLI file reader](./examples/file-reader-node.js), `node ./examples/file-reader-node.js`.
  - [CLI xhr request](./examples/xhr-request.js), `node ./examples/xhr-request.js`.
  - [Node http server](./examples/http-server/server.js), `node ./examples/http-server/server.js`.
  - [Web example using superfine for vdom](./examples/with-serverfine/main.js), `cd ./examples/with-superfine && npm i && npm start`.
