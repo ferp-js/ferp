@@ -1,6 +1,6 @@
-const test = require('ava');
-const sinon = require('sinon');
-const { Effect } = require('./effect.js');
+import test from 'ava';
+import sinon from 'sinon';
+import { Effect } from './effect.js';
 
 test('Effect wraps a promise', (t) => {
   const effect = new Effect(() => {});

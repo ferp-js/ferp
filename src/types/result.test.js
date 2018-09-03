@@ -1,5 +1,5 @@
-const test = require('ava');
-const { Result } = require('./result.js');
+import test from 'ava';
+import { Result } from './result.js';
 
 test('Result.nothing()', (t) => {
   const r = Result.nothing();

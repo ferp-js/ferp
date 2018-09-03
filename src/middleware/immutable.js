@@ -1,7 +1,3 @@
-const { freeze } = require('../freeze.js');
+import { freeze } from '../freeze.js';
 
-const immutable = () => next => (message, state) => next(message, freeze(state));
-
-module.exports = {
-  immutable,
-};
+export const immutable = () => next => (message, state) => next(message, freeze(state));

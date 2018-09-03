@@ -1,7 +1,7 @@
-const test = require('ava');
-const sinon = require('sinon');
-const { app } = require('./app.js');
-const { Effect } = require('./types/effect.js');
+import test from 'ava';
+import sinon from 'sinon';
+import { app } from './app.js';
+import { Effect } from './types/effect.js';
 
 test('app throws when missing init and update', (t) => {
   t.throws(() => app());

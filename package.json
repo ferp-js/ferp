@@ -1,6 +1,7 @@
 {
   "name": "ferp",
-  "main": "src/ferp.js",
+  "module": "src/ferp.js",
+  "main": "dist/ferp.js",
   "description": "Build functional and pure applications in NodeJS and the Browser!",
   "version": "0.0.1",
   "directories": {
@@ -27,14 +28,20 @@
   "homepage": "https://github.com/mrozbarry/ferp#readme",
   "scripts": {
     "test": "nyc ava",
-    "lint": "eslint ./src"
+    "lint": "eslint ./src",
+    "build": "rollup -c"
+  },
+  "dependencies": {
+    "sinon": "^6.1.5"
   },
   "devDependencies": {
     "ava": "^1.0.0-beta.7",
     "eslint": "^5.5.0",
     "eslint-config-airbnb-base": "^13.1.0",
     "eslint-plugin-import": "^2.14.0",
-    "nyc": "^13.0.1"
+    "nyc": "^13.0.1",
+    "rollup": "^0.65.0",
+    "rollup-plugin-eslint": "^5.0.0"
   },
   "ava": {
     "files": [
@@ -47,8 +54,5 @@
     "failFast": true,
     "verbose": true,
     "compileEnhancements": true
-  },
-  "dependencies": {
-    "sinon": "^6.1.5"
   }
 }

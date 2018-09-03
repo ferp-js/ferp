@@ -1,5 +1,5 @@
-const test = require('ava');
-const Every = require('./every.js');
+import test from 'ava';
+import * as Every from './every.js';
 
 test.cb('Every.millisecond dispatches messages', (t) => {
   t.plan(1);

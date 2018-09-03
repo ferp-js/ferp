@@ -9,12 +9,8 @@ const replacer = (key, value) => {
   }
 };
 
-const logger = spacing => next => (message, state) => {
+export const logger = spacing => next => (message, state) => {
   const result = next(message, state);
   console.log('[LOG]', JSON.stringify(result, replacer, spacing)); // eslint-disable-line no-console
   return result;
-};
-
-module.exports = {
-  logger,
 };

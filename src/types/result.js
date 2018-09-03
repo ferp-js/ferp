@@ -9,7 +9,7 @@ const states = {
   error: Symbol('error'),
 };
 
-class Result {
+export class Result {
   static nothing() {
     return new Result(null, null, states.nothing);
   }
@@ -74,7 +74,3 @@ class Result {
     );
   }
 }
-
-module.exports = {
-  Result,
-};

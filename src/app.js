@@ -1,6 +1,6 @@
-const { Effect } = require('./types/effect.js');
+import { Effect } from './types/effect.js';
 
-const app = ({
+export const app = ({
   init,
   update,
   subscribe,
@@ -82,8 +82,4 @@ const app = ({
     killSwitch = true;
     subscriptions.forEach(sub => sub.detach());
   };
-};
-
-module.exports = {
-  app,
 };

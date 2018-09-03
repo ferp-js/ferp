@@ -1,4 +1,4 @@
-const freeze = (value) => {
+export const freeze = (value) => {
   if (typeof value !== 'object' || value === null) {
     return value;
   }
@@ -10,8 +10,4 @@ const freeze = (value) => {
     get: (target, property) => freeze(target[property]),
     deleteProperty: () => false,
   });
-};
-
-module.exports = {
-  freeze,
 };

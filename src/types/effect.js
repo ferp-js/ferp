@@ -1,4 +1,4 @@
-class Effect {
+export class Effect {
   static none() {
     return Effect.map([]);
   }
@@ -31,7 +31,3 @@ class Effect {
     return this.promise.then(callback);
   }
 }
-
-module.exports = {
-  Effect,
-};
