@@ -1,4 +1,4 @@
-const ferp = require('../../src/ferp.js');
+const ferp = require('ferp');
 const { h, patch } = require('superfine');
 
 const view = (state, dispatch) => (
@@ -17,7 +17,7 @@ ferp.app({
       value: 0,
       node: null,
     },
-    new ferp.types.Effect.immediate('RENDER'),
+    ferp.types.Effect.immediate('RENDER'),
   ],
 
   update: (message, state) => {

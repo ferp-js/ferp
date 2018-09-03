@@ -10,7 +10,8 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "superfine": "^6.0.1"
+    "superfine": "^6.0.1",
+    "ferp": "^0.0.1"
   },
   "devDependencies": {
     "parcel-bundler": "^1.9.7"

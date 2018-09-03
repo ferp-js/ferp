@@ -1,6 +1,6 @@
 {
   "name": "ferp",
-  "main": "ferp.js",
+  "main": "src/ferp.js",
   "description": "Build functional and pure applications in NodeJS and the Browser!",
   "version": "0.0.1",
   "directories": {
