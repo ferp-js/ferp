@@ -26,10 +26,14 @@
   },
   "homepage": "https://github.com/mrozbarry/ferp#readme",
   "scripts": {
-    "test": "nyc ava"
+    "test": "nyc ava",
+    "lint": "eslint ./src"
   },
   "devDependencies": {
     "ava": "^1.0.0-beta.7",
+    "eslint": "^5.5.0",
+    "eslint-config-airbnb-base": "^13.1.0",
+    "eslint-plugin-import": "^2.14.0",
     "nyc": "^13.0.1"
   },
   "ava": {

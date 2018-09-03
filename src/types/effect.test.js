@@ -10,9 +10,9 @@ test('Effect wraps a promise', (t) => {
 test.cb('Effect forwards #then', (t) => {
   t.plan(1);
 
-  const effect = new Effect((done) => { done(1) });
+  const effect = new Effect((done) => { done(1); });
 
-  effect.then((value) => value).then((value) => {
+  effect.then(value => value).then((value) => {
     t.is(value, 1);
     t.end();
   });
@@ -25,7 +25,7 @@ test.cb('Effect.map returns a method that resolves multiple effects', (t) => {
 
   t.is(typeof resolver, 'function');
 
-  const dispatch = sinon.fake((value) => value);
+  const dispatch = sinon.fake(value => value);
   resolver(dispatch)
     .then((resolved) => {
       t.truthy(Array.isArray(resolved));

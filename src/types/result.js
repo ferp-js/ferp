@@ -36,20 +36,22 @@ class Result {
   }
 
   serialize() {
-    switch(this[stateKey]) {
+    switch (this[stateKey]) {
       case states.nothing:
-        return `<Result Nothing>`;
+        return '<Result Nothing>';
       case states.pending:
-        return `<Result Pending>`;
+        return '<Result Pending>';
       case states.done:
         return `<Result Done ${JSON.stringify(this[dataKey])}>`;
       case states.error:
         return `<Result Error ${JSON.stringify(this[errorKey])}>`;
+      default:
+        throw new Error('Result state not valid');
     }
   }
 
   get(onNothing, onPending, onDone, onError) {
-    switch(this[stateKey]) {
+    switch (this[stateKey]) {
       case states.nothing:
         return onNothing();
       case states.pending:
@@ -58,6 +60,8 @@ class Result {
         return onDone(this[dataKey]);
       case states.error:
         return onError(this[errorKey]);
+      default:
+        throw new Error('Result state not valid');
     }
   }
 
@@ -65,7 +69,7 @@ class Result {
     return this.get(
       () => defaultValue,
       () => defaultValue,
-      (data) => data,
+      data => data,
       () => defaultValue,
     );
   }

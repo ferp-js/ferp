@@ -14,10 +14,10 @@ const app = ({
     .reduce((all, method) => method(all), update);
 
   const getSubscriptionDetach = (previousSubscriptions, { id, method, params }) => {
-    const sub = previousSubscriptions.find((sub) => isSubscription(sub, id));
+    const sub = previousSubscriptions.find(pSub => pSub.id === id);
     if (sub && sub.detach) return sub.detach;
-    return method(...params)(dispatch);
-  }
+    return method(...params)(dispatch); // eslint-disable-line no-use-before-define
+  };
 
   const handleSubscriptions = (previousSubscriptions, currentState) => {
     if (!subscribe) return [];
@@ -32,30 +32,31 @@ const app = ({
       }));
 
     previousSubscriptions
-      .filter((prevSub) => (
-        !nextSubscriptions.find((nextSub) => nextSub.id === prevSub.id)
+      .filter(prevSub => (
+        !nextSubscriptions.find(nextSub => nextSub.id === prevSub.id)
       ))
       .forEach((removedSub) => {
         removedSub.detach();
       });
 
     return nextSubscriptions;
-  }
+  };
 
   const updateState = (newState) => {
     if (newState === undefined) return;
     subscriptions = handleSubscriptions(subscriptions, newState);
 
     state = newState;
-  }
+  };
 
   const runEffect = (effect) => {
-    if (killSwitch) return;
+    if (killSwitch) return Promise.resolve();
 
     if (effect instanceof Effect) {
-      return effect.then(dispatch);
-    } else if (typeof effect === 'function') {
-      return effect(dispatch);
+      return effect.then(dispatch); // eslint-disable-line no-use-before-define
+    }
+    if (typeof effect === 'function') {
+      return effect(dispatch); // eslint-disable-line no-use-before-define
     }
     return Promise.resolve();
   };
@@ -63,7 +64,7 @@ const app = ({
   const handleUpdate = ([newState, effect]) => {
     updateState(newState);
     return runEffect(effect);
-  }
+  };
 
   const dispatch = (message) => {
     const isMessageEmpty = (
@@ -79,7 +80,7 @@ const app = ({
 
   return () => {
     killSwitch = true;
-    subscriptions.forEach((sub) => sub.detach());
+    subscriptions.forEach(sub => sub.detach());
   };
 };
 

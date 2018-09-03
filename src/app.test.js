@@ -26,7 +26,7 @@ test.cb('app calls update immediately with effect', (t) => {
       t.is(state, 0);
       t.end();
       return [state, Effect.none()];
-    }
+    },
   });
 });
 
@@ -39,16 +39,16 @@ test('app creates a detach method', (t) => {
 
 test.cb('app can enable a subscription which can dispatch an update', (t) => {
   const emptySub = () => (dispatch) => {
-    let count = 0
+    let count = 0;
     const handle = setInterval(() => {
-      count = count + 1;
+      count += 1;
       dispatch({ type: 'from-sub', count });
     }, 100);
     return () => {
       clearInterval(handle);
     };
   };
-  const detach = app({
+  app({
     init: () => [false, Effect.immediate({ type: 'foo' })],
     update: (message, state) => {
       switch (message.type) {
@@ -59,9 +59,12 @@ test.cb('app can enable a subscription which can dispatch an update', (t) => {
           t.deepEqual(message, { type: 'from-sub', count: 1 });
           t.end();
           return [false, Effect.none()];
+
+        default:
+          return [state, Effect.none()];
       }
     },
-    subscribe: (state) => [
+    subscribe: state => [
       state && ['test', emptySub],
     ],
   });
@@ -69,19 +72,22 @@ test.cb('app can enable a subscription which can dispatch an update', (t) => {
 
 test.cb('app can use middleware', (t) => {
   t.plan(2);
-  const testMiddleware = (next) => sinon.fake((message, state) => {
+  const testMiddleware = next => sinon.fake((message, state) => {
     t.deepEqual(message, { type: 'foo' });
     t.is(state, true);
     t.end();
     return next(message, state);
   });
 
-  const detach = app({
+  app({
     init: () => [true, Effect.immediate({ type: 'foo' })],
     update: (message, state) => {
       switch (message.type) {
         case 'foo':
           return [true, Effect.none()];
+
+        default:
+          return [state, Effect.none()];
       }
     },
     middleware: [testMiddleware],

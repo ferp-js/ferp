@@ -7,10 +7,7 @@ const freeze = (value) => {
     isExtensible: () => false,
     preventExtensions: () => true,
     set: () => false,
-    get: (target, property) => {
-      const type = typeof target[property];
-      return freeze(target[property]);
-    },
+    get: (target, property) => freeze(target[property]),
     deleteProperty: () => false,
   });
 };

@@ -4,11 +4,11 @@ class Effect {
   }
 
   static map(effects) {
-    return (dispatch) => Promise.all(effects.map((effect) => effect.then(dispatch)));
+    return dispatch => Promise.all(effects.map(effect => effect.then(dispatch)));
   }
 
   static immediate(message) {
-    return new Effect((done) => done(message));
+    return new Effect(done => done(message));
   }
 
   static defer() {

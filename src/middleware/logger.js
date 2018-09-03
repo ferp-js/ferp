@@ -1,19 +1,17 @@
-const { Result } = require('../types/result.js');
-
 const replacer = (key, value) => {
   if (value && typeof value.serialize === 'function') {
     return value.serialize();
   }
   try {
     return value;
-  } catch(err) {
+  } catch (err) {
     return `<${value.constructor.name}>`;
   }
 };
 
-const logger = (spacing) => (next) => (message, state) => {
+const logger = spacing => next => (message, state) => {
   const result = next(message, state);
-  console.log('[LOG]', JSON.stringify(result, replacer, spacing));
+  console.log('[LOG]', JSON.stringify(result, replacer, spacing)); // eslint-disable-line no-console
   return result;
 };
 
