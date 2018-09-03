@@ -30,10 +30,6 @@ class Effect {
   then(callback) {
     return this.promise.then(callback);
   }
-
-  catch(callback) {
-    return this.promise.catch(callback);
-  }
 }
 
 module.exports = {

@@ -10,24 +10,19 @@ const app = ({
   let subscriptions = [];
   let killSwitch = false;
 
-  const updateWithMiddleware = (middleware || []).reduce((all, method) => {
-    return method(all);
-  }, update);
+  const updateWithMiddleware = (middleware || [])
+    .reduce((all, method) => method(all), update);
 
-  function isSubscription(subscription, id) {
-    return subscription.id === id;
-  }
-
-  function getSubscriptionDetach(previousSubscriptions, { id, method, params }) {
+  const getSubscriptionDetach = (previousSubscriptions, { id, method, params }) => {
     const sub = previousSubscriptions.find((sub) => isSubscription(sub, id));
     if (sub && sub.detach) return sub.detach;
     return method(...params)(dispatch);
   }
 
-  function handleSubscriptions(previousSubscriptions, state) {
+  const handleSubscriptions = (previousSubscriptions, currentState) => {
     if (!subscribe) return [];
 
-    const nextSubscriptions = subscribe(state)
+    const nextSubscriptions = subscribe(currentState)
       .filter(Array.isArray)
       .map(([id, method, ...params]) => ({
         id,
@@ -38,7 +33,7 @@ const app = ({
 
     previousSubscriptions
       .filter((prevSub) => (
-        !nextSubscriptions.find((nextSub) => isSubscription(nextSub, prevSub.id))
+        !nextSubscriptions.find((nextSub) => nextSub.id === prevSub.id)
       ))
       .forEach((removedSub) => {
         removedSub.detach();
@@ -47,34 +42,30 @@ const app = ({
     return nextSubscriptions;
   }
 
-  function updateState(newState) {
+  const updateState = (newState) => {
     if (newState === undefined) return;
     subscriptions = handleSubscriptions(subscriptions, newState);
 
     state = newState;
   }
 
-  function runEffect(effect) {
+  const runEffect = (effect) => {
     if (killSwitch) return;
 
     if (effect instanceof Effect) {
-      return effect
-        .then(dispatch)
-        .catch((err) => {
-          console.log('error', err);
-        });
+      return effect.then(dispatch);
     } else if (typeof effect === 'function') {
       return effect(dispatch);
     }
     return Promise.resolve();
   };
 
-  function handleUpdate([newState, effect]) {
+  const handleUpdate = ([newState, effect]) => {
     updateState(newState);
     return runEffect(effect);
   }
 
-  function dispatch(message) {
+  const dispatch = (message) => {
     const isMessageEmpty = (
       message === null
       || typeof message === 'undefined'
