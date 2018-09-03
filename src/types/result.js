@@ -30,6 +30,9 @@ class Result {
     this[dataKey] = data;
     this[errorKey] = error;
     this[stateKey] = state;
+    if (!Object.values(states).includes(state)) {
+      throw new Error('Result state not valid');
+    }
   }
 
   serialize() {
@@ -43,7 +46,6 @@ class Result {
       case states.error:
         return `<Result Error ${JSON.stringify(this[errorKey])}>`;
     }
-    throw new Error('Result state not valid');
   }
 
   get(onNothing, onPending, onDone, onError) {
@@ -57,7 +59,6 @@ class Result {
       case states.error:
         return onError(this[errorKey]);
     }
-    throw new Error('Result state not valid');
   }
 
   getWithDefault(defaultValue) {

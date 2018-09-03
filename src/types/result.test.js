@@ -28,3 +28,9 @@ test('Result.error()', (t) => {
   t.is(r.getWithDefault(123), 123);
   t.is(r.serialize(), '<Result Error {"message":"error"}>');
 });
+
+test('creating an invalid result state will throw errors', (t) => {
+  t.throws(() => {
+    const r = new Result(null, null, null);
+  });
+});

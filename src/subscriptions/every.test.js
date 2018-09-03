@@ -2,13 +2,10 @@ const test = require('ava');
 const Every = require('./every.js');
 
 test.cb('Every.millisecond dispatches messages', (t) => {
-  t.plan(2);
-  const start = Date.now();
+  t.plan(1);
   const detach = Every.millisecond(10, 'test')((message) => {
     detach();
-    const delay = Date.now() - start;
     t.deepEqual(message, { type: 'test' });
-    t.truthy(delay >= 10 && delay <= 15);
     t.end();
   });
 });
