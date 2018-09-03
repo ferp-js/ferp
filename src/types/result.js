@@ -41,7 +41,7 @@ class Result {
       case states.done:
         return `<Result Done ${JSON.stringify(this[dataKey])}>`;
       case states.error:
-        return `<Result Error ${this[errorKey]}>`;
+        return `<Result Error ${JSON.stringify(this[errorKey])}>`;
     }
     throw new Error('Result state not valid');
   }
@@ -57,6 +57,7 @@ class Result {
       case states.error:
         return onError(this[errorKey]);
     }
+    throw new Error('Result state not valid');
   }
 
   getWithDefault(defaultValue) {
