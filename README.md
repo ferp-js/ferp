@@ -1,4 +1,7 @@
+[![npm version](https://badge.fury.io/js/ferp.svg)](https://badge.fury.io/js/ferp)
 [![Build Status](https://travis-ci.org/mrozbarry/ferp.svg?branch=master)](https://travis-ci.org/mrozbarry/ferp)
+![Dependencies](https://david-dm.org/mrozbarry/ferp.svg)
+[![Known Vulnerabilities](https://snyk.io/test/github/mrozbarry/ferp/badge.svg)](https://snyk.io/test/github/mrozbarry/ferp)
 
 # ferp
 
@@ -15,6 +18,12 @@ Build functional and pure applications in NodeJS and the Browser!
 Like any great idea, it's based on other (much smarter) people's work, namely
 [elm](https://elm-lang.org/), my first frp-love, and
 [hyperapp](https://github.com/hyperapp/hyperapp), a great functional alternative to react.
+
+## Installing
+
+```bash
+npm install --save ferp
+```
 
 ## Creating an app
 
