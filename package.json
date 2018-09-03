@@ -26,10 +26,11 @@
   },
   "homepage": "https://github.com/mrozbarry/ferp#readme",
   "scripts": {
-    "test": "ava"
+    "test": "nyc ava"
   },
   "devDependencies": {
-    "ava": "^1.0.0-beta.7"
+    "ava": "^1.0.0-beta.7",
+    "nyc": "^13.0.1"
   },
   "ava": {
     "files": [
