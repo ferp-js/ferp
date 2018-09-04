@@ -1,0 +1,10 @@
+{
+  "env": {
+    "test": {
+      "presets": [
+        ["@ava/transform-test-files", { "powerAssert": false }],
+        ["@ava/stage-4"],
+      ]
+    }
+  }
+}
