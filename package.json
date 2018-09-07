@@ -29,7 +29,8 @@
   "scripts": {
     "test": "nyc ava",
     "lint": "eslint ./src",
-    "build": "rollup -c"
+    "build": "rollup -c",
+    "prepublishOnly": "npm run build"
   },
   "dependencies": {
     "sinon": "^6.1.5"

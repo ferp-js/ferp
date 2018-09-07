@@ -12,8 +12,13 @@ const requestAnimationFrame = window && typeof window.requestAnimationFrame === 
   ? callback => window.requestAnimationFrame(callback)
   : callback => setTimeout(callback, 1000 / 60);
 
-export const raf = messageType => new Effect((done) => {
+export const raf = (messageType, lastTimestamp) => new Effect((done) => {
   requestAnimationFrame((timestamp) => {
-    done({ type: messageType, timestamp });
+    done({
+      type: messageType,
+      timestamp,
+      lastTimestamp,
+      delta: lastTimestamp ? timestamp - lastTimestamp : 0,
+    });
   });
 });

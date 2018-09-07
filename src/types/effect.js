@@ -4,7 +4,7 @@ export class Effect {
   }
 
   static map(effects) {
-    return dispatch => Promise.all(effects.map(effect => effect.then(dispatch)));
+    return Promise.resolve(effects);
   }
 
   static immediate(message) {

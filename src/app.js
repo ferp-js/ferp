@@ -52,11 +52,13 @@ export const app = ({
   const runEffect = (effect) => {
     if (killSwitch) return Promise.resolve();
 
+    // console.log('runEffect', effect);
+    //
     if (effect instanceof Effect) {
       return effect.then(dispatch); // eslint-disable-line no-use-before-define
     }
-    if (typeof effect === 'function') {
-      return effect(dispatch); // eslint-disable-line no-use-before-define
+    if (effect instanceof Promise) {
+      return effect.then(effects => Promise.all(effects.map(runEffect)));
     }
     return Promise.resolve();
   };
