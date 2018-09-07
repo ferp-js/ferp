@@ -2,7 +2,6 @@ const ferp = require('ferp');
 const { Effect } = ferp.types;
 
 const playerReducer = id => (message, state) => {
-  console.log('playerReducer', id, message.playerId);
   if (message.playerId !== id) return [state, Effect.none()];
   switch (message.type) {
     case 'SOURCE_CHANGE':
@@ -10,6 +9,10 @@ const playerReducer = id => (message, state) => {
         Object.assign({}, state, {
           sourceType: message.sourceType,
           gamePadIndex: null,
+          up: false,
+          down: false,
+          left: false,
+          right: false,
         }),
         Effect.none(),
       ];
@@ -19,6 +22,10 @@ const playerReducer = id => (message, state) => {
         Object.assign({}, state, {
           sourceType: 'gamepad',
           gamePadIndex: message.gamePadIndex,
+          up: false,
+          down: false,
+          left: false,
+          right: false,
         }),
         Effect.none(),
       ];

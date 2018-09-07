@@ -1,25 +1,25 @@
-  
+
 primary-color = hsl(30, 100%, 47%)
-  
+
 *
     box-sizing border-box
-  
+
 body
     background-color primary-color
     color white
     font-family "Open Sans", sans-serif
-    
+
 header
   width 400px
   margin 0 auto 20px auto
   text-align center
-    
+
 .players
     display flex
     flex-direction row
     align-items center
     justify-content center
-    
+
     .player
         width 200px
         border 4px white solid
@@ -46,7 +46,7 @@ header
             &.pressed
                 border-color red
                 transition border 0s ease-in-out
-                
+
 
             &-group
                 display flex
@@ -76,7 +76,7 @@ header
             input.source[type="radio"]
                 position absolute
                 visibility hidden
-                
+
             label.source
                 margin-top 10px
                 background-color primary-color
@@ -90,7 +90,7 @@ header
                 border 3px white solid
                 border-radius 3px
                 transition background-color .3s ease-in-out, color .3s ease-in-out
-                              
+
                 &:hover,
                 &:focus
                     color primary-color
@@ -99,3 +99,14 @@ header
             input.source[type="radio"]:checked + label.source
                 color primary-color
                 background-color white
+
+#canvas-container
+  display flex
+  flex-direction column
+  align-items center
+  justify-content center
+  margin-top 20px
+
+#canvas
+  border 3px white solid
+  border-radius 3px

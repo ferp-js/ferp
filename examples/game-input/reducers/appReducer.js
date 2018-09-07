@@ -8,7 +8,7 @@ const appReducer = view => (message, state) => updatesToStateEffects({
   players: playersReducer(message, state.players),
   gamePads: gamePadsReducer(state.players)(message, state.gamePads),
   vdom: vdomReducer(view)(state.players)(message, state.vdom),
-  canvas: canvasReducer(message, state.canvas),
+  canvas: canvasReducer(state.players)(message, state.canvas),
 });
 
 const initialState = {
@@ -19,8 +19,7 @@ const initialState = {
     target: document.getElementById('container'),
   },
   canvas: {
-    context: null,
-    target: document.getElementById('canvas'),
+    targetId: 'canvas',
   },
 };
 

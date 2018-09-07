@@ -1,8 +1,8 @@
 const ferp = require('ferp');
-const { h, patch } = require('superfine');
+const { h } = require('superfine');
 const { appReducer, initialState } = require('./reducers/appReducer.js');
-const { keyboardSubscription } = require('./subscriptions/keyboardSubscription.js');
-const { inputEffect } = require('./effects/inputEffect.js');
+const { keyboardSubscription } = require('./subscriptions/keyboardSubscription.js'); const { inputEffect } = require('./effects/inputEffect.js');
+const { gamePadEffect } = require('./effects/gamePadEffect.js');
 
 const { Effect } = ferp.types;
 
@@ -96,10 +96,10 @@ ferp.app({
       Effect.immediate({ type: 'ADD_PLAYER', playerId: Math.random().toString(36).substr(7) }),
       Effect.immediate({ type: 'ADD_PLAYER', playerId: Math.random().toString(36).substr(7) }),
       Effect.immediate({ type: 'ADD_PLAYER', playerId: Math.random().toString(36).substr(7) }),
+      Effect.immediate({ type: 'TICK' }),
     ]),
   ],
   update: (message, state) => {
-    console.log(message);
     const [nextState, effects] = appReducer(view)(message, state);
     const extraEffects = [];
     switch (message.type) {
@@ -109,6 +109,11 @@ ferp.app({
 
       case 'KEY_UP':
         extraEffects.push(effectForKeyEvent(false, message.key, state.players));
+        break;
+
+      case 'TICK':
+        extraEffects.push(ferp.effects.delay.raf('TICK', message.timestamp));
+        extraEffects.push(gamePadEffect(state.gamePads));
         break;
 
       default:
@@ -124,14 +129,11 @@ ferp.app({
       Effect.map([
         Effect.map(effects),
         Effect.map(extraEffects),
-      ])
+      ]),
     ];
   },
 
-  subscribe: (state) => {
-    const anyGamePadPlayers = state.players.some(p => p.sourceType === 'gamepad');
-    return [
-      ['keyhandler', keyboardSubscription, 'KEY_DOWN', 'KEY_UP'],
-    ];
-  },
+  subscribe: () => [
+    ['keyhandler', keyboardSubscription, 'KEY_DOWN', 'KEY_UP'],
+  ],
 });

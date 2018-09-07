@@ -34,15 +34,59 @@ const standardAxisMapping = {
   3: 'right-vertical',
 };
 
-const gamePadReducer = gamePadIndex => players => (message, state) => {
-  if (message.gamePadIndex !== gamePadIndex) return [state, Effect.none()];
+const axesToInputEffect = (playerId, index, value) => {
+  switch (standardAxisMapping[index]) {
+    case 'left-horizontal':
+      if (value !== 0) return inputEffect(true, playerId, value < 0 ? 'left' : 'right');
+      return Effect.map([
+        inputEffect(false, playerId, 'left'),
+        inputEffect(false, playerId, 'right'),
+      ]);
+
+    case 'left-vertical':
+      if (value !== 0) return inputEffect(true, playerId, value < 0 ? 'up' : 'down');
+      return Effect.map([
+        inputEffect(false, playerId, 'up'),
+        inputEffect(false, playerId, 'down'),
+      ]);
+
+    default:
+      return Effect.none();
+  }
+};
+
+const gamePadReducer = players => (message, state) => {
+  const noGamePadIndex = typeof message.gamePadIndex === 'undefined';
+  const differentGamePadIndex = state && message.gamePadIndex !== state.index;
+  if (noGamePadIndex || differentGamePadIndex) return [state, Effect.none()];
+
+  const updateButtons = (buttons, buttonIndex, pressed, value) => {
+    const nextButtons = [...buttons];
+    nextButtons[buttonIndex].pressed = Boolean(pressed);
+    if (typeof value !== 'undefined') {
+      nextButtons[buttonIndex].value = value;
+    } else {
+      nextButtons[buttonIndex].value = Boolean(pressed)
+        ? 1.0
+        : 0.0;
+    }
+
+    return nextButtons;
+  };
+
+  const updateAxes = (axes, axesIndex, value) => {
+    const nextAxes = [...axes];
+    nextAxes[axesIndex] = value;
+
+    return nextAxes;
+  }
 
   switch (message.type) {
     case 'GAMEPAD_BUTTON_DOWN':
       return (() => {
-        const isGamePadFree = !state.players
+        const isGamePadFree = !players
           .find(p => p.gamePadIndex === message.gamePadIndex);
-        const playerNeedsGamePadIndex = state.players
+        const playerNeedsGamePadIndex = players
           .find(p => p.sourceType === 'gamepad' && p.gamePadIndex === null);
 
         const effect = (() => {
@@ -53,28 +97,58 @@ const gamePadReducer = gamePadIndex => players => (message, state) => {
               gamePadIndex: message.gamePadIndex,
             });
           }
-          const player = state.players
+          const player = players
             .find(p => p.sourceType === 'gamepad' && p.gamePadIndex === message.gamePadIndex);
-          if (!player) return ferp.types.Effect.none();
 
           return inputEffect(true, player.id, message.button);
         })();
 
         return [
-          state,
+          Object.assign({}, state, {
+            buttons: updateButtons(
+              state.buttons,
+              message.buttonIndex,
+              true,
+            ),
+          }),
           effect,
         ];
       })();
 
     case 'GAMEPAD_BUTTON_UP':
       return (() => {
-        const player = state.players
+        const player = players
           .find(p => p.sourceType === 'gamepad' && p.gamePadIndex === message.gamePadIndex);
-        if (!player) return ferp.types.Effect.none();
+        const effect = player
+          ? inputEffect(false, player.id, message.button)
+          : Effect.none();
 
         return [
-          state,
-          inputEffect(false, player.id, message.button),
+          Object.assign({}, state, {
+            buttons: updateButtons(
+              state.buttons,
+              message.buttonIndex,
+              false,
+            ),
+          }),
+          effect,
+        ];
+      })();
+
+    case 'GAMEPAD_AXES_CHANGE':
+      return (() => {
+        const player = players
+          .find(p => p.sourceType === 'gamepad' && p.gamePadIndex === message.gamePadIndex);
+
+        const effect = player
+          ? axesToInputEffect(player.id, message.axesIndex, message.value)
+          : Effect.none();
+
+        return [
+          Object.assign({}, state, {
+            axes: updateAxes(state.axes, message.axesIndex, message.value),
+          }),
+          effect,
         ];
       })();
 
