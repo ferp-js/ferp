@@ -5,13 +5,13 @@
 
 # ferp
 
-Build functional and pure applications in NodeJS and the Browser!
+Build functional and pure applications for NodeJS and the Browser!
 
 ## But...what is it?
 
- - *Presentation Agnostic* - Tie this into your favorite front-end libraries like React or Vue. :fireworks:
- - *Functional* - Makes it easy to test :heavy_check_mark:, control side effects :imp:, and keep things immutable. :zap:
- - *Simple* - Everything is standard javascript, there is no misdirection or magic. If you know javascript, you will know how to use frp-js. :smile:
+ - **Presentation Agnostic** - Tie this into your favorite front-end libraries like React or Vue. :fireworks:, or commandline tasks like an interactive prompt or sever :shipit:.
+ - **Functional** - Makes it easy to test :heavy_check_mark:, control side effects :imp:, and keep things immutable. :zap:
+ - **Simple** - Everything is standard javascript, there is no misdirection or magic. If you know javascript, you will know how to use ferp. :smile:
 
 ## Where did this come from
 
@@ -34,7 +34,7 @@ const ferp = require('ferp');
 
 const initialState = 0;
 
-frp.app({
+ferp.app({
   init: () => [initialState, ferp.types.Effect.none()],
   update: (message, state) => {
     return [
@@ -43,7 +43,7 @@ frp.app({
     ];
   },
   subscribe: () => [],
-  middleware: [frp.middleware.logger()],
+  middleware: [ferp.middleware.logger()],
 });
 ```
 
