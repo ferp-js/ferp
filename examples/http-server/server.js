@@ -1,4 +1,4 @@
-const ferp = require('../../src/ferp.js');
+const ferp = require('ferp');
 const { router } = require('./router.js');
 const { serverSubscription } = require('./subscription.js');
 

@@ -11,7 +11,7 @@
   "license": "MIT",
   "dependencies": {
     "superfine": "^6.0.1",
-    "ferp": "^0.0.1"
+    "ferp": "^0.0.2"
   },
   "devDependencies": {
     "parcel-bundler": "^1.9.7"

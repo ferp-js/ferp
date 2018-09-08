@@ -23,13 +23,12 @@ test.cb('Effect.map returns a method that resolves multiple effects', (t) => {
 
   const resolver = Effect.map([Effect.immediate(true)]);
 
-  t.is(typeof resolver, 'function');
+  t.truthy(resolver instanceof Promise);
 
-  const dispatch = sinon.fake(value => value);
-  resolver(dispatch)
+  resolver
     .then((resolved) => {
       t.truthy(Array.isArray(resolved));
-      t.deepEqual(resolved, [true]);
+      t.truthy(resolved[0] instanceof Effect);
       t.end();
     });
 });

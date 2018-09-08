@@ -1,15 +1,15 @@
 {
   "name": "game-input",
   "version": "0.0.1",
-  "description": "",
-  "main": "index.js",
+  "description": "An example of using ferp for a game",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "parcel ./index.html"
   },
-  "author": "",
+  "author": "Alex Barry",
   "license": "MIT",
   "dependencies": {
+    "ferp": "^0.0.2",
     "superfine": "^6.0.1"
   },
   "devDependencies": {

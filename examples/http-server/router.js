@@ -1,4 +1,4 @@
-const ferp = require('../../src/ferp.js');
+const ferp = require('ferp');
 const url = require('url');
 
 const requestToMatcher = (request, parsed) => (

@@ -1,0 +1,15 @@
+{
+  "name": "http-server",
+  "version": "0.0.1",
+  "description": "Simple http server using ferp",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "author": "Alex Barry",
+  "license": "MIT",
+  "dependencies": {
+    "ferp": "^0.0.2"
+  }
+}

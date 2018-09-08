@@ -8,7 +8,7 @@ export const second = (seconds, messageType) => millisecond(seconds * 1000, mess
 export const minute = (minutes, messageType) => second(minutes * 60, messageType);
 export const hour = (hours, messageType) => minute(hours * 60, messageType);
 
-const requestAnimationFrame = window && typeof window.requestAnimationFrame === 'function'
+const requestAnimationFrame = typeof window !== 'undefined' && typeof window.requestAnimationFrame === 'function'
   ? callback => window.requestAnimationFrame(callback)
   : callback => setTimeout(callback, 1000 / 60);
 

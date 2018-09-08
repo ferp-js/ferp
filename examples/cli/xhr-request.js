@@ -1,6 +1,7 @@
-const ferp = require('../src/ferp.js');
-const { Effect, Result } = ferp.types;
+const ferp = require('ferp');
 const https = require('https');
+
+const { Effect, Result } = ferp.types;
 
 const request = (url, messageType) => Effect.map([
   Effect.immediate({ type: messageType, data: Result.pending() }),
@@ -8,10 +9,10 @@ const request = (url, messageType) => Effect.map([
     https.get(url, (response) => {
       let data = '';
       response
-        .on('data', (chunk) => { data += chunk })
+        .on('data', (chunk) => { data += chunk; })
         .on('end', () => done({ type: messageType, data: Result.done(JSON.parse(data)) }));
     })
-      .on('error', (err) => done({ type: messageType, data: Result.error(err) }))
+      .on('error', err => done({ type: messageType, data: Result.error(err) }))
       .end();
   }),
 ]);

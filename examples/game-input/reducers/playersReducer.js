@@ -2,14 +2,17 @@ const ferp = require('ferp');
 const { playerReducer } = require('./playerReducer.js');
 const { updatesCollectionToStateEffects } = require('./helper.js');
 
+const clamp = (max, value) => Math.min(Math.max(0, value), max);
+
 const integrate = (player, delta) => {
   if (!delta) return player;
-  const xDiff = (player.left ? -5 : 0) + (player.right ? 5 : 0);
-  const yDiff = (player.up ? -5 : 0) + (player.down ? 5 : 0);
+  const speed = 9;
+  const xDiff = (player.left ? -speed : 0) + (player.right ? speed : 0);
+  const yDiff = (player.up ? -speed : 0) + (player.down ? speed : 0);
 
   return Object.assign({}, player, {
-    x: player.x + (xDiff * delta / 100),
-    y: player.y + (yDiff * delta / 100),
+    x: clamp(800, player.x + (xDiff * delta / 100)),
+    y: clamp(300, player.y + (yDiff * delta / 100)),
   });
 };
 

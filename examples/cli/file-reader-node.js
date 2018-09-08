@@ -1,8 +1,8 @@
-const ferp = require('../src/ferp.js');
-const { Effect, Result } = ferp.types;
-
+const ferp = require('ferp');
 const fs = require('fs');
 const path = require('path');
+
+const { Effect, Result } = ferp.types;
 
 const readFile = (file, messageType) => Effect.map([
   Effect.immediate({ type: messageType, data: Result.pending() }),
