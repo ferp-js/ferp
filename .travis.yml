@@ -7,3 +7,5 @@ jobs:
   include:
     - stage: "test"
       script: "npm test"
+    - stage: "lint"
+      script: "npm run lint"

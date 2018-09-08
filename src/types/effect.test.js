@@ -1,5 +1,4 @@
 import test from 'ava';
-import sinon from 'sinon';
 import { Effect } from './effect.js';
 
 test('Effect wraps a promise', (t) => {
