@@ -66,7 +66,7 @@ const gamePadReducer = players => (message, state) => {
     if (typeof value !== 'undefined') {
       nextButtons[buttonIndex].value = value;
     } else {
-      nextButtons[buttonIndex].value = Boolean(pressed)
+      nextButtons[buttonIndex].value = pressed
         ? 1.0
         : 0.0;
     }
@@ -79,7 +79,7 @@ const gamePadReducer = players => (message, state) => {
     nextAxes[axesIndex] = value;
 
     return nextAxes;
-  }
+  };
 
   switch (message.type) {
     case 'GAMEPAD_BUTTON_DOWN':
@@ -99,6 +99,8 @@ const gamePadReducer = players => (message, state) => {
           }
           const player = players
             .find(p => p.sourceType === 'gamepad' && p.gamePadIndex === message.gamePadIndex);
+
+          if (!player) return Effect.none();
 
           return inputEffect(true, player.id, message.button);
         })();

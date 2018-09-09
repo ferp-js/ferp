@@ -9,7 +9,7 @@
   "author": "Alex Barry",
   "license": "MIT",
   "dependencies": {
-    "ferp": "^0.0.2",
+    "ferp": "^0.0.3",
     "superfine": "^6.0.1"
   },
   "devDependencies": {

@@ -12,7 +12,10 @@ const vdomReducer = view => players => (message, state) => {
             view(
               players,
               (playerId, sourceType) => {
-                deferred.dispatch({ type: 'SOURCE_CHANGE', playerId, sourceType });
+                console.log('vdomReducer.onSourceChange', playerId, sourceType);
+                deferred.dispatch(
+                  Effect.immediate({ type: 'SOURCE_CHANGE', playerId, sourceType }),
+                );
               },
             ),
             state.target,

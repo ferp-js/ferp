@@ -1,66 +1,10 @@
 const ferp = require('ferp');
-const { h } = require('superfine');
 const { appReducer, initialState } = require('./reducers/appReducer.js');
 const { keyboardSubscription } = require('./subscriptions/keyboardSubscription.js'); const { inputEffect } = require('./effects/inputEffect.js');
 const { gamePadEffect } = require('./effects/gamePadEffect.js');
+const { view } = require('./view.js');
 
 const { Effect } = ferp.types;
-
-const view = (players, onSourceChange) => (
-  h('div', { class: 'players' }, players.map((player) => {
-    const name = `${player.id}-source`;
-
-    const renderInput = (label, value, sourceType) => [
-      h('input', {
-        class: 'source',
-        type: 'radio',
-        value,
-        name,
-        id: `${name}-${value}`,
-        checked: sourceType === value,
-        onchange: (e) => {
-          onSourceChange(player.id, e.target.value);
-        },
-      }),
-      h('label', { class: 'source', for: `${name}-${value}` }, label),
-    ];
-
-    const gamePadStatus = () => {
-      if (player.sourceType !== 'gamepad') return 'Gamepad disabled';
-      return player.gamePadIndex === null ? 'Press gamepad button' : `Game pad ${player.gamePadIndex}`;
-    };
-
-    return h('div', { class: 'player' }, [
-      h('h2', null, `Player ${player.id}`),
-
-      h('div', { class: 'input-group' }, [
-        h('div', { class: ['input', 'up', player.up && 'pressed'].filter(Boolean).join(' ') }),
-      ]),
-      h('div', { class: 'input-group' }, [
-        h('div', { class: ['input', 'left', player.left && 'pressed'].filter(Boolean).join(' ') }),
-        h('div', { class: ['input', 'right', player.right && 'pressed'].filter(Boolean).join(' ') }),
-      ]),
-      h('div', { class: 'input-group' }, [
-        h('div', { class: ['input', 'down', player.down && 'pressed'].filter(Boolean).join(' ') }),
-      ]),
-
-      h(
-        'div',
-        { class: 'sources' },
-        []
-          .concat(renderInput('Unassigned', 'empty', player.sourceType))
-          .concat(renderInput('WASD Keys', 'wasd', player.sourceType))
-          .concat(renderInput('Arrow Keys', 'arrows', player.sourceType))
-          .concat(renderInput('Gamepad', 'gamepad', player.sourceType)),
-      ),
-      h(
-        'small',
-        null,
-        gamePadStatus(),
-      ),
-    ]);
-  }))
-);
 
 const effectForKeyEvent = (isKeyDown, key, players) => {
   const mapping = {
@@ -88,7 +32,18 @@ const effectForKeyEvent = (isKeyDown, key, players) => {
   )));
 };
 
-ferp.app({
+const withMoreEffects = result => (effects) => {
+  const [state, effect] = result;
+  return [
+    state,
+    Effect.map([
+      effect,
+      Effect.map(effects),
+    ]),
+  ];
+};
+
+const createApp = () => ferp.app({
   init: () => [
     initialState,
     Effect.map([
@@ -100,40 +55,47 @@ ferp.app({
     ]),
   ],
   update: (message, state) => {
-    const [nextState, effects] = appReducer(view)(message, state);
-    const extraEffects = [];
+    const result = appReducer(view)(message, state);
     switch (message.type) {
       case 'KEY_DOWN':
-        extraEffects.push(effectForKeyEvent(true, message.key, state.players));
-        break;
+        return withMoreEffects(result)([
+          effectForKeyEvent(true, message.key, state.players),
+        ]);
 
       case 'KEY_UP':
-        extraEffects.push(effectForKeyEvent(false, message.key, state.players));
-        break;
+        return withMoreEffects(result)([
+          effectForKeyEvent(false, message.key, state.players),
+        ]);
 
       case 'TICK':
-        extraEffects.push(ferp.effects.delay.raf('TICK', message.timestamp));
-        extraEffects.push(gamePadEffect(state.gamePads));
-        break;
+        return withMoreEffects(result)([
+          ferp.effects.delay.raf('TICK', message.timestamp),
+          gamePadEffect(state.gamePads),
+        ]);
+
+      case 'RENDER':
+        return result;
 
       default:
-        break;
+        return withMoreEffects(result)([
+          Effect.immediate({ type: 'RENDER', view }),
+        ]);
     }
-
-    if (message.type !== 'RENDER') {
-      extraEffects.push(Effect.immediate({ type: 'RENDER', view }));
-    }
-
-    return [
-      nextState,
-      Effect.map([
-        Effect.map(effects),
-        Effect.map(extraEffects),
-      ]),
-    ];
   },
 
   subscribe: () => [
     ['keyhandler', keyboardSubscription, 'KEY_DOWN', 'KEY_UP'],
   ],
 });
+
+let detach = createApp();
+
+if (module.hot) {
+  module.hot.dispose(() => {
+    detach();
+    detach = null;
+  });
+  module.hot.accept(() => {
+    detach = createApp();
+  });
+}

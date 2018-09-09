@@ -2,6 +2,7 @@ const ferp = require('ferp');
 const { Effect } = ferp.types;
 
 const playerReducer = id => (message, state) => {
+  if (message.type !== 'TICK') console.log('playerReducer', message);
   if (message.playerId !== id) return [state, Effect.none()];
   switch (message.type) {
     case 'SOURCE_CHANGE':
