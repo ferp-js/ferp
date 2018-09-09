@@ -6,12 +6,8 @@ import { Effect } from '../types/effect.js';
 import * as delay from './delay.js';
 
 test.before((t) => {
-  t.context.spy = sinon.spy(global, 'setTimeout');
+  t.context.spy = sinon.spy(global, 'setTimeout'); // eslint-disable-line no-param-reassign
   t.log(t.context.spy);
-});
-
-test.beforeEach((t) => {
-  // t.context.spy.reset();
 });
 
 test.after((t) => {
