@@ -8,17 +8,17 @@ export const second = (seconds, messageType) => millisecond(seconds * 1000, mess
 export const minute = (minutes, messageType) => second(minutes * 60, messageType);
 export const hour = (hours, messageType) => minute(hours * 60, messageType);
 
-const requestAnimationFrame = typeof window !== 'undefined' && typeof window.requestAnimationFrame === 'function'
-  ? callback => window.requestAnimationFrame(callback)
-  : callback => setTimeout(callback, 1000 / 60);
-
 export const raf = (messageType, lastTimestamp) => new Effect((done) => {
-  requestAnimationFrame((timestamp) => {
+  const nextFrame = typeof requestAnimationFrame === 'function'
+    ? callback => requestAnimationFrame(callback)
+    : callback => setTimeout(() => callback(Date.now()), 1000 / 60);
+
+  nextFrame((timestamp) => {
     done({
       type: messageType,
       timestamp,
       lastTimestamp,
-      delta: lastTimestamp ? timestamp - lastTimestamp : 0,
+      delta: typeof lastTimestamp !== 'undefined' && lastTimestamp !== null ? timestamp - lastTimestamp : 0,
     });
   });
 });

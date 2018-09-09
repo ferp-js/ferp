@@ -59,7 +59,14 @@ export const app = ({
       return effect.then(runEffect);
     }
     if (Array.isArray(effect)) {
-      return Promise.all(effect.map(runEffect));
+      const [currentEffect, ...trailing] = effect;
+      return runEffect(currentEffect)
+        .then(() => {
+          if (trailing.length > 0) {
+            return runEffect(trailing);
+          }
+          return Promise.resolve();
+        });
     }
     console.error('runEffect recieved something that was not an effect', effect); // eslint-disable-line no-console
     return Promise.resolve();

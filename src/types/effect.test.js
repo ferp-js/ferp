@@ -39,3 +39,7 @@ test('Effect.defer allows the effect to resolve externally', (t) => {
   t.is(typeof result.dispatch, 'function');
   t.truthy(result.effect instanceof Effect);
 });
+
+test('Effect.none maps an empty array', async (t) => {
+  t.deepEqual(await Effect.none(), []);
+});
