@@ -23,8 +23,8 @@ export class Effect {
     };
   }
 
-  constructor(done) {
-    this.promise = new Promise(done);
+  constructor(promiseFunction) {
+    this.promise = new Promise(promiseFunction);
   }
 
   then(callback) {

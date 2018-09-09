@@ -52,14 +52,16 @@ export const app = ({
   const runEffect = (effect) => {
     if (killSwitch) return Promise.resolve();
 
-    // console.log('runEffect', effect);
-    //
     if (effect instanceof Effect) {
       return effect.then(dispatch); // eslint-disable-line no-use-before-define
     }
     if (effect instanceof Promise) {
-      return effect.then(effects => Promise.all(effects.map(runEffect)));
+      return effect.then(runEffect);
     }
+    if (Array.isArray(effect)) {
+      return Promise.all(effect.map(runEffect));
+    }
+    console.error('runEffect recieved something that was not an effect', effect); // eslint-disable-line no-console
     return Promise.resolve();
   };
 
