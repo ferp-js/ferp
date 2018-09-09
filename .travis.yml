@@ -3,9 +3,9 @@ cache:
   directories:
     - "node_modules"
 
-jobs:
-  include:
-    - stage: "test"
-      script: "npm test"
-    - stage: "lint"
-      script: "npm run lint"
+env:
+  - SCRIPT=build
+  - SCRIPT=test
+  - SCRIPT=lint
+
+script: "npm run ${SCRIPT}"
