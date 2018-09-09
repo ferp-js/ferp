@@ -50,7 +50,7 @@ export const app = ({
   };
 
   const runEffect = (effect) => {
-    if (killSwitch) return Promise.resolve();
+    if (killSwitch || typeof effect === 'undefined') return Promise.resolve();
 
     if (effect instanceof Effect) {
       return effect.then(dispatch); // eslint-disable-line no-use-before-define
