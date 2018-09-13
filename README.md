@@ -13,6 +13,11 @@ Build functional and pure applications for NodeJS and the Browser!
  - **Functional** - Makes it easy to test :heavy_check_mark:, control side effects :imp:, and keep things immutable. :zap:
  - **Simple** - Everything is standard javascript, there is no misdirection or magic. If you know javascript, you will know how to use ferp. :smile:
 
+## What it isn't
+
+ - **A vdom implementation** - You have to provide your own presentation layer. But the good news is, you can basically pick any one you want. Check out the [superfine example](./examples/with-superfine)
+ - **A new language** - This isn't like Elm, in the sense of the language. You can always bring this into typescript, but I don't plan on supporting any other languages out of the box.
+
 ## Where did this come from
 
 Like any great idea, it's based on other (much smarter) people's work, namely
@@ -46,6 +51,15 @@ ferp.app({
   middleware: [ferp.middleware.logger()],
 });
 ```
+
+### Quick anatomy of an app
+
+Every app needs `init` and `update` functions.
+Both of these functions must return an array where the first element is the latest state, and the second is an effect you'd like to run.
+All effects should return a message that can be used to update your app.
+Effects are also an opportunity to run impure code in a controlled way.
+
+## Digging in
 
 ### Initializing your app
 
