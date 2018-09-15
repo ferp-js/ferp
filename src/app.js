@@ -1,5 +1,3 @@
-import { Effect } from './types/effect.js';
-
 export const app = ({
   init,
   update,
@@ -50,14 +48,12 @@ export const app = ({
   };
 
   const runEffect = (effect) => {
-    if (killSwitch || typeof effect === 'undefined') return Promise.resolve();
+    if (killSwitch || !effect) return Promise.resolve();
 
-    if (effect instanceof Effect) {
-      return effect.then(dispatch); // eslint-disable-line no-use-before-define
-    }
     if (effect instanceof Promise) {
       return effect.then(runEffect);
     }
+
     if (Array.isArray(effect)) {
       const [currentEffect, ...trailing] = effect;
       return runEffect(currentEffect)
@@ -68,8 +64,8 @@ export const app = ({
           return Promise.resolve();
         });
     }
-    console.error('runEffect recieved something that was not an effect', effect); // eslint-disable-line no-console
-    return Promise.resolve();
+
+    return dispatch(effect);
   };
 
   const handleUpdate = ([newState, effect]) => {

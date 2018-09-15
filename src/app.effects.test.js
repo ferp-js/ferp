@@ -1,13 +1,10 @@
 import test from 'ava';
-import sinon from 'sinon';
 
-import * as ferp from './ferp.js';
+import { app, effect } from './ferp.js';
 
-const { Effect } = ferp.types;
+const defaultUpdate = (_, state) => [state, effect.none()];
 
-const defaultUpdate = (_, state) => [state, Effect.none()];
-
-const createApp = args => ferp.app({
+const createApp = args => app({
   init: args.init,
   update: args.update || defaultUpdate,
   middleware: args.middleware || [],
@@ -24,10 +21,10 @@ test.cb('update does not get called with no init effect', (t) => {
 
   callEndSoon();
   createApp({
-    init: () => [null, Effect.none()],
+    init: () => [null, effect.none()],
     update: (message, state) => {
       t.fail('should not update');
-      return [state, Effect.none()];
+      return [state, effect.none()];
     },
     middleware: [next => (message, state) => {
       callEndSoon();
@@ -40,11 +37,11 @@ test.cb('initial effect calls update', (t) => {
   t.plan(1);
 
   createApp({
-    init: () => [null, Effect.immediate({ type: 'TEST' })],
+    init: () => [null, effect.immediate({ type: 'TEST' })],
     update: (message, state) => {
       t.deepEqual(message, { type: 'TEST' });
       t.end();
-      return [state, Effect.none()];
+      return [state, effect.none()];
     },
   });
 });
@@ -57,10 +54,10 @@ test.cb('an initial mapped set of effects calls update multiple times', (t) => {
   createApp({
     init: () => [
       null,
-      Effect.map([
-        Effect.immediate({ type: 'TEST1' }),
-        Effect.immediate({ type: 'TEST2' }),
-        Effect.immediate({ type: 'TEST3' }),
+      effect.map([
+        effect.immediate({ type: 'TEST1' }),
+        effect.immediate({ type: 'TEST2' }),
+        effect.immediate({ type: 'TEST3' }),
       ]),
     ],
     update: (message, state) => {
@@ -68,27 +65,26 @@ test.cb('an initial mapped set of effects calls update multiple times', (t) => {
       t.is(message.type, expectedType);
       if (expectedOrder.length === 0) t.end();
 
-      return [state, Effect.none()];
+      return [state, effect.none()];
     },
   });
 });
 
-test.cb('effects run in a deterministic order', (t) => {
-  const expectedOrder = ['TEST3', 'TEST2', 'TEST4', 'TEST1'];
+test.cb('effects run in a deterministic order', (t) => { const expectedOrder = ['TEST3', 'TEST2', 'TEST4', 'TEST1'];
   t.plan(expectedOrder.length);
 
   createApp({
     init: () => [
       null,
-      Effect.map([
-        Effect.map([
-          Effect.immediate({ type: 'TEST3' }),
-          Effect.map([
-            Effect.immediate({ type: 'TEST2' }),
-            Effect.immediate({ type: 'TEST4' }),
+      effect.map([
+        effect.map([
+          effect.immediate({ type: 'TEST3' }),
+          effect.map([
+            effect.immediate({ type: 'TEST2' }),
+            effect.immediate({ type: 'TEST4' }),
           ]),
         ]),
-        Effect.immediate({ type: 'TEST1' }),
+        effect.immediate({ type: 'TEST1' }),
       ]),
     ],
     update: (message, state) => {
@@ -96,28 +92,7 @@ test.cb('effects run in a deterministic order', (t) => {
       t.is(message.type, expectedType);
       if (expectedOrder.length === 0) t.end();
 
-      return [state, Effect.none()];
+      return [state, effect.none()];
     },
   });
-});
-
-
-test.cb('app reports an incorrect effect', (t) => {
-  t.plan(1);
-
-  sinon.stub(console, 'error');
-
-  createApp({
-    init: () => [
-      null,
-      'not an effect',
-    ],
-    update: () => {},
-  });
-
-  setTimeout(() => {
-    t.truthy(console.error.called);
-    console.error.reset();
-    t.end();
-  }, 30);
 });

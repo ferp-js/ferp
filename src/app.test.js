@@ -1,7 +1,7 @@
 import test from 'ava';
 import sinon from 'sinon';
 import { app } from './app.js';
-import { Effect } from './types/effect.js';
+import * as effect from './types/effect.js';
 
 test('app throws when missing init and update', (t) => {
   t.throws(() => app());
@@ -10,22 +10,22 @@ test('app throws when missing init and update', (t) => {
   t.throws(() => app({ init: () => {} }));
 
   // This does throw, but later. Not sure how to capture that
-  // t.throws(() => app({ init: () => [0, Effect.immediate('test')] }));
+  // t.throws(() => app({ init: () => [0, effect.immediate('test')] }));
 
   t.notThrows(() => app({ init: () => [], update: () => [] }));
-  t.notThrows(() => app({ init: () => [0, Effect.immediate('test')], update: () => [] }));
+  t.notThrows(() => app({ init: () => [0, effect.immediate('test')], update: () => [] }));
 });
 
 test.cb('app calls update immediately with effect', (t) => {
   t.plan(2);
 
   app({
-    init: () => [0, Effect.immediate({ type: 'update' })],
+    init: () => [0, effect.immediate({ type: 'update' })],
     update: (message, state) => {
       t.deepEqual(message, { type: 'update' });
       t.is(state, 0);
       t.end();
-      return [state, Effect.none()];
+      return [state, effect.none()];
     },
   });
 });
@@ -49,19 +49,19 @@ test.cb('app can enable a subscription which can dispatch an update', (t) => {
     };
   };
   app({
-    init: () => [false, Effect.immediate({ type: 'foo' })],
+    init: () => [false, effect.immediate({ type: 'foo' })],
     update: (message, state) => {
       switch (message.type) {
         case 'foo':
-          return [true, Effect.none()];
+          return [true, effect.none()];
 
         case 'from-sub':
           t.deepEqual(message, { type: 'from-sub', count: 1 });
           t.end();
-          return [false, Effect.none()];
+          return [false, effect.none()];
 
         default:
-          return [state, Effect.none()];
+          return [state, effect.none()];
       }
     },
     subscribe: state => [
@@ -80,14 +80,14 @@ test.cb('app can use middleware', (t) => {
   });
 
   app({
-    init: () => [true, Effect.immediate({ type: 'foo' })],
+    init: () => [true, effect.immediate({ type: 'foo' })],
     update: (message, state) => {
       switch (message.type) {
         case 'foo':
-          return [true, Effect.none()];
+          return [true, effect.none()];
 
         default:
-          return [state, Effect.none()];
+          return [state, effect.none()];
       }
     },
     middleware: [testMiddleware],

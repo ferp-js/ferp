@@ -1,45 +1,31 @@
 import test from 'ava';
-import { Effect } from './effect.js';
+import * as effect from './effect.js';
 
-test('Effect wraps a promise', (t) => {
-  const effect = new Effect(() => {});
-  t.truthy(effect.promise instanceof Promise);
-});
-
-test.cb('Effect forwards #then', (t) => {
-  t.plan(1);
-
-  const effect = new Effect((done) => { done(1); });
-
-  effect.then(value => value).then((value) => {
-    t.is(value, 1);
-    t.end();
-  });
-});
-
-test.cb('Effect.map returns a method that resolves multiple effects', (t) => {
+test.cb('effect.map returns a method that resolves multiple effects', (t) => {
   t.plan(3);
 
-  const resolver = Effect.map([Effect.immediate(true)]);
+  const resolver = effect.map([effect.immediate(true)]);
 
   t.truthy(resolver instanceof Promise);
 
   resolver
     .then((resolved) => {
       t.truthy(Array.isArray(resolved));
-      t.truthy(resolved[0] instanceof Effect);
+      t.truthy(resolved[0] instanceof Promise);
       t.end();
     });
 });
 
-test('Effect.defer allows the effect to resolve externally', (t) => {
-  t.plan(3);
-  const result = Effect.defer();
-  t.deepEqual(Object.keys(result), ['dispatch', 'effect']);
+test('effect.defer allows the effect to resolve externally', (t) => {
+  t.plan(4);
+  const result = effect.defer();
+  const resultKeys = Object.keys(result);
+  t.truthy(resultKeys.includes('dispatch'));
+  t.truthy(resultKeys.includes('effect'));
   t.is(typeof result.dispatch, 'function');
-  t.truthy(result.effect instanceof Effect);
+  t.truthy(result.effect instanceof Promise);
 });
 
-test('Effect.none maps an empty array', async (t) => {
-  t.deepEqual(await Effect.none(), []);
+test('effect.none resolves to null', async (t) => {
+  t.is(await effect.none(), null);
 });

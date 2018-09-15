@@ -1,8 +1,6 @@
 import test from 'ava';
 import sinon from 'sinon';
 
-import { Effect } from '../types/effect.js';
-
 import * as delay from './delay.js';
 
 test.before((t) => {
@@ -25,7 +23,7 @@ test('exports millisecond, second, minute, hour, and raf', (t) => {
 });
 
 test('millisecond returns an effect', (t) => {
-  t.truthy(delay.millisecond() instanceof Effect);
+  t.truthy(delay.millisecond() instanceof Promise);
 });
 
 test('millisecond resolves the correct message', async (t) => {
@@ -34,44 +32,34 @@ test('millisecond resolves the correct message', async (t) => {
 });
 
 test('raf resolves the correct message with no lastTimestamp', async (t) => {
-  const original = Date.now;
+  const requestFrame = callback => callback(1);
 
-  Date.now = () => 1;
-
-  t.deepEqual(await delay.raf('test').then(message => message), {
+  t.deepEqual(await delay.raf('test', undefined, requestFrame).then(message => message), {
     type: 'test',
     delta: 0,
     lastTimestamp: undefined,
     timestamp: 1,
   });
-  t.truthy(t.context.spy.called);
 
-  Date.now = original;
 });
 
 test('raf resolves the correct message with a lastTimestamp', async (t) => {
-  const now = Date.now();
-  const original = Date.now;
+  const lastTimestamp = 1;
+  const timestamp = 2;
+  const requestFrame = callback => callback(timestamp);
 
-  Date.now = () => now;
-  const lastTimestamp = now - 1;
-
-  t.deepEqual(await delay.raf('test', lastTimestamp).then(message => message), {
+  t.deepEqual(await delay.raf('test', lastTimestamp, requestFrame).then(message => message), {
     type: 'test',
-    delta: 1,
+    delta: timestamp - lastTimestamp,
     lastTimestamp,
-    timestamp: now,
+    timestamp,
   });
   t.truthy(t.context.spy.called);
-
-  Date.now = original;
 });
 
 test('requestAnimationFrame will use requestAnimationFrame if it is available', async (t) => {
-  global.requestAnimationFrame = sinon.fake(cb => cb());
+  const requestFrame = sinon.fake(cb => cb());
 
-  await delay.raf('test').then(message => message);
-  t.truthy(global.requestAnimationFrame.called);
-
-  delete global.requestAnimationFrame;
+  await delay.raf('test', undefined, requestFrame).then(message => message);
+  t.truthy(requestFrame.called);
 });
