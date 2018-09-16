@@ -2,11 +2,12 @@ const ferp = require('ferp');
 const fs = require('fs');
 const path = require('path');
 
-const { Effect, Result } = ferp.types;
+const { effect } = ferp;
+const { Result } = ferp.types;
 
-const readFile = (file, messageType) => Effect.map([
-  Effect.immediate({ type: messageType, data: Result.pending() }),
-  new Effect((done) => {
+const readFile = (file, messageType) => effect.map([
+  effect.immediate({ type: messageType, data: Result.pending() }),
+  effect.create((done) => {
     fs.readFile(file, { encoding: 'utf-8' }, (err, data) => {
       if (err) {
         done({ type: messageType, data: Result.error(err) });
@@ -30,11 +31,11 @@ ferp.app({
       case 'SET_CONTENTS':
         return [
           { data: message.data },
-          Effect.none(),
+          effect.none(),
         ];
 
       default:
-        return [state, Effect.none()];
+        return [state, effect.none()];
     }
   },
 

@@ -5,7 +5,7 @@ const requestToMatcher = (request, parsed) => (
   `${request.method.toUpperCase()} ${parsed.pathname}`
 );
 
-const logEffect = (date, request, parsed, matcher) => new ferp.types.Effect((done) => {
+const logEffect = (date, request, parsed, matcher) => ferp.effect.create((done) => {
   const log = {
     date: date.toISOString(),
     address: request.socket.address().address,
@@ -15,31 +15,35 @@ const logEffect = (date, request, parsed, matcher) => new ferp.types.Effect((don
   done({ type: 'LOG', log });
 });
 
-const router = (routes) => (message, state) => {
+const router = routes => (message, state) => {
   switch (message.type) {
     case 'ROUTE':
-      const parsed = url.parse(message.request.url);
-      const matcher = requestToMatcher(message.request, parsed);
-      const handler = routes[matcher] || routes['GET /not-found'];
-      if (handler) {
-        const [nextState, effect] = handler(message, state, parsed);
-        return [
-          nextState,
-          ferp.types.Effect.map([
-            effect,
-            logEffect(new Date(), message.request, parsed, matcher),
-          ])
-        ]
-      }
+      return (() => {
+        const parsed = url.parse(message.request.url);
+        const matcher = requestToMatcher(message.request, parsed);
+        const handler = routes[matcher] || routes['GET /not-found'];
+        if (handler) {
+          const [nextState, effect] = handler(message, state, parsed);
+          return [
+            nextState,
+            ferp.effect.map([
+              effect,
+              logEffect(new Date(), message.request, parsed, matcher),
+            ]),
+          ];
+        }
+
+        return [state, ferp.effect.none()];
+      })();
 
     case 'LOG':
       return [
         { ...state, logs: [message.log].concat(state.logs) },
-        ferp.types.Effect.none(),
+        ferp.effect.none(),
       ];
 
     default:
-      return [state, ferp.types.Effect.none()];
+      return [state, ferp.effect.none()];
   }
 }
 

@@ -1,4 +1,3 @@
-import { Effect } from './types/effect.js';
 import { subscribeHandler } from './subscribeHandler.js';
 import { freeze } from './freeze.js';
 
@@ -28,32 +27,25 @@ export const app = ({
     state = newState;
   };
 
-  const runEffect = (effect) => {
-    if (killSwitch || typeof effect === 'undefined') return Promise.resolve();
+  const afterTick = value => new Promise(resolve => setTimeout(resolve, 0, value));
 
-    if (effect instanceof Effect) {
-      return effect.then(dispatch); // eslint-disable-line no-use-before-define
-    }
+  const runEffect = (effect) => {
+    if (killSwitch || !effect) return Promise.resolve();
+
     if (effect instanceof Promise) {
       return effect.then(runEffect);
     }
+
     if (Array.isArray(effect)) {
-      const [currentEffect, ...trailing] = effect;
-      return runEffect(currentEffect)
-        .then(() => {
-          if (trailing.length > 0) {
-            return runEffect(trailing);
-          }
-          return Promise.resolve();
-        });
+      return Promise.all(effect.filter(Boolean).map(runEffect));
     }
-    console.error('runEffect recieved something that was not an effect', effect); // eslint-disable-line no-console
-    return Promise.resolve();
+
+    return dispatch(effect); // eslint-disable-line no-use-before-define
   };
 
   const handleUpdate = ([newState, effect]) => {
     updateState(newState);
-    return runEffect(effect);
+    return afterTick(effect).then(runEffect);
   };
 
   const dispatch = (message) => {
@@ -62,7 +54,7 @@ export const app = ({
       || typeof message === 'undefined'
     );
 
-    if (isMessageEmpty) return Promise.resolve();
+    if (isMessageEmpty) return afterTick();
     return handleUpdate(updateWithMiddleware(message, state));
   };
 

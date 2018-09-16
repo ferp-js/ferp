@@ -2,7 +2,7 @@ const ferp = require('ferp');
 const { router } = require('./router.js');
 const { serverSubscription } = require('./subscription.js');
 
-const responseEffect = ({ response }, status, json) => new ferp.types.Effect((done) => {
+const responseEffect = ({ response }, status, json) => ferp.effect.create((done) => {
   response.writeHead(status, { 'Content-Type': 'application/json' });
   response.end(JSON.stringify(json), () => done(null));
 });
@@ -12,7 +12,7 @@ const logs = (message, state) => [state, responseEffect(message, 200, state.logs
 const fourOhFour = (message, state) => [state, responseEffect(message, 404, { error: 'not found' })];
 
 ferp.app({
-  init: () => [{ logs: [] }, ferp.types.Effect.none()],
+  init: () => [{ logs: [] }, ferp.effect.none()],
 
   update: router({
     'GET /': welcome,

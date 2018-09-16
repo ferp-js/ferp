@@ -1,5 +1,6 @@
 const ferp = require('ferp');
-const { Effect } = ferp.types;
+
+const { effect } = ferp;
 
 const axisActive = value => Math.abs(value) >= 0.1;
 const axisNormalized = value => Math.round(value);
@@ -17,9 +18,7 @@ const cloneGamePad = (gamePad) => {
       pressed: button.pressed,
       value: button.value,
     })),
-    axes: gamePad.axes.map((axis) => {
-      return axisActive(axis) ? axisNormalized(axis): 0.0;
-    }),
+    axes: gamePad.axes.map(axis => (axisActive(axis) ? axisNormalized(axis) : 0.0)),
   };
 };
 
@@ -38,7 +37,9 @@ const gamePadEffect = (prevGamePads) => {
     .filter(gp => gp !== null)
     .map(cloneGamePad);
 
-  const newlyConnected = gamePads.filter(gp => !prevGamePads.some(pgp => !pgp || pgp.index === gp.index));
+  const newlyConnected = gamePads.filter(gp => (
+    !prevGamePads.some(pgp => !pgp || pgp.index === gp.index)
+  ));
   const newlyDisconnected = prevGamePads.filter((pgp) => {
     const match = gamePads.find(gp => pgp && gp.index === pgp.index);
     return !match || !match.connected;
@@ -75,10 +76,10 @@ const gamePadEffect = (prevGamePads) => {
     return messages.concat(buttonMessages).concat(axesMessages);
   }, []);
 
-  return Effect.map([
-    Effect.map(newlyConnected.map(gp => Effect.immediate({ type: 'GAMEPAD_CONNECTED', gamePad: gp }))),
-    Effect.map(newlyDisconnected.map(gp => Effect.immediate({ type: 'GAMEPAD_DISCONNECTED', gamePadIndex: gp.index }))),
-    Effect.map(changeMessages.map(Effect.immediate)),
+  return effect.map([
+    ...effect.map(newlyConnected.map(gp => ({ type: 'GAMEPAD_CONNECTED', gamePad: gp }))),
+    ...effect.map(newlyDisconnected.map(gp => ({ type: 'GAMEPAD_DISCONNECTED', gamePadIndex: gp.index }))),
+    ...effect.map(changeMessages),
   ]);
 };
 

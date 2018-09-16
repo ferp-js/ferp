@@ -28,6 +28,7 @@
   "homepage": "https://github.com/mrozbarry/ferp#readme",
   "scripts": {
     "test": "nyc ava",
+    "test:basic": "ava --fail-fast --concurrency 1",
     "lint": "eslint ./src",
     "build": "rollup -c",
     "prepublishOnly": "npm run build"

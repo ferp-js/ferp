@@ -1,33 +1,15 @@
-export class Effect {
-  static none() {
-    return Effect.map([]);
-  }
+export const immediate = message => message;
 
-  static map(effects) {
-    return Promise.resolve(effects);
-  }
+export const none = () => null;
 
-  static immediate(message) {
-    return new Effect(done => done(message));
-  }
+export const defer = () => {
+  let dispatch = () => {};
+  const effect = new Promise((resolve) => {
+    dispatch = resolve;
+  });
+  return { effect, dispatch };
+};
 
-  static defer() {
-    let dispatch = () => {};
-    const effect = new Effect((done) => {
-      dispatch = done;
-    });
+export const map = effects => [].concat(effects);
 
-    return {
-      dispatch,
-      effect,
-    };
-  }
-
-  constructor(promiseFunction) {
-    this.promise = new Promise(promiseFunction);
-  }
-
-  then(callback) {
-    return this.promise.then(callback);
-  }
-}
+export const create = callback => new Promise(callback);

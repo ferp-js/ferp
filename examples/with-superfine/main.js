@@ -9,7 +9,7 @@ const view = (state, dispatch) => (
       h('button', { type: 'button', onclick: () => dispatch('ADDITION') }, '+'),
     ]),
   ])
-)
+);
 
 ferp.app({
   init: () => [
@@ -17,7 +17,7 @@ ferp.app({
       value: 0,
       node: null,
     },
-    ferp.types.Effect.immediate('RENDER'),
+    ferp.effect.immediate('RENDER'),
   ],
 
   update: (message, state) => {
@@ -25,27 +25,29 @@ ferp.app({
       case 'SUBTRACT':
         return [
           { node: state.node, value: state.value - 1 },
-          ferp.types.Effect.immediate('RENDER'),
+          ferp.effect.immediate('RENDER'),
         ];
 
       case 'ADDITION':
         return [
           { node: state.node, value: state.value + 1 },
-          ferp.types.Effect.immediate('RENDER'),
+          ferp.effect.immediate('RENDER'),
         ];
 
       case 'RENDER':
-        const deferred = ferp.types.Effect.defer();
-        return [
-          {
-            node: patch(state.node, view(state.value, deferred.dispatch), document.body),
-            value: state.value,
-          },
-          deferred.effect,
-        ];
+        return (() => {
+          const deferred = ferp.effect.defer();
+          return [
+            {
+              node: patch(state.node, view(state.value, deferred.dispatch), document.body),
+              value: state.value,
+            },
+            deferred.effect,
+          ];
+        })();
 
       default:
-        return [state, ferp.types.Effect.none()];
+        return [state, ferp.effect.none()];
     }
   },
 });

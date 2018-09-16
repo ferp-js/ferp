@@ -40,11 +40,11 @@ const ferp = require('ferp');
 const initialState = 0;
 
 ferp.app({
-  init: () => [initialState, ferp.types.Effect.none()],
+  init: () => [initialState, ferp.effect.none()],
   update: (message, state) => {
     return [
       state + 1,
-      ferp.types.Effect.immediate(true),
+      ferp.effect.immediate(true),
     ];
   },
   subscribe: () => [],
@@ -79,9 +79,10 @@ The `update(message, state)` function gives you the opportunity to make changes 
 All updates need to return the array `[updatedState, effect]`, where state is a new copy of state with any changes you have made, and effect is any effect you want to trigger.
 An effect is just a promise that returns a message. Here are some convenience methods to handle the case you need:
 
- - `Effect.none()` if you do not want to trigger an effect.
- - `new Effect((done) => { done(new YourMessage) })` if you want to do some work and fire a new update.
- - `Effect.map([effect1, effect2, ...])` if you want to fire multiple effects.
+ - `effect.none()` if you do not want to trigger an effect.
+ - `effect.immediate()` if you to trigger an effect immediately with no processing.
+ - `effect.create((done) => { done(new YourMessage) })` if you want to do some work and fire a new update.
+ - `effect.map([effect1, effect2, ...])` if you want to fire multiple effects.
 
 ### Subscribe to third-party events
 

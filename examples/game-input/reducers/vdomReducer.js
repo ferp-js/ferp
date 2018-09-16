@@ -1,8 +1,8 @@
 const { patch } = require('superfine');
-const { Effect } = require('ferp').types;
+const { effect } = require('ferp');
 
 const vdomReducer = view => players => (message, state) => {
-  const deferred = Effect.defer();
+  const deferred = effect.defer();
   switch (message.type) {
     case 'RENDER':
       return [
@@ -12,9 +12,8 @@ const vdomReducer = view => players => (message, state) => {
             view(
               players,
               (playerId, sourceType) => {
-                console.log('vdomReducer.onSourceChange', playerId, sourceType);
                 deferred.dispatch(
-                  Effect.immediate({ type: 'SOURCE_CHANGE', playerId, sourceType }),
+                  effect.immediate({ type: 'SOURCE_CHANGE', playerId, sourceType }),
                 );
               },
             ),
@@ -25,7 +24,7 @@ const vdomReducer = view => players => (message, state) => {
       ];
 
     default:
-      return [state, Effect.none()];
+      return [state, effect.none()];
   }
 };
 
