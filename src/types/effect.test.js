@@ -1,19 +1,9 @@
 import test from 'ava';
 import * as effect from './effect.js';
 
-test.cb('effect.map returns a method that resolves multiple effects', (t) => {
-  t.plan(3);
-
+test('effect.map returns an array of effects', (t) => {
   const resolver = effect.map([effect.immediate(true)]);
-
-  t.truthy(resolver instanceof Promise);
-
-  resolver
-    .then((resolved) => {
-      t.truthy(Array.isArray(resolved));
-      t.truthy(resolved[0] instanceof Promise);
-      t.end();
-    });
+  t.truthy(Array.isArray(resolver));
 });
 
 test('effect.defer allows the effect to resolve externally', (t) => {

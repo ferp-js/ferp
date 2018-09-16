@@ -10,6 +10,6 @@ export const defer = () => {
   return { effect, dispatch };
 };
 
-export const map = effects => effects;
+export const map = effects => [].concat(effects);
 
 export const create = callback => new Promise(callback);
