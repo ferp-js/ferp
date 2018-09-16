@@ -96,14 +96,14 @@ This function is run each update, and can and should react to the new state to t
 ```javascript
 subscribe: (state) => {
   return [
-    ['unique-identifier', subscriptionMethod, param1, param2, param3, ...],
-    ['another-subscription-identifier', subMethod, param1, param2, param3, ...],
+    [subscriptionMethod, param1, param2, param3, ...],
+    [subMethod, param1, param2, param3, ...],
     ...
   ]
 }
 ```
 
-Each subscription needs at least a unique identifier and a subscription method.
+Each subscription needs at least a subscription method.
 
 Subscription methods should look like the following:
 
