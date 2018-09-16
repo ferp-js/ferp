@@ -40,7 +40,6 @@ test('raf resolves the correct message with no lastTimestamp', async (t) => {
     lastTimestamp: undefined,
     timestamp: 1,
   });
-
 });
 
 test('raf resolves the correct message with a lastTimestamp', async (t) => {

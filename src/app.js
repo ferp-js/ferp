@@ -16,7 +16,11 @@ export const app = ({
   const updateState = (newState) => {
     if (newState === undefined) return;
     if (typeof subscribe === 'function') {
-      subscriptions = subscribeHandler(subscriptions, subscribe(newState), dispatch);
+      subscriptions = subscribeHandler(
+        subscriptions,
+        subscribe(newState),
+        dispatch, // eslint-disable-line no-use-before-define
+      );
     }
 
     state = newState;
@@ -35,7 +39,7 @@ export const app = ({
       return Promise.all(effect.filter(Boolean).map(runEffect));
     }
 
-    return dispatch(effect);
+    return dispatch(effect); // eslint-disable-line no-use-before-define
   };
 
   const handleUpdate = ([newState, effect]) => {

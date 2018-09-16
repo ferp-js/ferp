@@ -70,7 +70,8 @@ test.cb('an initial mapped set of effects calls update multiple times', (t) => {
   });
 });
 
-test.cb('effects run in a deterministic order', (t) => { const expectedOrder = ['TEST3', 'TEST2', 'TEST4', 'TEST1'];
+test.cb('effects run in a deterministic order', (t) => {
+  const expectedOrder = ['TEST3', 'TEST2', 'TEST4', 'TEST1'];
   t.plan(expectedOrder.length);
 
   createApp({
