@@ -11,7 +11,7 @@ A subscription using every may look something like:
 app({
   // ...
   subscribe: () => [
-    ['unique-id', ferp.subscriptions.Every.minute, 1, 'SOME_ACTION'],
+    [ferp.subscriptions.Every.minute, 1, 'SOME_ACTION'],
   ],
 })
 ```
@@ -36,7 +36,7 @@ And it would be called like this:
 app({
   // ...
   subscribe: () => [
-    ['unique-id', mySub],
+    [mySub],
   ],
 })
 ```
@@ -59,7 +59,7 @@ Now we can pass our message to the subscription:
 app({
   // ...
   subscribe: () => [
-    ['unique-id', mySub, { my: 'message' }],
+    [mySub, { my: 'message' }],
   ],
 })
 ```

@@ -1,4 +1,5 @@
 import { subscribeHandler } from './subscribeHandler.js';
+import { freeze } from './freeze.js';
 
 export const app = ({
   init,
@@ -18,7 +19,7 @@ export const app = ({
     if (typeof subscribe === 'function') {
       subscriptions = subscribeHandler(
         subscriptions,
-        subscribe(newState),
+        subscribe(freeze(newState)),
         dispatch, // eslint-disable-line no-use-before-define
       );
     }
