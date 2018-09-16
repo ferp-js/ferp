@@ -1,6 +1,6 @@
-export const immediate = message => Promise.resolve(message);
+export const immediate = message => message;
 
-export const none = () => Promise.resolve(null);
+export const none = () => null;
 
 export const defer = () => {
   let dispatch = () => {};
@@ -10,6 +10,6 @@ export const defer = () => {
   return { effect, dispatch };
 };
 
-export const map = effects => immediate(effects);
+export const map = effects => effects;
 
 export const create = callback => new Promise(callback);

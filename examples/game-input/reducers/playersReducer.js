@@ -1,4 +1,4 @@
-const ferp = require('ferp');
+const { effect } = require('ferp');
 const { playerReducer } = require('./playerReducer.js');
 const { updatesCollectionToStateEffects } = require('./helper.js');
 
@@ -43,7 +43,7 @@ const playersReducer = (message, state) => {
     case 'TICK':
       return [
         state.map(p => integrate(p, message.delta)),
-        ferp.types.Effect.none(),
+        effect.none(),
       ];
 
     default:

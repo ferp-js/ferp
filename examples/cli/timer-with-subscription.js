@@ -1,25 +1,25 @@
 const ferp = require('ferp');
 
-const { Effect } = ferp.types;
+const { effect } = ferp;
 const { logger, immutable } = ferp.middleware;
 const { every } = ferp.subscriptions;
 
 ferp.app({
   init: () => [
     0,
-    Effect.none(),
+    effect.none(),
   ],
 
   update: (_, state) => {
     const nextState = state + 1;
     return [
       nextState,
-      Effect.none(),
+      effect.none(),
     ];
   },
 
   subscribe: state => [
-    state < 5 && ['ticker', every.second, 1, 'INCREMENT'],
+    state < 5 && [every.second, 1, 'INCREMENT'],
   ],
 
   middleware: [logger(), immutable()],

@@ -1,5 +1,3 @@
-const ferp = require('ferp');
-
 const keyboardSubscription = (keyDownType, keyUpType) => (dispatch) => {
   const onKeyDown = (e) => {
     if (e.repeat) return;

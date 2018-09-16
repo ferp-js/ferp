@@ -1,3 +1,5 @@
+import { subscribeHandler } from './subscribeHandler.js';
+
 export const app = ({
   init,
   update,
@@ -11,41 +13,16 @@ export const app = ({
   const updateWithMiddleware = (middleware || [])
     .reduce((all, method) => method(all), update);
 
-  const getSubscriptionDetach = (previousSubscriptions, { id, method, params }) => {
-    const sub = previousSubscriptions.find(pSub => pSub.id === id);
-    if (sub && sub.detach) return sub.detach;
-    return method(...params)(dispatch); // eslint-disable-line no-use-before-define
-  };
-
-  const handleSubscriptions = (previousSubscriptions, currentState) => {
-    if (!subscribe) return [];
-
-    const nextSubscriptions = subscribe(currentState)
-      .filter(Array.isArray)
-      .map(([id, method, ...params]) => ({
-        id,
-        method,
-        params,
-        detach: getSubscriptionDetach(previousSubscriptions, { id, method, params }),
-      }));
-
-    previousSubscriptions
-      .filter(prevSub => (
-        !nextSubscriptions.find(nextSub => nextSub.id === prevSub.id)
-      ))
-      .forEach((removedSub) => {
-        removedSub.detach();
-      });
-
-    return nextSubscriptions;
-  };
-
   const updateState = (newState) => {
     if (newState === undefined) return;
-    subscriptions = handleSubscriptions(subscriptions, newState);
+    if (typeof subscribe === 'function') {
+      subscriptions = subscribeHandler(subscriptions, subscribe(newState), dispatch);
+    }
 
     state = newState;
   };
+
+  const afterTick = value => new Promise(resolve => setTimeout(resolve, 0, value));
 
   const runEffect = (effect) => {
     if (killSwitch || !effect) return Promise.resolve();
@@ -55,14 +32,7 @@ export const app = ({
     }
 
     if (Array.isArray(effect)) {
-      const [currentEffect, ...trailing] = effect;
-      return runEffect(currentEffect)
-        .then(() => {
-          if (trailing.length > 0) {
-            return runEffect(trailing);
-          }
-          return Promise.resolve();
-        });
+      return Promise.all(effect.filter(Boolean).map(runEffect));
     }
 
     return dispatch(effect);
@@ -70,7 +40,7 @@ export const app = ({
 
   const handleUpdate = ([newState, effect]) => {
     updateState(newState);
-    return runEffect(effect);
+    return afterTick(effect).then(runEffect);
   };
 
   const dispatch = (message) => {
@@ -79,7 +49,7 @@ export const app = ({
       || typeof message === 'undefined'
     );
 
-    if (isMessageEmpty) return Promise.resolve();
+    if (isMessageEmpty) return afterTick();
     return handleUpdate(updateWithMiddleware(message, state));
   };
 

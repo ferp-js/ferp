@@ -3,7 +3,7 @@
   "module": "src/ferp.js",
   "main": "dist/ferp.js",
   "description": "Build functional and pure applications in NodeJS and the Browser!",
-  "version": "0.0.5",
+  "version": "0.1.0",
   "directories": {
     "example": "examples"
   },
@@ -28,6 +28,7 @@
   "homepage": "https://github.com/mrozbarry/ferp#readme",
   "scripts": {
     "test": "nyc ava",
+    "test:basic": "ava --fail-fast --concurrency 1",
     "lint": "eslint ./src",
     "build": "rollup -c",
     "prepublishOnly": "npm run build"
