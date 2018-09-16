@@ -1,4 +1,6 @@
 import { Effect } from './types/effect.js';
+import { subscribeHandler } from './subscribeHandler.js';
+import { freeze } from './freeze.js';
 
 export const app = ({
   init,
@@ -13,38 +15,15 @@ export const app = ({
   const updateWithMiddleware = (middleware || [])
     .reduce((all, method) => method(all), update);
 
-  const getSubscriptionDetach = (previousSubscriptions, { id, method, params }) => {
-    const sub = previousSubscriptions.find(pSub => pSub.id === id);
-    if (sub && sub.detach) return sub.detach;
-    return method(...params)(dispatch); // eslint-disable-line no-use-before-define
-  };
-
-  const handleSubscriptions = (previousSubscriptions, currentState) => {
-    if (!subscribe) return [];
-
-    const nextSubscriptions = subscribe(currentState)
-      .filter(Array.isArray)
-      .map(([id, method, ...params]) => ({
-        id,
-        method,
-        params,
-        detach: getSubscriptionDetach(previousSubscriptions, { id, method, params }),
-      }));
-
-    previousSubscriptions
-      .filter(prevSub => (
-        !nextSubscriptions.find(nextSub => nextSub.id === prevSub.id)
-      ))
-      .forEach((removedSub) => {
-        removedSub.detach();
-      });
-
-    return nextSubscriptions;
-  };
-
   const updateState = (newState) => {
     if (newState === undefined) return;
-    subscriptions = handleSubscriptions(subscriptions, newState);
+    if (typeof subscribe === 'function') {
+      subscriptions = subscribeHandler(
+        subscriptions,
+        subscribe(freeze(newState)),
+        dispatch, // eslint-disable-line no-use-before-define
+      );
+    }
 
     state = newState;
   };

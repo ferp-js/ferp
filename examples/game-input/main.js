@@ -84,7 +84,7 @@ const createApp = () => ferp.app({
   },
 
   subscribe: () => [
-    ['keyhandler', keyboardSubscription, 'KEY_DOWN', 'KEY_UP'],
+    [keyboardSubscription, 'KEY_DOWN', 'KEY_UP'],
   ],
 });
 

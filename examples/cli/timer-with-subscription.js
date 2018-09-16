@@ -19,7 +19,7 @@ ferp.app({
   },
 
   subscribe: state => [
-    state < 5 && ['ticker', every.second, 1, 'INCREMENT'],
+    state < 5 && [every.second, 1, 'INCREMENT'],
   ],
 
   middleware: [logger(), immutable()],
