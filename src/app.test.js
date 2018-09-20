@@ -93,3 +93,32 @@ test.cb('app can use middleware', (t) => {
     middleware: [testMiddleware],
   });
 });
+
+test.cb('app runs subscription without initial effect', (t) => {
+  t.plan(1);
+
+  const sub = () => (dispatch) => {
+    dispatch({ type: 'FROM_SUB' });
+    return () => {};
+  };
+
+  app({
+    init: () => [true, Effect.none()],
+    update: (message, state) => {
+      switch (message.type) {
+        case 'FROM_SUB':
+          t.pass();
+          t.end();
+          return [state, Effect.none()];
+
+        default:
+          t.fail('Got an unexpected message');
+          t.end();
+          return [state, Effect.none()];
+      }
+    },
+    subscribe: () => [
+      [sub]
+    ],
+  });
+});

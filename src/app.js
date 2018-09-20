@@ -29,7 +29,11 @@ export const app = ({
   };
 
   const runEffect = (effect) => {
-    if (killSwitch || typeof effect === 'undefined') return Promise.resolve();
+    const emptyEffect = (
+      effect === null ||
+      typeof effect === 'undefined'
+    );
+    if (killSwitch || emptyEffect) return Promise.resolve();
 
     if (effect instanceof Effect) {
       return effect.then(dispatch); // eslint-disable-line no-use-before-define
@@ -63,7 +67,11 @@ export const app = ({
     );
 
     if (isMessageEmpty) return Promise.resolve();
-    return handleUpdate(updateWithMiddleware(message, state));
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve(handleUpdate(updateWithMiddleware(message, state)));
+      }, 0);
+    });
   };
 
   handleUpdate(init());
