@@ -30,8 +30,8 @@ export const app = ({
 
   const runEffect = (effect) => {
     const emptyEffect = (
-      effect === null ||
-      typeof effect === 'undefined'
+      effect === null
+      || typeof effect === 'undefined'
     );
     if (killSwitch || emptyEffect) return Promise.resolve();
 

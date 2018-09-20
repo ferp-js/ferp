@@ -118,7 +118,7 @@ test.cb('app runs subscription without initial effect', (t) => {
       }
     },
     subscribe: () => [
-      [sub]
+      [sub],
     ],
   });
 });
