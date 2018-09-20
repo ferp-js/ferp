@@ -6,7 +6,9 @@ const compareValue = (a, b) => {
 };
 
 const subscriptionComparator = args => (subArgs) => {
-  if (args.length !== subArgs.length) return false;
+  if (args.length !== subArgs.length) {
+    return false;
+  }
   return args.every((value, position) => compareValue(value, subArgs[position]));
 };
 
@@ -22,15 +24,22 @@ const toSubscription = (args, dispatch) => ({
 });
 
 export const subscribeHandler = (prevSubs, subscriptions, dispatch) => {
-  const initialSubs = prevSubs.filter((prevSub) => {
-    const keepSub = subscriptions.some(sub => prevSub.isSub(sub));
-    if (!keepSub) prevSub.detach();
-    return keepSub;
-  });
+  const nextSubs = subscriptions.filter(Array.isArray);
 
-  const newSubs = subscriptions.filter(Boolean).filter(nextSub => (
-    !prevSubs.some(sub => sub.isSub(nextSub))
+  const discontinuedSubs = prevSubs.filter(prevSub => (
+    nextSubs.every(sub => !prevSub.isSub(sub))
   ));
 
-  return initialSubs.concat(newSubs.map(sub => toSubscription(sub, dispatch)));
+  const continuedSubs = prevSubs.filter(prevSub => (
+    nextSubs.some(newSub => prevSub.isSub(newSub))
+  ));
+
+  const newSubs = nextSubs.filter(newSub => (
+    continuedSubs.every(sub => !sub.isSub(newSub))
+  ));
+
+  discontinuedSubs.forEach(oldSub => oldSub.detach());
+
+  const addedSubs = newSubs.map(sub => toSubscription(sub, dispatch));
+  return continuedSubs.concat(addedSubs);
 };
