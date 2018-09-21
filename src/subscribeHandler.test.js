@@ -1,7 +1,23 @@
 import test from 'ava';
 import sinon from 'sinon';
 
-import { subscribeHandler } from './subscribeHandler.js';
+import { compareValue, subscriptionComparator, subscribeHandler } from './subscribeHandler.js';
+
+test('compareValue will return true if both values are null', (t) => {
+  t.truthy(compareValue(null, null));
+});
+
+test('compareValue will deeply compare objects', (t) => {
+  t.falsy(compareValue({ foo: 'bar' }, { foo: 'baz' }));
+});
+
+test('compareValue will return false if both values have a different type', (t) => {
+  t.falsy(compareValue([], 1));
+});
+
+test('subscriptionComparator will immediately return false if args are of different length', (t) => {
+  t.falsy(subscriptionComparator([() => {}, 1])([() => {}]));
+});
 
 test('will return an empty array when there are no subscriptions', (t) => {
   t.deepEqual(subscribeHandler([], [], () => {}), []);

@@ -2,8 +2,7 @@ import * as appModule from './app.js';
 import * as core from './effects/core.js';
 import * as delay from './effects/delay.js';
 import { raf } from './effects/raf.js';
-import { immutable } from './middleware/immutable.js';
-import { logger } from './middleware/logger.js';
+import { logger } from './listeners/logger.js';
 import * as every from './subscriptions/every.js';
 import { Result } from './types/result.js';
 
@@ -18,7 +17,6 @@ export const effects = {
 };
 
 export const middleware = {
-  immutable,
   logger,
 };
 

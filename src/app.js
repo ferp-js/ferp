@@ -6,56 +6,60 @@ export const app = ({
   init,
   update,
   subscribe,
-  middleware,
+  listen,
 }) => {
   let state = null;
   let subscriptions = [];
 
   let dispatch = (message) => {
-    if (!message) return Promise.resolve(state); // throw new Error('All updates must return an effect');
+    if (!message) return Promise.resolve(state);
     return new Promise((resolve) => {
       setTimeout(() => {
-        if (Array.isArray(middleware)) {
-          middleware.forEach(mw => mw(() => {})(message, state));
+        if (Array.isArray(listen)) {
+          const frozenMessage = freeze(message);
+          const frozenState = freeze(state);
+          listen.forEach(listener => listener(frozenMessage, frozenState));
         }
-        resolve(resolveEffects(update(message, state)));
+        resolve(runUpdate(update(message, state))); // eslint-disable-line no-use-before-define
       }, 0);
     });
   };
 
   const updateState = (newState) => {
     state = newState;
-    const frozenState = freeze(newState);
     if (typeof subscribe === 'function') {
+      const frozenState = freeze(newState);
       subscriptions = subscribeHandler(subscriptions, subscribe(frozenState), dispatch);
     }
-    return Promise.resolve(state);
   };
 
-  const resolveEffects = ([newState, effect]) => (
-    updateState(newState)
-      .then((currentState) => {
-        switch (effect && effect.type) {
-          case effectTypes.none:
-            return currentState;
+  const runEffects = (effect) => {
+    switch (effect && effect.type) {
+      case effectTypes.none:
+        return state;
 
-          case effectTypes.batch:
-            return effect.effects.reduce((chain, fx) => (
-              chain.then(s => resolveEffects([s, fx]))
-            ), Promise.resolve(currentState));
+      case effectTypes.batch:
+        return effect.effects.reduce((chain, fx) => (
+          chain.then(() => runEffects(fx))
+        ), Promise.resolve());
 
-          case effectTypes.defer:
-            return effect.promise.then(fx => resolveEffects([state, fx]));
+      case effectTypes.defer:
+        return effect.promise.then(fx => runEffects(fx));
 
-          default:
-            return dispatch(effect);
-        }
-      })
-  );
+      default:
+        return dispatch(effect);
+    }
+  };
 
-  resolveEffects(init());
+  const runUpdate = ([nextState, nextEffect]) => {
+    updateState(nextState);
+    runEffects(nextEffect);
+  };
+
+  runUpdate(init());
 
   return () => {
+    dispatch = () => Promise.resolve();
     subscriptions.forEach(sub => sub.detach());
   };
 };

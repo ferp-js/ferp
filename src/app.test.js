@@ -68,13 +68,12 @@ test.cb('app can enable a subscription which can dispatch an update', (t) => {
   });
 });
 
-test.cb('app can use middleware', (t) => {
+test.cb('app can use listeners', (t) => {
   t.plan(2);
-  const testMiddleware = next => sinon.fake((message, state) => {
+  const testMiddleware = sinon.fake((message, state) => {
     t.deepEqual(message, { type: 'foo' });
     t.is(state, true);
     t.end();
-    return next(message, state);
   });
 
   app({
@@ -88,7 +87,7 @@ test.cb('app can use middleware', (t) => {
           return [state, none()];
       }
     },
-    middleware: [testMiddleware],
+    listen: [testMiddleware],
   });
 });
 
