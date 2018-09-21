@@ -4,6 +4,6 @@ export const millisecond = (milliseconds, message) => defer(new Promise((resolve
   setTimeout(resolve, milliseconds, message);
 }));
 
-export const second = (seconds, messageType) => millisecond(seconds * 1000, messageType);
-export const minute = (minutes, messageType) => second(minutes * 60, messageType);
-export const hour = (hours, messageType) => minute(hours * 60, messageType);
+export const second = (seconds, message) => millisecond(seconds * 1000, message);
+export const minute = (minutes, message) => second(minutes * 60, message);
+export const hour = (hours, message) => minute(hours * 60, message);

@@ -3,7 +3,7 @@ import sinon from 'sinon';
 
 import * as core from './core.js';
 
-import { raf } from './raf.js';
+import { raf, getNextFrameMethod } from './raf.js';
 
 test.before((t) => {
   t.context.spy = sinon.spy(global, 'setTimeout'); // eslint-disable-line no-param-reassign
@@ -52,11 +52,12 @@ test('raf resolves the correct message with a lastTimestamp', async (t) => {
   Date.now = original;
 });
 
-// The requestAnimationFrame check isn't inlined any more, this may not be as testable
-test.skip('requestAnimationFrame will use requestAnimationFrame if it is available', async (t) => {
+test('getNextFrameMethod uses requestAnimationFrame when available', async (t) => {
   global.requestAnimationFrame = sinon.fake(cb => cb());
 
-  await raf('test').promise.then(message => message);
+  const nextMethod = getNextFrameMethod();
+  nextMethod(() => {});
+
   t.truthy(global.requestAnimationFrame.called);
 
   delete global.requestAnimationFrame;

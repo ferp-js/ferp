@@ -1,8 +1,12 @@
 import { defer } from './core.js';
 
-const nextFrame = typeof requestAnimationFrame === 'function'
-  ? callback => requestAnimationFrame(callback)
-  : callback => setTimeout(() => callback(Date.now()), 1000 / 60);
+export const getNextFrameMethod = () => (
+  typeof requestAnimationFrame === 'function'
+    ? callback => requestAnimationFrame(callback)
+    : callback => setTimeout(() => callback(Date.now()), 1000 / 60)
+);
+
+const nextFrame = getNextFrameMethod();
 
 export const raf = (message, lastTimestamp) => defer(new Promise((resolve) => {
   nextFrame((timestamp) => {
