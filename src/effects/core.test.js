@@ -2,9 +2,10 @@ import test from 'ava';
 import * as core from './core.js';
 
 test('core effects return the correct types', (t) => {
-  for (const type of ['none', 'batch', 'defer']) {
+  const types = ['none', 'batch', 'defer'];
+  types.forEach((type) => {
     t.is(core[type]().type, core.effectTypes[type]);
-  }
+  });
 });
 
 test('batch has an array of effects', (t) => {

@@ -1,5 +1,4 @@
 import test from 'ava';
-import sinon from 'sinon';
 
 import * as ferp from './ferp.js';
 
