@@ -1,0 +1,18 @@
+import test from 'ava';
+import * as core from './core.js';
+
+test('core effects return the correct types', (t) => {
+  for (const type of ['none', 'batch', 'defer']) {
+    t.is(core[type]().type, core.effectTypes[type]);
+  }
+});
+
+test('batch has an array of effects', (t) => {
+  const effect = core.batch(['a', 'b']);
+  t.deepEqual(effect.effects, ['a', 'b']);
+});
+
+test('defer has a promise', (t) => {
+  const effect = core.defer(1);
+  t.truthy(effect.promise instanceof Promise);
+});

@@ -1,15 +1,20 @@
 import * as appModule from './app.js';
+import * as core from './effects/core.js';
 import * as delay from './effects/delay.js';
+import { raf } from './effects/raf.js';
 import { immutable } from './middleware/immutable.js';
 import { logger } from './middleware/logger.js';
 import * as every from './subscriptions/every.js';
-import { Effect } from './types/effect.js';
 import { Result } from './types/result.js';
 
 export const app = appModule.app;
 
 export const effects = {
+  none: core.none,
+  batch: core.batch,
+  defer: core.defer,
   delay,
+  raf,
 };
 
 export const middleware = {
@@ -22,6 +27,5 @@ export const subscriptions = {
 };
 
 export const types = {
-  Effect,
   Result,
 };

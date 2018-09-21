@@ -40,11 +40,11 @@ const ferp = require('ferp');
 const initialState = 0;
 
 ferp.app({
-  init: () => [initialState, ferp.types.Effect.none()],
+  init: () => [initialState, ferp.effects.none()],
   update: (message, state) => {
     return [
       state + 1,
-      ferp.types.Effect.immediate(true),
+      ferp.effects.none(),
     ];
   },
   subscribe: () => [],
