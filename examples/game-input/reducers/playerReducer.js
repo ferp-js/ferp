@@ -1,9 +1,9 @@
 const ferp = require('ferp');
-const { Effect } = ferp.types;
+
+const { none } = ferp.effects;
 
 const playerReducer = id => (message, state) => {
-  if (message.type !== 'TICK') console.log('playerReducer', message);
-  if (message.playerId !== id) return [state, Effect.none()];
+  if (message.playerId !== id) return [state, none()];
   switch (message.type) {
     case 'SOURCE_CHANGE':
       return [
@@ -15,7 +15,7 @@ const playerReducer = id => (message, state) => {
           left: false,
           right: false,
         }),
-        Effect.none(),
+        none(),
       ];
 
     case 'ASSIGN_GAMEPAD_INDEX':
@@ -28,7 +28,7 @@ const playerReducer = id => (message, state) => {
           left: false,
           right: false,
         }),
-        Effect.none(),
+        none(),
       ];
 
     case 'INPUT_DOWN':
@@ -36,7 +36,7 @@ const playerReducer = id => (message, state) => {
         Object.assign({}, state, {
           [message.key]: true,
         }),
-        Effect.none(),
+        none(),
       ];
 
     case 'INPUT_UP':
@@ -44,13 +44,13 @@ const playerReducer = id => (message, state) => {
         Object.assign({}, state, {
           [message.key]: false,
         }),
-        Effect.none(),
+        none(),
       ];
 
     default:
       return [
         state,
-        Effect.none(),
+        none(),
       ];
   }
 };

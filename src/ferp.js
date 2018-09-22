@@ -16,7 +16,7 @@ export const effects = {
   raf,
 };
 
-export const middleware = {
+export const listeners = {
   logger,
 };
 

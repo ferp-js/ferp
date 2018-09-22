@@ -4,7 +4,7 @@ const { keyboardSubscription } = require('./subscriptions/keyboardSubscription.j
 const { gamePadEffect } = require('./effects/gamePadEffect.js');
 const { view } = require('./view.js');
 
-const { Effect } = ferp.types;
+const { batch, defer, none } = ferp.effects;
 
 const effectForKeyEvent = (isKeyDown, key, players) => {
   const mapping = {
@@ -25,9 +25,9 @@ const effectForKeyEvent = (isKeyDown, key, players) => {
   const sourceType = ['wasd', 'arrows'].find(type => mapping[type][key]);
 
   const ps = players.filter(p => p.sourceType === sourceType);
-  if (!sourceType || players.length === 0) return Effect.none();
+  if (!sourceType || players.length === 0) return none();
 
-  return Effect.map(ps.map(p => (
+  return batch(ps.map(p => (
     inputEffect(isKeyDown, p.id, mapping[sourceType][key])
   )));
 };
@@ -36,9 +36,9 @@ const withMoreEffects = result => (effects) => {
   const [state, effect] = result;
   return [
     state,
-    Effect.map([
+    batch([
       effect,
-      Effect.map(effects),
+      batch(effects),
     ]),
   ];
 };
@@ -46,12 +46,12 @@ const withMoreEffects = result => (effects) => {
 const createApp = () => ferp.app({
   init: () => [
     initialState,
-    Effect.map([
-      Effect.immediate({ type: 'ADD_PLAYER', playerId: Math.random().toString(36).substr(7) }),
-      Effect.immediate({ type: 'ADD_PLAYER', playerId: Math.random().toString(36).substr(7) }),
-      Effect.immediate({ type: 'ADD_PLAYER', playerId: Math.random().toString(36).substr(7) }),
-      Effect.immediate({ type: 'ADD_PLAYER', playerId: Math.random().toString(36).substr(7) }),
-      Effect.immediate({ type: 'TICK' }),
+    batch([
+      { type: 'ADD_PLAYER', playerId: Math.random().toString(36).substr(7) },
+      { type: 'ADD_PLAYER', playerId: Math.random().toString(36).substr(7) },
+      { type: 'ADD_PLAYER', playerId: Math.random().toString(36).substr(7) },
+      { type: 'ADD_PLAYER', playerId: Math.random().toString(36).substr(7) },
+      { type: 'TICK' },
     ]),
   ],
   update: (message, state) => {
@@ -69,7 +69,7 @@ const createApp = () => ferp.app({
 
       case 'TICK':
         return withMoreEffects(result)([
-          ferp.effects.delay.raf('TICK', message.timestamp),
+          ferp.effects.raf({ type: 'TICK' }, message.timestamp),
           gamePadEffect(state.gamePads),
         ]);
 
@@ -78,7 +78,7 @@ const createApp = () => ferp.app({
 
       default:
         return withMoreEffects(result)([
-          Effect.immediate({ type: 'RENDER', view }),
+          { type: 'RENDER', view },
         ]);
     }
   },

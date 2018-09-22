@@ -1,11 +1,12 @@
 const ferp = require('ferp');
 const https = require('https');
 
-const { Effect, Result } = ferp.types;
+const { Result } = ferp.types;
+const { batch, defer, none } = ferp.effects;
 
-const request = (url, messageType) => Effect.map([
-  Effect.immediate({ type: messageType, data: Result.pending() }),
-  new Effect((done) => {
+const request = (url, messageType) => batch([
+  { type: messageType, data: Result.pending() },
+  defer(new Promise((done) => {
     https.get(url, (response) => {
       let data = '';
       response
@@ -14,7 +15,7 @@ const request = (url, messageType) => Effect.map([
     })
       .on('error', err => done({ type: messageType, data: Result.error(err) }))
       .end();
-  }),
+  })),
 ]);
 
 ferp.app({
@@ -30,16 +31,16 @@ ferp.app({
       case 'RECV':
         return [
           { data: message.data },
-          Effect.none(),
+          none(),
         ];
 
       default:
         return [
           state,
-          Effect.none(),
+          none(),
         ];
     }
   },
 
-  middleware: [ferp.middleware.logger(2), ferp.middleware.immutable()],
+  listen: [ferp.listeners.logger(2)],
 });

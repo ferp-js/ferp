@@ -1,20 +1,21 @@
 const ferp = require('ferp');
 
-const { Effect } = ferp.types;
-const { logger, immutable } = ferp.middleware;
+const { logger } = ferp.listeners;
 const { every } = ferp.subscriptions;
+
+const { none } = ferp.effects;
 
 ferp.app({
   init: () => [
     0,
-    Effect.none(),
+    none(),
   ],
 
   update: (_, state) => {
     const nextState = state + 1;
     return [
       nextState,
-      Effect.none(),
+      none(),
     ];
   },
 
@@ -22,5 +23,5 @@ ferp.app({
     state < 5 && [every.second, 1, 'INCREMENT'],
   ],
 
-  middleware: [logger(), immutable()],
+  listen: [logger()],
 });

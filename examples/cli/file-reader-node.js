@@ -2,11 +2,12 @@ const ferp = require('ferp');
 const fs = require('fs');
 const path = require('path');
 
-const { Effect, Result } = ferp.types;
+const { Result } = ferp.types;
+const { batch, defer, none } = ferp.effects;
 
-const readFile = (file, messageType) => Effect.map([
-  Effect.immediate({ type: messageType, data: Result.pending() }),
-  new Effect((done) => {
+const readFile = (file, messageType) => batch([
+  { type: messageType, data: Result.pending() },
+  defer(new Promise((done) => {
     fs.readFile(file, { encoding: 'utf-8' }, (err, data) => {
       if (err) {
         done({ type: messageType, data: Result.error(err) });
@@ -14,7 +15,7 @@ const readFile = (file, messageType) => Effect.map([
         done({ type: messageType, data: Result.done(data) });
       }
     });
-  }),
+  })),
 ]);
 
 ferp.app({
@@ -28,15 +29,12 @@ ferp.app({
   update: (message, state) => {
     switch (message.type) {
       case 'SET_CONTENTS':
-        return [
-          { data: message.data },
-          Effect.none(),
-        ];
+        return [{ data: message.data }, none()];
 
       default:
-        return [state, Effect.none()];
+        return [state, none()];
     }
   },
 
-  middleware: [ferp.middleware.logger(2), ferp.middleware.immutable()],
+  listen: [ferp.listeners.logger(2)],
 });

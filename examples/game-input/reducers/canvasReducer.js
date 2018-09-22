@@ -1,5 +1,6 @@
 const ferp = require('ferp');
-const { Effect } = ferp.types;
+
+const { none } = ferp.effects;
 
 const canvasReducer = players => (message, state) => {
   if (message.type === 'TICK') {
@@ -16,7 +17,7 @@ const canvasReducer = players => (message, state) => {
     });
   }
 
-  return [state, Effect.none()];
+  return [state, none()];
 };
 
 module.exports = {
