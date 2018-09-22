@@ -5,6 +5,7 @@ import { raf } from './effects/raf.js';
 import { logger } from './listeners/logger.js';
 import * as every from './subscriptions/every.js';
 import { Result } from './types/result.js';
+import { combineReducers } from './util/combineReducers.js';
 
 export const app = appModule.app;
 
@@ -26,4 +27,8 @@ export const subscriptions = {
 
 export const types = {
   Result,
+};
+
+export const util = {
+  combineReducers,
 };
