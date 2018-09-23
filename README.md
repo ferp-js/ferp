@@ -48,7 +48,6 @@ ferp.app({
     ];
   },
   subscribe: () => [],
-  middleware: [ferp.middleware.logger()],
 });
 ```
 
@@ -76,12 +75,10 @@ The `init()` function lets you establish initial state, and any initial [side-ef
 | update   | Function | Yes      |
 
 The `update(message, state)` function gives you the opportunity to make changes to your state.
-All updates need to return the array `[updatedState, effect]`, where state is a new copy of state with any changes you have made, and effect is any effect you want to trigger.
-An effect is just a promise that returns a message. Here are some convenience methods to handle the case you need:
+All updates need to return the array `[updatedState, effect]`, where:
 
- - `Effect.none()` if you do not want to trigger an effect.
- - `new Effect((done) => { done(new YourMessage) })` if you want to do some work and fire a new update.
- - `Effect.map([effect1, effect2, ...])` if you want to fire multiple effects.
+ - `updatedState` is a new copy of state with any changes you have made
+ - `effect` is any effect you want to trigger. See [effects](./src/effects/README.md) for more information on what they are and how to use them.
 
 ### Subscribe to third-party events
 
@@ -119,31 +116,19 @@ const myCoolSubscription = (param1, param2, param3) => (dispatch) => {
 };
 ```
 
-### Tracking changes through middleware
-
-| Param         | Type     | Required |
-| ------------- | -------- | -------- |
-| middleware    | Array    | No       |
-
-Middleware is a simple way of letting external sources react to data changes.
-A middleware should take the signature `const myMiddleware = (next) => (message, state) => next(message, state)`.
-You can use this opportunity to inspect the message that changed the state, or the new state.
-Be aware that long running middleware can greatly affect performance!
-
 ## Examples
 
- - CLI Timer
-   - [Using effects](./examples/cli/timer-with-effects.js), `cd examples/cli && node ./timer-with-effects.js`.
-   - [Using subscriptions](./examples/cli/timer-with-subscription), `cd examples/cli && node ./timer-with-subscription.js`.
- - [CLI file reader](./examples/cli/file-reader-node.js), `cd examples/cli && node ./file-reader-node.js`.
- - [CLI xhr request](./examples/cli/xhr-request.js), `cd examples/cli && node ./xhr-request.js`.
- - [Node http server](./examples/http-server/server.js), `node ./examples/http-server/server.js`.
- - [Web example using superfine for vdom](./examples/with-serverfine/main.js), `cd ./examples/with-superfine && npm i && npm start`.
- - [Web example for game input with superfine and canvas](./examples/game-input/main.js), `cd ./examples/game-input && npm i && npm start`.
+ - Command-line Examples
+   - [Timer using effects](./examples/cli/timer-with-effects.js), `cd examples/cli && node ./timer-with-effects.js`.
+   - [Timer using subscriptions](./examples/cli/timer-with-subscription), `cd examples/cli && node ./timer-with-subscription.js`.
+   - [File reader](./examples/cli/file-reader-node.js), `cd examples/cli && node ./file-reader-node.js`.
+   - [Http request](./examples/cli/xhr-request.js), `cd examples/cli && node ./xhr-request.js`.
+ - [Node http server](./examples/http-server), `node ./examples/http-server/server.js`.
+ - [Web example using superfine for vdom](./examples/with-serverfine), `cd ./examples/with-superfine && npm i && npm start`.
 
 ## More docs
 
- - [Types](./src/types/README.md)
  - [Effects](./src/effects/README.md)
  - [Subscriptions](./src/subscriptions/README.md)
- - [Middleware](./src/middleware/README.md)
+ - [Utility](./src/util/README.md)
+ - [Types](./src/types/README.md)
