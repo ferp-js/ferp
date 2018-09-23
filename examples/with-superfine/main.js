@@ -1,7 +1,9 @@
 const ferp = require('ferp');
 const { h, patch } = require('superfine');
 
-const { none, batch, defer } = ferp.effects;
+const { superfineEffect } = require('./superfineEffect');
+
+const { none } = ferp.effects;
 
 const view = (state, dispatch) => (
   h('div', null, [
@@ -24,26 +26,16 @@ const view = (state, dispatch) => (
   ])
 );
 
-const renderEffect = (state) => {
-  let dispatch = () => {};
-  const eventPromise = new Promise((eventResolve) => {
-    dispatch = eventResolve;
-  });
-
-  const node = patch(state.node, view(state, dispatch), document.body);
-
-  return batch([
-    { type: 'UPDATE_NODE', node },
-    defer(eventPromise),
-  ]);
-};
+const render = (state, dispatch) => (
+  patch(state.node, view(state, dispatch), document.body)
+);
 
 const initialState = { value: 0, node: null };
 
 ferp.app({
-  init: () => [
+  init: [
     initialState,
-    renderEffect(initialState),
+    superfineEffect(render, initialState, { type: 'UPDATE_NODE' }),
   ],
 
   update: (message, state) => {
@@ -53,7 +45,7 @@ ferp.app({
           const nextState = { node: state.node, value: message.value };
           return [
             nextState,
-            renderEffect(nextState),
+            superfineEffect(render, nextState, { type: 'UPDATE_NODE' }),
           ];
         })();
 
