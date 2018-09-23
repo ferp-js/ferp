@@ -3,7 +3,7 @@
   "module": "src/ferp.js",
   "main": "dist/ferp.js",
   "description": "Build functional and pure applications in NodeJS and the Browser!",
-  "version": "0.1.1",
+  "version": "1.0.0-beta",
   "directories": {
     "example": "examples"
   },
@@ -42,12 +42,13 @@
     "eslint-plugin-import": "^2.14.0",
     "nyc": "^13.0.1",
     "rollup": "^0.65.0",
+    "rollup-plugin-babel-minify": "^6.0.0",
     "rollup-plugin-eslint": "^5.0.0",
     "sinon": "^6.1.5"
   },
   "ava": {
     "files": [
-      "src/**/*.test.js"
+      "src/**/**/*.test.js"
     ],
     "sources": [
       "src/**/*.js"
