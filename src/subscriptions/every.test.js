@@ -1,18 +1,26 @@
 import test from 'ava';
-import * as Every from './every.js';
+import sinon from 'sinon';
 
-test.cb('Every.millisecond dispatches messages', (t) => {
-  t.plan(1);
-  const detach = Every.millisecond(10, 'test')((message) => {
-    detach();
-    t.deepEqual(message, { type: 'test' });
-    t.end();
+import { every } from './every.js';
+
+test.beforeEach((t) => {
+  t.context.sandbox = sinon.createSandbox({ // eslint-disable-line no-param-reassign
+    useFakeTimers: true,
   });
 });
 
-test('Every exports millisecond, second, minute, and hour', (t) => {
-  t.is(typeof Every.millisecond, 'function');
-  t.is(typeof Every.second, 'function');
-  t.is(typeof Every.minute, 'function');
-  t.is(typeof Every.hour, 'function');
+test.afterEach((t) => {
+  t.context.sandbox.restore();
+});
+
+test('Every.millisecond dispatches messages', async (t) => {
+  const sub = every(1, { type: 'test' });
+  t.is(typeof sub, 'function');
+
+  const dispatch = sinon.fake();
+  const detach = sub(dispatch);
+  t.context.sandbox.clock.tick(100);
+
+  detach();
+  t.deepEqual(dispatch.getCall(0).args[0], { type: 'test' });
 });

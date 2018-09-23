@@ -1,5 +1,4 @@
 import test from 'ava';
-import sinon from 'sinon';
 import { app } from './app.js';
 import { none } from './effects/core.js';
 
@@ -7,17 +6,15 @@ test('app throws when missing init and update', (t) => {
   t.throws(() => app());
   t.throws(() => app({}));
 
-  t.throws(() => app({ init: () => {} }));
-
-  t.notThrows(() => app({ init: () => [], update: () => [] }));
-  t.notThrows(() => app({ init: () => [0, 'test'], update: () => [] }));
+  t.notThrows(() => app({ init: [], update: () => [] }));
+  t.notThrows(() => app({ init: [0, 'test'], update: () => [] }));
 });
 
 test.cb('app calls update immediately with effect', (t) => {
   t.plan(2);
 
   app({
-    init: () => [0, { type: 'update' }],
+    init: [0, { type: 'update' }],
     update: (message, state) => {
       t.deepEqual(message, { type: 'update' });
       t.is(state, 0);
@@ -29,7 +26,7 @@ test.cb('app calls update immediately with effect', (t) => {
 
 test('app creates a detach method', (t) => {
   const detach = app({
-    init: () => [null, none()],
+    init: [null, none()],
     update: () => [null, none()],
   });
   t.is(typeof detach, 'function');
@@ -47,7 +44,7 @@ test.cb('app can enable a subscription which can dispatch an update', (t) => {
     };
   };
   app({
-    init: () => [false, { type: 'foo' }],
+    init: [false, { type: 'foo' }],
     update: (message, state) => {
       switch (message.type) {
         case 'foo':
@@ -68,29 +65,6 @@ test.cb('app can enable a subscription which can dispatch an update', (t) => {
   });
 });
 
-test.cb('app can use listeners', (t) => {
-  t.plan(2);
-  const testMiddleware = sinon.fake((message, state) => {
-    t.deepEqual(message, { type: 'foo' });
-    t.is(state, true);
-    t.end();
-  });
-
-  app({
-    init: () => [true, { type: 'foo' }],
-    update: (message, state) => {
-      switch (message.type) {
-        case 'foo':
-          return [true, none()];
-
-        default:
-          return [state, none()];
-      }
-    },
-    listen: [testMiddleware],
-  });
-});
-
 test.cb('app runs subscription without initial effect', (t) => {
   t.plan(1);
 
@@ -100,7 +74,7 @@ test.cb('app runs subscription without initial effect', (t) => {
   };
 
   app({
-    init: () => [true, none()],
+    init: [true, none()],
     update: (message, state) => {
       switch (message.type) {
         case 'FROM_SUB':

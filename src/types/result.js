@@ -1,76 +1,44 @@
-const dataKey = Symbol('data');
-const errorKey = Symbol('error');
-const stateKey = Symbol('state');
-
-const states = {
+export const resultTypes = {
+  result: Symbol('result'),
   nothing: Symbol('nothing'),
   pending: Symbol('pending'),
-  done: Symbol('done'),
+  just: Symbol('just'),
   error: Symbol('error'),
 };
 
-export class Result {
-  static nothing() {
-    return new Result(null, null, states.nothing);
-  }
+export const result = (subtype, augment = {}) => Object.assign(
+  {},
+  augment,
+  { type: resultTypes.result, subtype },
+);
 
-  static pending() {
-    return new Result(null, null, states.pending);
-  }
+export const nothing = () => result(resultTypes.nothing);
+export const pending = () => result(resultTypes.pending);
+export const just = value => result(resultTypes.just, { value });
+export const error = errorMessage => result(resultTypes.error, { error: errorMessage });
 
-  static done(data) {
-    return new Result(data, null, states.done);
-  }
+export const get = (onNothing, onPending, onJust, onError) => (message) => {
+  switch (message && message.type === resultTypes.result && message.subtype) {
+    case resultTypes.nothing:
+      return onNothing();
 
-  static error(error) {
-    return new Result(null, error, states.error);
-  }
+    case resultTypes.pending:
+      return onPending();
 
-  constructor(data, error, state) {
-    this[dataKey] = data;
-    this[errorKey] = error;
-    this[stateKey] = state;
-    if (!Object.values(states).includes(state)) {
-      throw new Error('Result state not valid');
-    }
-  }
+    case resultTypes.just:
+      return onJust(message.value);
 
-  serialize() {
-    switch (this[stateKey]) {
-      case states.nothing:
-        return '<Result Nothing>';
-      case states.pending:
-        return '<Result Pending>';
-      case states.done:
-        return `<Result Done ${JSON.stringify(this[dataKey])}>`;
-      case states.error:
-        return `<Result Error ${JSON.stringify(this[errorKey])}>`;
-      default:
-        throw new Error('Result state not valid');
-    }
-  }
+    case resultTypes.error:
+      return onError(message.error);
 
-  get(onNothing, onPending, onDone, onError) {
-    switch (this[stateKey]) {
-      case states.nothing:
-        return onNothing();
-      case states.pending:
-        return onPending();
-      case states.done:
-        return onDone(this[dataKey]);
-      case states.error:
-        return onError(this[errorKey]);
-      default:
-        throw new Error('Result state not valid');
-    }
+    default:
+      return onJust(message);
   }
+};
 
-  getWithDefault(defaultValue) {
-    return this.get(
-      () => defaultValue,
-      () => defaultValue,
-      data => data,
-      () => defaultValue,
-    );
-  }
-}
+export const getWithDefault = (onJust, onDefault) => get(
+  onDefault,
+  onDefault,
+  onJust,
+  onDefault,
+);

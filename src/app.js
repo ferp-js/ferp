@@ -6,18 +6,12 @@ export const app = ({
   init,
   update,
   subscribe,
-  listen,
 }) => {
   let state = null;
   let subscriptions = [];
 
   let dispatch = message => new Promise((resolve) => {
     setTimeout(() => {
-      if (Array.isArray(listen)) {
-        const frozenMessage = freeze(message);
-        const frozenState = freeze(state);
-        listen.forEach(listener => listener(frozenMessage, frozenState));
-      }
       resolve(runUpdate(update(message, state))); // eslint-disable-line no-use-before-define
     }, 0);
   });
@@ -25,15 +19,16 @@ export const app = ({
   const updateState = (newState) => {
     state = newState;
     if (typeof subscribe === 'function') {
-      const frozenState = freeze(newState);
-      subscriptions = subscribeHandler(subscriptions, subscribe(frozenState), dispatch);
+      subscriptions = subscribeHandler(
+        subscriptions,
+        subscribe(freeze(newState)),
+        dispatch,
+      );
     }
   };
 
   const runEffects = (effect) => {
-    if (!effect) return dispatch(effect);
-
-    switch (effect.type) {
+    switch (effect && effect.type) {
       case effectTypes.none:
         return state;
 
@@ -52,10 +47,10 @@ export const app = ({
 
   const runUpdate = ([nextState, nextEffect]) => {
     updateState(nextState);
-    runEffects(nextEffect);
+    return runEffects(nextEffect);
   };
 
-  runUpdate(init());
+  runUpdate(init);
 
   return () => {
     dispatch = () => Promise.resolve();

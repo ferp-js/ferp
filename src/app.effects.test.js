@@ -2,14 +2,13 @@ import test from 'ava';
 
 import * as ferp from './ferp.js';
 
-const { none, batch } = ferp.effects;
+const { none, batch, defer } = ferp.effects;
 
 const defaultUpdate = (_, state) => [state, none()];
 
 const createApp = args => ferp.app({
   init: args.init,
   update: args.update || defaultUpdate,
-  middleware: args.middleware || [],
 });
 
 test.cb('update does not get called with no init effect', (t) => {
@@ -23,15 +22,11 @@ test.cb('update does not get called with no init effect', (t) => {
 
   callEndSoon();
   createApp({
-    init: () => [null, none()],
+    init: [null, none()],
     update: (message, state) => {
       t.fail('should not update');
       return [state, none()];
     },
-    middleware: [next => (message, state) => {
-      callEndSoon();
-      return next(message, state);
-    }],
   });
 });
 
@@ -39,7 +34,7 @@ test.cb('initial effect calls update', (t) => {
   t.plan(1);
 
   createApp({
-    init: () => [null, { type: 'TEST' }],
+    init: [null, { type: 'TEST' }],
     update: (message, state) => {
       t.deepEqual(message, { type: 'TEST' });
       t.end();
@@ -54,7 +49,7 @@ test.cb('an initial mapped set of effects calls update multiple times', (t) => {
   const expectedOrder = ['TEST1', 'TEST2', 'TEST3'];
 
   createApp({
-    init: () => [
+    init: [
       null,
       batch([
         { type: 'TEST1' },
@@ -77,7 +72,7 @@ test.cb('effects run in a deterministic order', (t) => {
   t.plan(expectedOrder.length);
 
   createApp({
-    init: () => [
+    init: [
       null,
       batch([
         batch([
@@ -98,4 +93,41 @@ test.cb('effects run in a deterministic order', (t) => {
       return [state, none()];
     },
   });
+});
+
+test.cb('deferred effects run later', (t) => {
+  const laterMessage = { type: 'from promise' };
+  createApp({
+    init: [
+      null,
+      defer(new Promise(resolve => resolve(laterMessage))),
+    ],
+    update: (message, state) => {
+      t.deepEqual(message, laterMessage);
+      t.end();
+
+      return [state, none()];
+    },
+  });
+});
+
+test('detaching app cleans up subscriptions, and prevents further dispatches', async (t) => {
+  let didDetach = false;
+  const detach = createApp({
+    init: [
+      null,
+      'keep going',
+    ],
+    update: (message, state) => {
+      if (didDetach) t.fail('Detached, but updates are still active');
+      return [state, 'keep going'];
+    },
+  });
+
+  await new Promise(resolve => setTimeout(resolve, 1000));
+  detach();
+  // Allow tick for next effects to get new dispatch
+  await new Promise(resolve => setTimeout(resolve, 0));
+  didDetach = true;
+  t.pass('Detach prevented further dispatches');
 });

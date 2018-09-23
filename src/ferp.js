@@ -1,10 +1,16 @@
 import * as appModule from './app.js';
 import * as core from './effects/core.js';
-import * as delay from './effects/delay.js';
+import { delay } from './effects/delay.js';
 import { raf } from './effects/raf.js';
-import { logger } from './listeners/logger.js';
-import * as every from './subscriptions/every.js';
-import { Result } from './types/result.js';
+import { every } from './subscriptions/every.js';
+import {
+  nothing,
+  pending,
+  just,
+  error,
+  get,
+  getWithDefault,
+} from './types/result.js';
 import { combineReducers } from './util/combineReducers.js';
 
 export const app = appModule.app;
@@ -17,16 +23,17 @@ export const effects = {
   raf,
 };
 
-export const listeners = {
-  logger,
-};
-
 export const subscriptions = {
   every,
 };
 
-export const types = {
-  Result,
+export const result = {
+  nothing,
+  pending,
+  just,
+  error,
+  get,
+  getWithDefault,
 };
 
 export const util = {
