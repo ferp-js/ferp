@@ -3,11 +3,9 @@ const https = require('https');
 
 const { updateLogger } = require('./updateLogger.js');
 
-const { result } = ferp;
 const { batch, defer, none } = ferp.effects;
 
-const request = (url, message) => batch([
-  Object.assign({}, message, { data: result.pending() }),
+const request = (url, number, successType = 'ADD_TODO_OK', failType = 'ADD_TODO_FAIL') => batch([
   defer(new Promise((done) => {
     https.get(url, (response) => {
       let data = '';
@@ -16,22 +14,20 @@ const request = (url, message) => batch([
           data += chunk;
         })
         .on('end', () => {
-          done(Object.assign({ data: result.just(JSON.parse(data)) }, message));
+          done({ type: successType, data: JSON.parse(data) });
         });
     })
       .on('error', (err) => {
-        done(Object.assign({}, message, { data: result.error(err) }));
+        done({ type: failType, number, error: err });
       })
       .end();
   })),
 ]);
 
-const fetchTodoItem = (number, message) => request(
+const fetchTodoItem = number => request(
   `https://jsonplaceholder.typicode.com/todos/${number}`,
-  message,
+  number,
 );
-
-const getTodoItem = result.getWithDefault(value => value, () => []);
 
 ferp.app({
   init: [
@@ -45,14 +41,21 @@ ferp.app({
 
   update: updateLogger((message, state) => {
     switch (message.type) {
-      case 'ADD_TODO':
+      case 'ADD_TODO_OK':
         return [
           {
             todo: state.todo
-              .concat(getTodoItem(message.data))
+              .concat(message.data)
               .sort((a, b) => a.id - b.id),
           },
           none(),
+        ];
+
+      case 'ADD_TODO_FAIL':
+        console.log('fetch error', message.error);
+        return [
+          state,
+          delay(1000, fetchTodoItem(message.number)),
         ];
 
       default:

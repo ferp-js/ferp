@@ -131,4 +131,3 @@ const myCoolSubscription = (param1, param2, param3) => (dispatch) => {
  - [Effects](./src/effects/README.md)
  - [Subscriptions](./src/subscriptions/README.md)
  - [Utility](./src/util/README.md)
- - [Types](./src/types/README.md)
