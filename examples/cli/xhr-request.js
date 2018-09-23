@@ -1,36 +1,57 @@
 const ferp = require('ferp');
 const https = require('https');
 
-const { Result } = ferp.types;
+const { updateLogger } = require('./updateLogger.js');
+
+const { result } = ferp;
 const { batch, defer, none } = ferp.effects;
 
-const request = (url, messageType) => batch([
-  { type: messageType, data: Result.pending() },
+const request = (url, message) => batch([
+  Object.assign({}, message, { data: result.pending() }),
   defer(new Promise((done) => {
     https.get(url, (response) => {
       let data = '';
       response
-        .on('data', (chunk) => { data += chunk; })
-        .on('end', () => done({ type: messageType, data: Result.done(JSON.parse(data)) }));
+        .on('data', (chunk) => {
+          data += chunk;
+        })
+        .on('end', () => {
+          done(Object.assign({ data: result.just(JSON.parse(data)) }, message));
+        });
     })
-      .on('error', err => done({ type: messageType, data: Result.error(err) }))
+      .on('error', (err) => {
+        done(Object.assign({}, message, { data: result.error(err) }));
+      })
       .end();
   })),
 ]);
 
+const fetchTodoItem = (number, message) => request(
+  `https://jsonplaceholder.typicode.com/todos/${number}`,
+  message,
+);
+
+const getTodoItem = result.getWithDefault(value => value, () => []);
+
 ferp.app({
-  init: () => [
+  init: [
     {
-      data: Result.nothing(),
+      todo: [],
     },
-    request('https://jsonplaceholder.typicode.com/todos/1', 'RECV'),
+    batch([4, 2, 5, 3, 1, 7, 6].map(number => (
+      fetchTodoItem(number, { type: 'ADD_TODO' })
+    ))),
   ],
 
-  update: (message, state) => {
+  update: updateLogger((message, state) => {
     switch (message.type) {
-      case 'RECV':
+      case 'ADD_TODO':
         return [
-          { data: message.data },
+          {
+            todo: state.todo
+              .concat(getTodoItem(message.data))
+              .sort((a, b) => a.id - b.id),
+          },
           none(),
         ];
 
@@ -40,7 +61,5 @@ ferp.app({
           none(),
         ];
     }
-  },
-
-  listen: [ferp.listeners.logger(2)],
+  }),
 });

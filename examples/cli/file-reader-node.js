@@ -2,31 +2,33 @@ const ferp = require('ferp');
 const fs = require('fs');
 const path = require('path');
 
-const { Result } = ferp.types;
+const { updateLogger } = require('./updateLogger.js');
+
+const { result } = ferp;
 const { batch, defer, none } = ferp.effects;
 
 const readFile = (file, messageType) => batch([
-  { type: messageType, data: Result.pending() },
+  { type: messageType, data: result.pending() },
   defer(new Promise((done) => {
     fs.readFile(file, { encoding: 'utf-8' }, (err, data) => {
       if (err) {
-        done({ type: messageType, data: Result.error(err) });
+        done({ type: messageType, data: result.error(err) });
       } else {
-        done({ type: messageType, data: Result.done(data) });
+        done({ type: messageType, data: result.just(data) });
       }
     });
   })),
 ]);
 
 ferp.app({
-  init: () => [
+  init: [
     {
-      data: Result.nothing(),
+      data: result.nothing(),
     },
     readFile(path.resolve(__dirname, './hello-world.txt'), 'SET_CONTENTS'),
   ],
 
-  update: (message, state) => {
+  update: updateLogger((message, state) => {
     switch (message.type) {
       case 'SET_CONTENTS':
         return [{ data: message.data }, none()];
@@ -34,7 +36,5 @@ ferp.app({
       default:
         return [state, none()];
     }
-  },
-
-  listen: [ferp.listeners.logger(2)],
+  }),
 });
