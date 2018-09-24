@@ -1,9 +1,8 @@
 ## Ferp subscriptions
 
-### Every
+### every
 
-This subscription triggers a new update every n units.
-The `Every` module exports `Every.millisecond`, `Every.second`, `Every.minute`, and `Every.hour`.
+This subscription triggers a new message effect every n milliseconds.
 
 A subscription using every may look something like:
 
@@ -11,12 +10,12 @@ A subscription using every may look something like:
 app({
   // ...
   subscribe: () => [
-    [ferp.subscriptions.Every.minute, 1, 'SOME_ACTION'],
+    [ferp.subscriptions.every, { type: 'SOME_ACTION' }, 60000],
   ],
 })
 ```
 
-This will send a `{ type: 'SOME_ACTION' }` through `update` every `1` minute.
+This will send a `{ type: 'SOME_ACTION' }` effect through `update` every `60000` milliseconds, or 1 minute.
 
 
 ## Creating your own subscription

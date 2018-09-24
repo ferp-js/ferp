@@ -14,7 +14,7 @@ test.afterEach((t) => {
 });
 
 test('Every.millisecond dispatches messages', async (t) => {
-  const sub = every(1, { type: 'test' });
+  const sub = every({ type: 'test' }, 1);
   t.is(typeof sub, 'function');
 
   const dispatch = sinon.fake();
