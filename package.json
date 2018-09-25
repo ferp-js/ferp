@@ -3,7 +3,7 @@
   "module": "src/ferp.js",
   "main": "dist/ferp.js",
   "description": "Build functional and pure applications in NodeJS and the Browser!",
-  "version": "1.0.0-beta",
+  "version": "1.0.0-beta.1",
   "directories": {
     "example": "examples"
   },
