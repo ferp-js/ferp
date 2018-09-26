@@ -1,22 +1,20 @@
 const ferp = require('ferp');
 
-const { Effect } = ferp.types;
-const { logger, immutable } = ferp.middleware;
-const { delay } = ferp.effects;
+const { updateLogger } = require('./updateLogger.js');
+
+const { delay, none } = ferp.effects;
 
 ferp.app({
-  init: () => [
+  init: [
     0,
-    delay.second(1),
+    delay(null, 1000),
   ],
 
-  update: (_, state) => {
+  update: updateLogger((_, state) => {
     const nextState = state + 1;
     return [
       nextState,
-      nextState < 5 ? delay.second(1) : Effect.none(),
+      nextState < 5 ? delay(null, 1000) : none(),
     ];
-  },
-
-  middleware: [logger(), immutable()],
+  }),
 });

@@ -1,11 +1,13 @@
 const ferp = require('ferp');
 const url = require('url');
 
+const { batch, defer, none } = ferp.effects;
+
 const requestToMatcher = (request, parsed) => (
   `${request.method.toUpperCase()} ${parsed.pathname}`
 );
 
-const logEffect = (date, request, parsed, matcher) => new ferp.types.Effect((done) => {
+const logEffect = (date, request, parsed, matcher) => defer(new Promise((done) => {
   const log = {
     date: date.toISOString(),
     address: request.socket.address().address,
@@ -13,35 +15,38 @@ const logEffect = (date, request, parsed, matcher) => new ferp.types.Effect((don
     parsed,
   };
   done({ type: 'LOG', log });
-});
+}));
 
-const router = (routes) => (message, state) => {
+const router = routes => (message, state) => {
   switch (message.type) {
     case 'ROUTE':
-      const parsed = url.parse(message.request.url);
-      const matcher = requestToMatcher(message.request, parsed);
-      const handler = routes[matcher] || routes['GET /not-found'];
-      if (handler) {
-        const [nextState, effect] = handler(message, state, parsed);
-        return [
-          nextState,
-          ferp.types.Effect.map([
-            effect,
-            logEffect(new Date(), message.request, parsed, matcher),
-          ])
-        ]
-      }
+      return (() => {
+        const parsed = url.parse(message.request.url);
+        const matcher = requestToMatcher(message.request, parsed);
+        const handler = routes[matcher] || routes['GET /not-found'];
+        if (handler) {
+          const [nextState, effect] = handler(message, state, parsed);
+          return [
+            nextState,
+            batch([
+              effect,
+              logEffect(new Date(), message.request, parsed, matcher),
+            ]),
+          ];
+        }
+        return [state, none()];
+      })();
 
     case 'LOG':
       return [
         { ...state, logs: [message.log].concat(state.logs) },
-        ferp.types.Effect.none(),
+        none(),
       ];
 
     default:
-      return [state, ferp.types.Effect.none()];
+      return [state, none()];
   }
-}
+};
 
 module.exports = {
   router,

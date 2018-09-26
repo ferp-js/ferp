@@ -1,11 +1,11 @@
-const compareValue = (a, b) => {
+export const compareValue = (a, b) => {
   if (typeof a !== typeof b) return false;
   if (typeof a !== 'object') return a === b;
   if (a === null && b === null) return true;
   return Object.keys(a).every(key => compareValue(a[key], b[key]));
 };
 
-const subscriptionComparator = args => (subArgs) => {
+export const subscriptionComparator = args => (subArgs) => {
   if (args.length !== subArgs.length) {
     return false;
   }

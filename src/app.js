@@ -1,83 +1,43 @@
-import { Effect } from './types/effect.js';
 import { subscribeHandler } from './subscribeHandler.js';
+import { effectRunner } from './effectRunner.js';
 import { freeze } from './freeze.js';
 
 export const app = ({
   init,
   update,
   subscribe,
-  middleware,
 }) => {
   let state = null;
   let subscriptions = [];
-  let killSwitch = false;
 
-  const updateWithMiddleware = (middleware || [])
-    .reduce((all, method) => method(all), update);
+  let dispatch = message => new Promise((resolve) => {
+    setTimeout(() => {
+      resolve(runUpdate(update(message, state))); // eslint-disable-line no-use-before-define
+    }, 0);
+  });
 
   const updateState = (newState) => {
-    if (newState === undefined) return;
+    state = newState;
     if (typeof subscribe === 'function') {
       subscriptions = subscribeHandler(
         subscriptions,
         subscribe(freeze(newState)),
-        dispatch, // eslint-disable-line no-use-before-define
+        dispatch,
       );
     }
-
-    state = newState;
   };
 
-  const runEffect = (effect) => {
-    const emptyEffect = (
-      effect === null
-      || typeof effect === 'undefined'
-    );
-    if (killSwitch || emptyEffect) return Promise.resolve();
+  const runEffects = effectRunner(dispatch);
 
-    if (effect instanceof Effect) {
-      return effect.then(dispatch); // eslint-disable-line no-use-before-define
-    }
-    if (effect instanceof Promise) {
-      return effect.then(runEffect);
-    }
-    if (Array.isArray(effect)) {
-      const [currentEffect, ...trailing] = effect;
-      return runEffect(currentEffect)
-        .then(() => {
-          if (trailing.length > 0) {
-            return runEffect(trailing);
-          }
-          return Promise.resolve();
-        });
-    }
-    console.error('runEffect recieved something that was not an effect', effect); // eslint-disable-line no-console
-    return Promise.resolve();
+  const runUpdate = ([nextState, nextEffect]) => {
+    updateState(nextState);
+    return runEffects(nextEffect);
   };
 
-  const handleUpdate = ([newState, effect]) => {
-    updateState(newState);
-    return runEffect(effect);
-  };
-
-  const dispatch = (message) => {
-    const isMessageEmpty = (
-      message === null
-      || typeof message === 'undefined'
-    );
-
-    if (isMessageEmpty) return Promise.resolve();
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve(handleUpdate(updateWithMiddleware(message, state)));
-      }, 0);
-    });
-  };
-
-  handleUpdate(init());
+  runUpdate(init);
 
   return () => {
-    killSwitch = true;
+    dispatch = () => Promise.resolve();
     subscriptions.forEach(sub => sub.detach());
   };
 };

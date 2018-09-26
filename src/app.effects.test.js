@@ -1,16 +1,14 @@
 import test from 'ava';
-import sinon from 'sinon';
 
 import * as ferp from './ferp.js';
 
-const { Effect } = ferp.types;
+const { none, batch, defer } = ferp.effects;
 
-const defaultUpdate = (_, state) => [state, Effect.none()];
+const defaultUpdate = (_, state) => [state, none()];
 
 const createApp = args => ferp.app({
   init: args.init,
   update: args.update || defaultUpdate,
-  middleware: args.middleware || [],
 });
 
 test.cb('update does not get called with no init effect', (t) => {
@@ -24,15 +22,11 @@ test.cb('update does not get called with no init effect', (t) => {
 
   callEndSoon();
   createApp({
-    init: () => [null, Effect.none()],
+    init: [null, none()],
     update: (message, state) => {
       t.fail('should not update');
-      return [state, Effect.none()];
+      return [state, none()];
     },
-    middleware: [next => (message, state) => {
-      callEndSoon();
-      return next(message, state);
-    }],
   });
 });
 
@@ -40,11 +34,11 @@ test.cb('initial effect calls update', (t) => {
   t.plan(1);
 
   createApp({
-    init: () => [null, Effect.immediate({ type: 'TEST' })],
+    init: [null, { type: 'TEST' }],
     update: (message, state) => {
       t.deepEqual(message, { type: 'TEST' });
       t.end();
-      return [state, Effect.none()];
+      return [state, none()];
     },
   });
 });
@@ -55,12 +49,12 @@ test.cb('an initial mapped set of effects calls update multiple times', (t) => {
   const expectedOrder = ['TEST1', 'TEST2', 'TEST3'];
 
   createApp({
-    init: () => [
+    init: [
       null,
-      Effect.map([
-        Effect.immediate({ type: 'TEST1' }),
-        Effect.immediate({ type: 'TEST2' }),
-        Effect.immediate({ type: 'TEST3' }),
+      batch([
+        { type: 'TEST1' },
+        { type: 'TEST2' },
+        { type: 'TEST3' },
       ]),
     ],
     update: (message, state) => {
@@ -68,7 +62,7 @@ test.cb('an initial mapped set of effects calls update multiple times', (t) => {
       t.is(message.type, expectedType);
       if (expectedOrder.length === 0) t.end();
 
-      return [state, Effect.none()];
+      return [state, none()];
     },
   });
 });
@@ -78,17 +72,17 @@ test.cb('effects run in a deterministic order', (t) => {
   t.plan(expectedOrder.length);
 
   createApp({
-    init: () => [
+    init: [
       null,
-      Effect.map([
-        Effect.map([
-          Effect.immediate({ type: 'TEST3' }),
-          Effect.map([
-            Effect.immediate({ type: 'TEST2' }),
-            Effect.immediate({ type: 'TEST4' }),
+      batch([
+        batch([
+          { type: 'TEST3' },
+          batch([
+            { type: 'TEST2' },
+            { type: 'TEST4' },
           ]),
         ]),
-        Effect.immediate({ type: 'TEST1' }),
+        { type: 'TEST1' },
       ]),
     ],
     update: (message, state) => {
@@ -96,28 +90,44 @@ test.cb('effects run in a deterministic order', (t) => {
       t.is(message.type, expectedType);
       if (expectedOrder.length === 0) t.end();
 
-      return [state, Effect.none()];
+      return [state, none()];
     },
   });
 });
 
-
-test.cb('app reports an incorrect effect', (t) => {
-  t.plan(1);
-
-  sinon.stub(console, 'error');
-
+test.cb('deferred effects run later', (t) => {
+  const laterMessage = { type: 'from promise' };
   createApp({
-    init: () => [
+    init: [
       null,
-      'not an effect',
+      defer(new Promise(resolve => resolve(laterMessage))),
     ],
-    update: () => {},
+    update: (message, state) => {
+      t.deepEqual(message, laterMessage);
+      t.end();
+
+      return [state, none()];
+    },
+  });
+});
+
+test('detaching app cleans up subscriptions, and prevents further dispatches', async (t) => {
+  let didDetach = false;
+  const detach = createApp({
+    init: [
+      null,
+      'keep going',
+    ],
+    update: (message, state) => {
+      if (didDetach) t.fail('Detached, but updates are still active');
+      return [state, 'keep going'];
+    },
   });
 
-  setTimeout(() => {
-    t.truthy(console.error.called);
-    console.error.reset();
-    t.end();
-  }, 30);
+  await new Promise(resolve => setTimeout(resolve, 1000));
+  detach();
+  // Allow tick for next effects to get new dispatch
+  await new Promise(resolve => setTimeout(resolve, 0));
+  didDetach = true;
+  t.pass('Detach prevented further dispatches');
 });

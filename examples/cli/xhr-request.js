@@ -1,45 +1,68 @@
 const ferp = require('ferp');
 const https = require('https');
 
-const { Effect, Result } = ferp.types;
+const { updateLogger } = require('./updateLogger.js');
 
-const request = (url, messageType) => Effect.map([
-  Effect.immediate({ type: messageType, data: Result.pending() }),
-  new Effect((done) => {
+const { batch, defer, none } = ferp.effects;
+
+const request = (url, number, successType = 'ADD_TODO_OK', failType = 'ADD_TODO_FAIL') => batch([
+  defer(new Promise((done) => {
     https.get(url, (response) => {
       let data = '';
       response
-        .on('data', (chunk) => { data += chunk; })
-        .on('end', () => done({ type: messageType, data: Result.done(JSON.parse(data)) }));
+        .on('data', (chunk) => {
+          data += chunk;
+        })
+        .on('end', () => {
+          done({ type: successType, data: JSON.parse(data) });
+        });
     })
-      .on('error', err => done({ type: messageType, data: Result.error(err) }))
+      .on('error', (err) => {
+        done({ type: failType, number, error: err });
+      })
       .end();
-  }),
+  })),
 ]);
 
+const fetchTodoItem = number => request(
+  `https://jsonplaceholder.typicode.com/todos/${number}`,
+  number,
+);
+
 ferp.app({
-  init: () => [
+  init: [
     {
-      data: Result.nothing(),
+      todo: [],
     },
-    request('https://jsonplaceholder.typicode.com/todos/1', 'RECV'),
+    batch([4, 2, 5, 3, 1, 7, 6].map(number => (
+      fetchTodoItem(number, { type: 'ADD_TODO' })
+    ))),
   ],
 
-  update: (message, state) => {
+  update: updateLogger((message, state) => {
     switch (message.type) {
-      case 'RECV':
+      case 'ADD_TODO_OK':
         return [
-          { data: message.data },
-          Effect.none(),
+          {
+            todo: state.todo
+              .concat(message.data)
+              .sort((a, b) => a.id - b.id),
+          },
+          none(),
+        ];
+
+      case 'ADD_TODO_FAIL':
+        console.log('fetch error', message.error);
+        return [
+          state,
+          delay(1000, fetchTodoItem(message.number)),
         ];
 
       default:
         return [
           state,
-          Effect.none(),
+          none(),
         ];
     }
-  },
-
-  middleware: [ferp.middleware.logger(2), ferp.middleware.immutable()],
+  }),
 });

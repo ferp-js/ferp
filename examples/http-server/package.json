@@ -5,11 +5,11 @@
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
+    "start": "node main.js"
   },
   "author": "Alex Barry",
   "license": "MIT",
   "dependencies": {
-    "ferp": "^0.0.2"
+    "ferp": "^1.0.0"
   }
 }

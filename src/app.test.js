@@ -1,38 +1,33 @@
 import test from 'ava';
-import sinon from 'sinon';
 import { app } from './app.js';
-import { Effect } from './types/effect.js';
+import { none } from './effects/core.js';
 
 test('app throws when missing init and update', (t) => {
   t.throws(() => app());
   t.throws(() => app({}));
 
-  t.throws(() => app({ init: () => {} }));
-
-  // This does throw, but later. Not sure how to capture that
-  // t.throws(() => app({ init: () => [0, Effect.immediate('test')] }));
-
-  t.notThrows(() => app({ init: () => [], update: () => [] }));
-  t.notThrows(() => app({ init: () => [0, Effect.immediate('test')], update: () => [] }));
+  t.notThrows(() => app({ init: [], update: () => [] }));
+  t.notThrows(() => app({ init: [0, 'test'], update: () => [] }));
 });
 
 test.cb('app calls update immediately with effect', (t) => {
   t.plan(2);
 
   app({
-    init: () => [0, Effect.immediate({ type: 'update' })],
+    init: [0, { type: 'update' }],
     update: (message, state) => {
       t.deepEqual(message, { type: 'update' });
       t.is(state, 0);
       t.end();
-      return [state, Effect.none()];
+      return [state, none()];
     },
   });
 });
 
 test('app creates a detach method', (t) => {
   const detach = app({
-    init: () => [],
+    init: [null, none()],
+    update: () => [null, none()],
   });
   t.is(typeof detach, 'function');
 });
@@ -49,48 +44,24 @@ test.cb('app can enable a subscription which can dispatch an update', (t) => {
     };
   };
   app({
-    init: () => [false, Effect.immediate({ type: 'foo' })],
+    init: [false, { type: 'foo' }],
     update: (message, state) => {
       switch (message.type) {
         case 'foo':
-          return [true, Effect.none()];
+          return [true, none()];
 
         case 'from-sub':
           t.deepEqual(message, { type: 'from-sub', count: 1 });
           t.end();
-          return [false, Effect.none()];
+          return [false, none()];
 
         default:
-          return [state, Effect.none()];
+          return [state, none()];
       }
     },
     subscribe: state => [
       state && [emptySub],
     ],
-  });
-});
-
-test.cb('app can use middleware', (t) => {
-  t.plan(2);
-  const testMiddleware = next => sinon.fake((message, state) => {
-    t.deepEqual(message, { type: 'foo' });
-    t.is(state, true);
-    t.end();
-    return next(message, state);
-  });
-
-  app({
-    init: () => [true, Effect.immediate({ type: 'foo' })],
-    update: (message, state) => {
-      switch (message.type) {
-        case 'foo':
-          return [true, Effect.none()];
-
-        default:
-          return [state, Effect.none()];
-      }
-    },
-    middleware: [testMiddleware],
   });
 });
 
@@ -103,18 +74,18 @@ test.cb('app runs subscription without initial effect', (t) => {
   };
 
   app({
-    init: () => [true, Effect.none()],
+    init: [true, none()],
     update: (message, state) => {
       switch (message.type) {
         case 'FROM_SUB':
           t.pass();
           t.end();
-          return [state, Effect.none()];
+          return [state, none()];
 
         default:
           t.fail('Got an unexpected message');
           t.end();
-          return [state, Effect.none()];
+          return [state, none()];
       }
     },
     subscribe: () => [

@@ -38,36 +38,74 @@ Here's an app that infinitely adds a counter, and logs it.
 const ferp = require('ferp');
 
 const initialState = 0;
+const incrementMessage = 1;
 
 ferp.app({
-  init: () => [initialState, ferp.types.Effect.none()],
+  init: [initialState, incrementMessage],
   update: (message, state) => {
     return [
       state + 1,
-      ferp.types.Effect.immediate(true),
+      incrementMessage,
     ];
   },
-  subscribe: () => [],
-  middleware: [ferp.middleware.logger()],
 });
 ```
 
 ### Quick anatomy of an app
 
 Every app needs `init` and `update` functions.
-Both of these functions must return an array where the first element is the latest state, and the second is an effect you'd like to run.
-All effects should return a message that can be used to update your app.
+Both of these functions must return an array where the first element is the latest state, and the second is an effect you'd like to run, just like `[state, ferp.effects.none()]`.
 Effects are also an opportunity to run impure code in a controlled way.
 
 ## Digging in
 
+### Managing your data
+
+Ferp has been designed to not care about what your state or messages look like.
+Typically, your state should represent how you want to present your data.
+I really recommend a great Richard Feldman elm-conf talk, [Making Impossible States Impossible](https://www.youtube.com/watch?v=IcgmSRJHu_8), if you want to think about what your state should look like.
+
+Messages should contain enough information for your update to not need any external data.
+Elm and Redux have an interesting pattern of messages having a type along with any extra data update needs to create the next state, and the redux variant ends up looking like `{ type: 'MEANINGFUL_UPDATE', ...otherFieldsOrNot }`.
+One thing to keep in mind is that messages are a mechanism to describe the update you want to do, messages shouldn't actually know anything about your state or general state model.
+For instance, a message shouldn't contain a copy of state with the changes you want to perform, but it could hold values you want to use in your update function.
+
+[Effects](./src/effects) are a way to fuel the update mechanism of your app.
+Both your init tuple and every branch of your update function must return both a state and an effect.
+If your update doesn't need to run a further update, you can use `ferp.effects.none()`.
+Other options are `ferp.effects.batch(arrayOfEffects)` which lets you run multiple effects at once, `ferp.effects.defer(aPromiseThatResolvesLater)` which lets you run asynchronous code, or `ferp.effects.thunk(method)` which lets you delay starting an effect until it is processed.
+The last option is that an effect can simply be a message that your update function can use.
+With these options, effects can be combined to do complex and interesting tasks.
+
+[Subscriptions](./src/subscriptions) are a way to inject effects into the app from an external source via a dispatch method.
+A subscription's method signature will look something like this:
+
+```javascript
+const mySubscription = (optionalArgsToInitializeWith) => (dispatch) => {
+  /* run your code here */
+  return () => {
+    /*
+      Do any cleanup here
+      This might include unsubscribing from event listeners or stopping timers.
+    */
+  };
+};
+```
+
+Good examples of subscriptions are event listeners, like a websocket server or client connection, global dom events, or generally events that are outside of the control of your app.
+Subscriptions can be turned on and off over the course of the app, in a way that reacts to state changes (see the subscribe section below).
+It is possible to pass in state values into a subscription, but bear in mind this will re-initialize your subscription each change, so it is often best that your subscription has very little knowledge of your state.
+
+
 ### Initializing your app
 
-| Param    | Type     | Required |
-| -------- | -------- | -------- |
-| init     | Function | Yes      |
+| Param    | Type        | Required |
+| -------- | ----------- | -------- |
+| init     | Array/Tuple | Yes      |
 
-The `init()` function lets you establish initial state, and any initial [side-effects](https://wikipedia.org/wiki/Side_effect_(computer_science)) you want to run.
+The `init` array/tuple lets you establish initial state, and run an initial [effect](./src/effects).
+The structure of this data **must** be `[initialState, initialEffect]` where initialState is the state you want your app to start with, and initialEffect is an [effect](./src/effects) that tells the app how to proceed.
+
 
 ### Keeping up to date
 
@@ -76,12 +114,11 @@ The `init()` function lets you establish initial state, and any initial [side-ef
 | update   | Function | Yes      |
 
 The `update(message, state)` function gives you the opportunity to make changes to your state.
-All updates need to return the array `[updatedState, effect]`, where state is a new copy of state with any changes you have made, and effect is any effect you want to trigger.
-An effect is just a promise that returns a message. Here are some convenience methods to handle the case you need:
+All updates **must** return the array `[updatedState, effect]`, where:
 
- - `Effect.none()` if you do not want to trigger an effect.
- - `new Effect((done) => { done(new YourMessage) })` if you want to do some work and fire a new update.
- - `Effect.map([effect1, effect2, ...])` if you want to fire multiple effects.
+ - `updatedState` is a new copy of state with any changes you have made
+ - `effect` is any effect you want to trigger. See [effects](./src/effects) for more information on what they are and how to use them.
+
 
 ### Subscribe to third-party events
 
@@ -89,7 +126,7 @@ An effect is just a promise that returns a message. Here are some convenience me
 | ------------- | -------- | -------- |
 | subscribe     | Function | No       |
 
-The `subscribe(state)` function describes which subscriptions are active and inactive.
+The `subscribe(state)` function describes which [subscriptions](./src/subscriptions) are active and inactive.
 This function is run each update, and can and should react to the new state to turn on and off subscriptions.
 `subscribe` should return an array in the following format:
 
@@ -104,8 +141,17 @@ subscribe: (state) => {
 ```
 
 Each subscription needs at least a subscription method.
+You can use boolean operations to toggle subscriptions on and off like this:
 
-Subscription methods should look like the following:
+```javascript
+subscribe: (state) => {
+  return [
+    state.somethingMeaningful && [subscriptionMethod, param1, param2, param3, ...],
+  ]
+}
+```
+
+If you want to write your own subscription, methods should look like the following:
 
 ```javascript
 const myCoolSubscription = (param1, param2, param3) => (dispatch) => {
@@ -119,31 +165,22 @@ const myCoolSubscription = (param1, param2, param3) => (dispatch) => {
 };
 ```
 
-### Tracking changes through middleware
-
-| Param         | Type     | Required |
-| ------------- | -------- | -------- |
-| middleware    | Array    | No       |
-
-Middleware is a simple way of letting external sources react to data changes.
-A middleware should take the signature `const myMiddleware = (next) => (message, state) => next(message, state)`.
-You can use this opportunity to inspect the message that changed the state, or the new state.
-Be aware that long running middleware can greatly affect performance!
+When a subscription is deactivated, ferp will run it's cleanup callback, and when it is (re-)activated, it will run a fresh copy of your subscription.
+Subscriptions aren't re-used in ferp, so re-activating a subscription will not remember any internal state your subscription previously handled.
+If you need your subscription to remember a previous state between activations, you may want to store that data in your state, and run an effect as your subscription ends to store that latest subscription state in your app state.
 
 ## Examples
 
- - CLI Timer
-   - [Using effects](./examples/cli/timer-with-effects.js), `cd examples/cli && node ./timer-with-effects.js`.
-   - [Using subscriptions](./examples/cli/timer-with-subscription), `cd examples/cli && node ./timer-with-subscription.js`.
- - [CLI file reader](./examples/cli/file-reader-node.js), `cd examples/cli && node ./file-reader-node.js`.
- - [CLI xhr request](./examples/cli/xhr-request.js), `cd examples/cli && node ./xhr-request.js`.
- - [Node http server](./examples/http-server/server.js), `node ./examples/http-server/server.js`.
- - [Web example using superfine for vdom](./examples/with-serverfine/main.js), `cd ./examples/with-superfine && npm i && npm start`.
- - [Web example for game input with superfine and canvas](./examples/game-input/main.js), `cd ./examples/game-input && npm i && npm start`.
+ - Command-line Examples
+   - [Timer using effects](./examples/cli/timer-with-effects.js), `cd examples/cli && node ./timer-with-effects.js`.
+   - [Timer using subscriptions](./examples/cli/timer-with-subscription), `cd examples/cli && node ./timer-with-subscription.js`.
+   - [File reader](./examples/cli/file-reader-node.js), `cd examples/cli && node ./file-reader-node.js`.
+   - [Http request](./examples/cli/xhr-request.js), `cd examples/cli && node ./xhr-request.js`.
+ - [Node http server](./examples/http-server), `node ./examples/http-server/server.js`.
+ - [Web example using superfine for vdom](./examples/with-serverfine), `cd ./examples/with-superfine && npm i && npm start`.
 
 ## More docs
 
- - [Types](./src/types/README.md)
  - [Effects](./src/effects/README.md)
  - [Subscriptions](./src/subscriptions/README.md)
- - [Middleware](./src/middleware/README.md)
+ - [Utility](./src/util/README.md)

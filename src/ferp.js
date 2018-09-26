@@ -1,27 +1,41 @@
 import * as appModule from './app.js';
-import * as delay from './effects/delay.js';
-import { immutable } from './middleware/immutable.js';
-import { logger } from './middleware/logger.js';
-import * as every from './subscriptions/every.js';
-import { Effect } from './types/effect.js';
-import { Result } from './types/result.js';
+import * as core from './effects/core.js';
+import { delay } from './effects/delay.js';
+import { raf } from './effects/raf.js';
+import { every } from './subscriptions/every.js';
+// import {
+//   nothing,
+//   pending,
+//   just,
+//   error,
+//   get,
+//   getWithDefault,
+// } from './types/result.js';
+import { combineReducers } from './util/combineReducers.js';
 
 export const app = appModule.app;
 
 export const effects = {
+  none: core.none,
+  batch: core.batch,
+  defer: core.defer,
   delay,
-};
-
-export const middleware = {
-  immutable,
-  logger,
+  raf,
 };
 
 export const subscriptions = {
   every,
 };
 
-export const types = {
-  Effect,
-  Result,
+// export const result = {
+//   nothing,
+//   pending,
+//   just,
+//   error,
+//   get,
+//   getWithDefault,
+// };
+//
+export const util = {
+  combineReducers,
 };
