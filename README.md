@@ -73,7 +73,7 @@ For instance, a message shouldn't contain a copy of state with the changes you w
 [Effects](./src/effects) are a way to fuel the update mechanism of your app.
 Both your init tuple and every branch of your update function must return both a state and an effect.
 If your update doesn't need to run a further update, you can use `ferp.effects.none()`.
-Other options are `ferp.effects.batch(arrayOfEffects)` which lets you run multiple effects at once, and `ferp.effects.defer(aPromiseThatResolvesLater)` which lets you run asynchronous code.
+Other options are `ferp.effects.batch(arrayOfEffects)` which lets you run multiple effects at once, `ferp.effects.defer(aPromiseThatResolvesLater)` which lets you run asynchronous code, or `ferp.effects.thunk(method)` which lets you delay starting an effect until it is processed.
 The last option is that an effect can simply be a message that your update function can use.
 With these options, effects can be combined to do complex and interesting tasks.
 

@@ -6,7 +6,7 @@
 
  - Renames `Effect.map` to `Effect.batch`
  - Removes `ferp.types.Effect`
- - Moves effect primitives into `ferp.effects` as `none()`, `batch([])`, and `defer(promise)`
+ - Moves effect primitives into `ferp.effects` as `none()`, `batch([])`, `defer(promise)`, and **new** `thunk(method)`
  - Disables `ferp.types.Result` - It may come back, or be removed in a future release
  - Changes `ferp.effects.delay`
    - Exposed as a single function that delays for n milliseconds
@@ -21,6 +21,7 @@
  - Huge test coverage improvement
  - Many internal changes that simplify the `ferp.app` function
  - Adds `ferp.util.combineReducers` to manage nested reducers that run effects
+ - Adds `ferp.effects.thunk` effect primitive
 
 
 ## v0.1.1 - 2018-09-20 - [git](https://github.com/mrozbarry/ferp/compare/4e1dbd1e8e82c8197be87ee59c7de827a6ca4741...619723b8b35676acaa1196629c35331bcb978b0f)
