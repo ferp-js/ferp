@@ -1,5 +1,5 @@
-import { defer } from './core.js';
+import { thunk, defer } from './core.js';
 
-export const delay = (message, milliseconds) => defer(new Promise((resolve) => {
+export const delay = (message, milliseconds) => thunk(() => defer(new Promise((resolve) => {
   setTimeout(resolve, milliseconds, message);
-}));
+})));

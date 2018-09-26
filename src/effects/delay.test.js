@@ -4,6 +4,7 @@ import sinon from 'sinon';
 import * as core from './core.js';
 
 import { delay } from './delay.js';
+import { effectRunner } from '../effectRunner.js';
 
 test.beforeEach((t) => {
   t.context.sandbox = sinon.createSandbox({ // eslint-disable-line no-param-reassign
@@ -15,13 +16,17 @@ test.afterEach((t) => {
   t.context.sandbox.restore();
 });
 
-test('millisecond returns a defer effect', (t) => {
-  t.is(delay().type, core.effectTypes.defer);
+test('millisecond returns a thunk-defer effect', (t) => {
+  t.is(delay().type, core.effectTypes.thunk);
+  t.is(delay().method().type, core.effectTypes.defer);
 });
 
-test('millisecond resolves the correct message', async (t) => {
+test.cb('millisecond resolves the correct message', (t) => {
   const effect = delay('test', 1);
+  const runner = effectRunner((message) => {
+    t.deepEqual(message, 'test');
+    t.end();
+  });
+  runner(effect);
   t.context.sandbox.clock.tick(100);
-  const message = await effect.promise;
-  t.deepEqual(message, 'test');
 });

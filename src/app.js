@@ -1,5 +1,5 @@
-import { effectTypes } from './effects/core.js';
 import { subscribeHandler } from './subscribeHandler.js';
+import { effectRunner } from './effectRunner.js';
 import { freeze } from './freeze.js';
 
 export const app = ({
@@ -27,23 +27,7 @@ export const app = ({
     }
   };
 
-  const runEffects = (effect) => {
-    switch (effect && effect.type) {
-      case effectTypes.none:
-        return state;
-
-      case effectTypes.batch:
-        return effect.effects.reduce((chain, fx) => (
-          chain.then(() => runEffects(fx))
-        ), Promise.resolve());
-
-      case effectTypes.defer:
-        return effect.promise.then(fx => runEffects(fx));
-
-      default:
-        return dispatch(effect);
-    }
-  };
+  const runEffects = effectRunner(dispatch);
 
   const runUpdate = ([nextState, nextEffect]) => {
     updateState(nextState);

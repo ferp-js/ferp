@@ -5,8 +5,9 @@
  - `ferp.effects.none()` produces no extra update
  - `ferp.effects.batch()` runs through multiple effects/messages, updating per message
  - `ferp.effects.defer(promise)` waits for the passed promise to resolve before running an update
+ - `ferp.effects.thunk(method)` runs a method that returns an effect - similar to defer, but waits to begin execution until processing the effect
 
-All promises, at some point, will back onto these core effects.
+All effects, at some point, will back onto these core effects.
 
 ### delay
 

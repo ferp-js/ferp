@@ -17,3 +17,8 @@ test('defer has a promise', (t) => {
   const effect = core.defer(1);
   t.truthy(effect.promise instanceof Promise);
 });
+
+test('thunk has a method', (t) => {
+  const effect = core.thunk(() => ({}));
+  t.truthy(typeof effect.method, 'function');
+});

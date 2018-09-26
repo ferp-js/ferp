@@ -1,4 +1,4 @@
-import { defer } from './core.js';
+import { defer, thunk } from './core.js';
 
 export const getNextFrameMethod = () => (
   typeof requestAnimationFrame === 'function'
@@ -8,7 +8,7 @@ export const getNextFrameMethod = () => (
 
 const nextFrame = getNextFrameMethod();
 
-export const raf = (message, lastTimestamp) => defer(new Promise((resolve) => {
+export const raf = (message, lastTimestamp) => thunk(() => defer(new Promise((resolve) => {
   nextFrame((timestamp) => {
     const hasLastTimestamp = (
       typeof lastTimestamp !== 'undefined'
@@ -23,4 +23,4 @@ export const raf = (message, lastTimestamp) => defer(new Promise((resolve) => {
       delta,
     }));
   });
-}));
+})));
