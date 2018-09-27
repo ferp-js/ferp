@@ -21,6 +21,6 @@ ferp.app({
   }),
 
   subscribe: state => [
-    state < 5 && [every, 1000, 'INCREMENT'],
+    state < 5 && [every, 'INCREMENT', 1000],
   ],
 });

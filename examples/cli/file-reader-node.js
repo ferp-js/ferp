@@ -4,34 +4,36 @@ const path = require('path');
 
 const { updateLogger } = require('./updateLogger.js');
 
-const { result } = ferp;
 const { batch, defer, none } = ferp.effects;
 
-const readFile = (file, messageType) => batch([
-  { type: messageType, data: result.pending() },
-  defer(new Promise((done) => {
-    fs.readFile(file, { encoding: 'utf-8' }, (err, data) => {
-      if (err) {
-        done({ type: messageType, data: result.error(err) });
-      } else {
-        done({ type: messageType, data: result.just(data) });
-      }
-    });
-  })),
-]);
+const readFile = (file, errorMessage, successMessage) => defer(new Promise((done) => {
+  fs.readFile(file, { encoding: 'utf-8' }, (err, data) => {
+    if (err) {
+      done({ type: errorMessage, file, err });
+    } else {
+      done({ type: successMessage, file, data });
+    }
+  });
+}));
 
 ferp.app({
   init: [
-    {
-      data: result.nothing(),
-    },
-    readFile(path.resolve(__dirname, './hello-world.txt'), 'SET_CONTENTS'),
+    null,
+    batch([
+      readFile(path.resolve(__dirname, './hello-world.txt'), 'READ_ERR', 'READ_OK'),
+      readFile(path.resolve(__dirname, './hello-world.txt.garbage'), 'READ_ERR', 'READ_OK'),
+    ]),
   ],
 
   update: updateLogger((message, state) => {
     switch (message.type) {
-      case 'SET_CONTENTS':
-        return [{ data: message.data }, none()];
+      case 'READ_OK':
+        // Can do something with message.data
+        return [state, none()];
+
+      case 'READ_ERR':
+        // Can do something with message.err
+        return [state, none()];
 
       default:
         return [state, none()];
