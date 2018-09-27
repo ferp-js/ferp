@@ -19,6 +19,7 @@ export const effects = {
   none: core.none,
   batch: core.batch,
   defer: core.defer,
+  thunk: core.thunk,
   delay,
   raf,
 };
