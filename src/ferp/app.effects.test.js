@@ -1,6 +1,6 @@
 import test from 'ava';
 
-import * as ferp from './ferp.js';
+import * as ferp from '../ferp.js';
 
 const { none, batch, defer } = ferp.effects;
 

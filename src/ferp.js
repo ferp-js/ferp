@@ -1,17 +1,9 @@
-import * as appModule from './app.js';
-import * as core from './effects/core.js';
-import { delay } from './effects/delay.js';
-import { raf } from './effects/raf.js';
-import { every } from './subscriptions/every.js';
-// import {
-//   nothing,
-//   pending,
-//   just,
-//   error,
-//   get,
-//   getWithDefault,
-// } from './types/result.js';
-import { combineReducers } from './util/combineReducers.js';
+import * as appModule from './ferp/app.js';
+import * as core from './ferp/effects/core.js';
+import { delay } from './ferp/effects/delay.js';
+import { raf } from './ferp/effects/raf.js';
+import { every } from './ferp/subscriptions/every.js';
+import { combineReducers } from './ferp/util/combineReducers.js';
 
 export const app = appModule.app;
 
@@ -28,15 +20,6 @@ export const subscriptions = {
   every,
 };
 
-// export const result = {
-//   nothing,
-//   pending,
-//   just,
-//   error,
-//   get,
-//   getWithDefault,
-// };
-//
 export const util = {
   combineReducers,
 };

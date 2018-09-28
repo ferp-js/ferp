@@ -1,5 +1,5 @@
-const test = require('ava');
-const { freeze } = require('./freeze.js');
+import test from 'ava';
+import { freeze } from './freeze.js';
 
 test('returns a new object back', (t) => {
   const sourceObject = {};

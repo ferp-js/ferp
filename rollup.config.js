@@ -9,7 +9,7 @@ export default {
   ],
   output: {
     name: 'ferp',
-    file: 'dist/ferp.js',
+    file: 'ferp.js',
     format: 'umd',
   },
 };
