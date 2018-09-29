@@ -5,12 +5,12 @@
 
 # ferp
 
-Build functional and pure applications for NodeJS and the Browser!
+Ferp is the easiest, functional-reactive, zero dependency app framework for nodejs and modern browsers.
 
 ## But...what is it?
 
  - **Presentation Agnostic** - Tie this into your favorite front-end libraries like React or Vue. :fireworks:, or commandline tasks like an interactive prompt or sever :shipit:.
- - **Functional** - Makes it easy to test :heavy_check_mark:, control side effects :imp:, and keep things immutable. :zap:
+ - **Functional+Reactive** - Makes it easy to test :heavy_check_mark:, control side effects :imp:, and keep things immutable. :zap:
  - **Simple** - Everything is standard javascript, there is no misdirection or magic. If you know javascript, you will know how to use ferp. :smile:
 
 ## What it isn't
@@ -20,9 +20,9 @@ Build functional and pure applications for NodeJS and the Browser!
 
 ## Where did this come from
 
-Like any great idea, it's based on other (much smarter) people's work, namely
-[elm](https://elm-lang.org/), my first frp-love, and
-[hyperapp](https://github.com/hyperapp/hyperapp), a great functional alternative to react.
+Like any great idea, it's based on other (much smarter) people's work, namely:
+ - [Evan Czaplicki](https://github.com/evancz)'s [Elm](https://elm-lang.org/), the language that made me see the power of the ~dark side~ functional reactive programming.
+ - [Jorge Bucaran](https://github.com/jorgebucaran)'s [hyperapp](https://github.com/hyperapp/hyperapp), a tiny but powerful functional front-end framework.
 
 ## Installing
 
@@ -43,10 +43,13 @@ const incrementMessage = 1;
 ferp.app({
   init: [initialState, incrementMessage],
   update: (message, state) => {
-    return [
-      state + 1,
-      incrementMessage,
-    ];
+    if (message === incrementMessage) {
+      return [
+        state + 1,
+        incrementMessage,
+      ];
+    }
+    return [state, ferp.effects.none()];
   },
 });
 ```
@@ -96,6 +99,56 @@ Good examples of subscriptions are event listeners, like a websocket server or c
 Subscriptions can be turned on and off over the course of the app, in a way that reacts to state changes (see the subscribe section below).
 It is possible to pass in state values into a subscription, but bear in mind this will re-initialize your subscription each change, so it is often best that your subscription has very little knowledge of your state.
 
+### How to make it go
+
+As mentioned above, messages are how you update your app, and messages are a type of effect.
+To start processing events, you will want to add an effect to your init tuple.
+A message can be as simple as a string or number, or as complicated as a deeply nested object, but we urge you to keep things simple.
+If I had a numeric state (ie `1`), and wanted to add math operation messages, they may look like this:
+
+```javascript
+const multiply = amount => ({ type: 'MULTIPLY', amount });
+const addition = amount => ({ type: 'ADDITION', amount });
+```
+
+And to use them, my init might look like:
+
+```javascript
+const init = [
+  1, // Our state value
+  ferp.effects.batch([ // tell ferp to do multiple effects serially
+    multiply(2), // First multiply our state by 2
+    addition(-1), // Second subtract 1
+  ])
+];
+```
+
+But passing messages isn't enough.
+You'll also need some handlers in the `update` method to actualy perform what you want.
+
+```javascript
+const update = (message, previousState) => {
+  switch (message.type) { // Switches are good here, because we'll be checking multiple cases for message.type
+    case 'MULTIPLY':
+      return [
+        previousState * message.amount,
+        ferp.effects.none(), // We don't need to do any more work, so declare that there are no more effects
+      ];
+
+    case 'ADDITION':
+      return [
+        previousState + message.amount,
+        ferp.effects.none(),
+      ];
+
+    default: // You should always have a no-op/default case, which will always keep your state, even if you aren't handling a certain message yet.
+      return [
+        previousState,
+        ferp.effects.none(),
+      ];
+  }
+};
+```
 
 ### Initializing your app
 

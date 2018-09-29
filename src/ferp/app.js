@@ -1,5 +1,7 @@
-import { subscribeHandler } from './subscribeHandler.js';
-import { effectRunner } from './effectRunner.js';
+import { subscriptionManager } from './subscriptionManager.js';
+import { stateManager } from './stateManager.js';
+import { effectManager } from './effectManager.js';
+import { messageManager } from './messageManager.js';
 import { freeze } from './freeze.js';
 
 export const app = ({
@@ -7,37 +9,37 @@ export const app = ({
   update,
   subscribe,
 }) => {
-  let state = null;
+  const state = stateManager();
+  const messages = messageManager();
   let subscriptions = [];
 
-  let dispatch = message => new Promise((resolve) => {
-    setTimeout(() => {
-      resolve(runUpdate(update(message, state))); // eslint-disable-line no-use-before-define
-    }, 0);
-  });
+  messages.onDispatch(message => (
+    runUpdate(update(message, state.get())) // eslint-disable-line no-use-before-define
+  ));
 
-  const updateState = (newState) => {
-    state = newState;
-    if (typeof subscribe === 'function') {
-      subscriptions = subscribeHandler(
-        subscriptions,
-        subscribe(freeze(newState)),
-        dispatch,
-      );
-    }
+  const updateSubscriptions = (nextState) => {
+    subscriptions = subscriptionManager(
+      subscriptions,
+      subscribe(freeze(nextState)),
+      messages.dispatch,
+    );
   };
 
-  const runEffects = effectRunner(dispatch);
+  if (typeof subscribe === 'function') {
+    state.onChange(updateSubscriptions);
+  }
+
+  const manageEffects = effectManager(messages.dispatch);
 
   const runUpdate = ([nextState, nextEffect]) => {
-    updateState(nextState);
-    return runEffects(nextEffect);
+    state.set(nextState);
+    return manageEffects(nextEffect);
   };
 
   runUpdate(init);
 
   return () => {
-    dispatch = () => Promise.resolve();
+    messages.onDispatch(null);
     subscriptions.forEach(sub => sub.detach());
   };
 };

@@ -23,7 +23,7 @@ const toSubscription = (args, dispatch) => ({
   raw: args,
 });
 
-export const subscribeHandler = (prevSubs, subscriptions, dispatch) => {
+export const subscriptionManager = (prevSubs, subscriptions, dispatch) => {
   const nextSubs = subscriptions.filter(Array.isArray);
 
   const discontinuedSubs = prevSubs.filter(prevSub => (

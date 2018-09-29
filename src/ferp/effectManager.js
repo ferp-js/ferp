@@ -1,26 +1,26 @@
 import { effectTypes } from './effects/core.js';
 
-export const effectRunner = (dispatch) => {
-  const runner = (effect) => {
+export const effectManager = (dispatch) => {
+  const manager = (effect) => {
     switch (effect && effect.type) {
       case effectTypes.none:
         return Promise.resolve();
 
       case effectTypes.batch:
         return effect.effects.reduce((chain, fx) => (
-          chain.then(() => runner(fx))
+          chain.then(() => manager(fx))
         ), Promise.resolve());
 
       case effectTypes.defer:
-        return effect.promise.then(fx => runner(fx));
+        return effect.promise.then(fx => manager(fx));
 
       case effectTypes.thunk:
-        return runner(effect.method());
+        return manager(effect.method());
 
       default:
-        return dispatch(effect);
+        return Promise.resolve(dispatch(effect));
     }
   };
 
-  return runner;
+  return manager;
 };
