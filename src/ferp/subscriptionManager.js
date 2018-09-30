@@ -1,3 +1,5 @@
+import { freeze } from './freeze.js';
+
 export const compareValue = (a, b) => {
   if (typeof a !== typeof b) return false;
   if (typeof a !== 'object') return a === b;
@@ -23,7 +25,7 @@ const toSubscription = (args, dispatch) => ({
   raw: args,
 });
 
-export const subscriptionManager = (prevSubs, subscriptions, dispatch) => {
+export const subscriptionUpdate = (prevSubs, subscriptions, dispatch) => {
   const nextSubs = subscriptions.filter(Array.isArray);
 
   const discontinuedSubs = prevSubs.filter(prevSub => (
@@ -42,4 +44,27 @@ export const subscriptionManager = (prevSubs, subscriptions, dispatch) => {
 
   const addedSubs = newSubs.map(sub => toSubscription(sub, dispatch));
   return continuedSubs.concat(addedSubs);
+};
+
+export const subscriptionManager = (dispatch, subscribe) => {
+  if (typeof subscribe !== 'function') return { next: () => {}, detach: () => {} };
+
+  let subscriptions = [];
+
+  const next = (state) => {
+    subscriptions = subscriptionUpdate(
+      subscriptions,
+      subscribe(freeze(state)),
+      dispatch,
+    );
+  };
+
+  const detach = () => {
+    subscriptions.forEach(subscription => subscription.detach());
+  };
+
+  return {
+    next,
+    detach,
+  };
 };
