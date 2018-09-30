@@ -1,13 +1,29 @@
 {
-  "name": "cli-examples",
-  "version": "0.0.1",
-  "description": "Ferp cli examples",
+  "name": "ferp-cli-examples",
+  "version": "1.0.0",
+  "main": "updateLogger.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "nyc ava"
   },
-  "author": "Alex Barry",
+  "author": "",
   "license": "MIT",
+  "devDependencies": {
+    "ava": "^0.25.0",
+    "nyc": "^13.0.1",
+    "sinon": "^6.3.4"
+  },
+  "ava": {
+    "files": [
+      "./**/*.test.js"
+    ],
+    "sources": [
+      "./**/*.js"
+    ],
+    "cache": false,
+    "failFast": true,
+    "verbose": true
+  },
   "dependencies": {
-    "ferp": "^1.0.0-beta.2"
+    "node-fetch": "^2.2.0"
   }
 }
