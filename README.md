@@ -5,7 +5,7 @@
 
 # ferp
 
-Ferp is the easiest, functional-reactive, zero dependency app framework for nodejs and modern browsers.
+Ferp is the easiest, functional-reactive, zero dependency javascript app framework for nodejs and modern browsers.
 
 ## But...what is it?
 
