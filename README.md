@@ -171,4 +171,5 @@ const update = (message, previousState) => {
 
  - [Open an issue](https://github.com/mrozbarry/ferp/issues/new), we're happy to answer any of your questions, or investigate how to fix a bug.
  - [Join us on reddit](https://www.reddit.com/r/ferp), show off what you're doing, post tutorials, or just hang out, but keep things ferp related please.
+ - [Chat with us on gitter](https://gitter.im/mrozbarry/ferp), we'll try to be quick to respond.
  - [Catch me on a live-stream](https://twitch.tv/mrozbarry), I usually stream every Saturday around 17:00 EST, stop by and ask your questions live.
