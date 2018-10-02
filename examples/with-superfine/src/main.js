@@ -1,7 +1,7 @@
 const ferp = require('ferp');
 const { h, patch } = require('superfine');
 
-const { superfineEffect } = require('./superfineEffect');
+const { superfineEffect } = require('./superfineEffect.js');
 
 const { none } = ferp.effects;
 
@@ -32,7 +32,7 @@ const render = (state, dispatch) => (
 
 const initialState = { value: 0, node: null };
 
-ferp.app({
+const main = () => ferp.app({
   init: [
     initialState,
     superfineEffect(render, initialState, { type: 'UPDATE_NODE' }),
@@ -60,3 +60,7 @@ ferp.app({
     }
   },
 });
+
+module.exports = {
+  main,
+};

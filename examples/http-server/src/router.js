@@ -1,21 +1,21 @@
 const ferp = require('ferp');
 const url = require('url');
 
-const { batch, defer, none } = ferp.effects;
+const { batch, none } = ferp.effects;
 
 const requestToMatcher = (request, parsed) => (
   `${request.method.toUpperCase()} ${parsed.pathname}`
 );
 
-const logEffect = (date, request, parsed, matcher) => defer(new Promise((done) => {
+const logEffect = (date, request, parsed, matcher) => {
   const log = {
     date: date.toISOString(),
     address: request.socket.address().address,
     matcher,
     parsed,
   };
-  done({ type: 'LOG', log });
-}));
+  return { type: 'LOG', log };
+};
 
 const router = routes => (message, state) => {
   switch (message.type) {
@@ -30,7 +30,7 @@ const router = routes => (message, state) => {
             nextState,
             batch([
               effect,
-              logEffect(new Date(), message.request, parsed, matcher),
+              logEffect(new Date(), message.request, matcher),
             ]),
           ];
         }

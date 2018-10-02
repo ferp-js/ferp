@@ -10,18 +10,16 @@ const serverSubscription = (port, messageType) => (dispatch) => {
   });
 
   server.listen(port, () => {
-    console.log('+-----------------------------------');
-    console.log('|');
-    console.log(`| Server started on port ${port}`);
-    console.log(`|  * http://localhost:${port}/`);
-    console.log(`|  * http://localhost:${port}/logs`);
-    console.log('|');
-    console.log('+-----------------------------------');
+    console.log('+-----------------------------------'); // eslint-disable-line no-console
+    console.log('|'); // eslint-disable-line no-console
+    console.log(`| Server started on http://localhost:${port}/`); // eslint-disable-line no-console
+    console.log('|'); // eslint-disable-line no-console
+    console.log('+-----------------------------------'); // eslint-disable-line no-console
   });
 
   return () => {
     server.close();
-  }
+  };
 };
 
 module.exports = {

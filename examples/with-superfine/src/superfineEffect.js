@@ -1,4 +1,4 @@
-const { batch, defer } = require('ferp').effects;
+const { effects } = require('ferp');
 
 const superfineEffect = (render, state, message) => {
   let dispatch = () => {};
@@ -8,9 +8,9 @@ const superfineEffect = (render, state, message) => {
 
   const node = render(state, dispatch);
 
-  return batch([
+  return effects.batch([
     Object.assign({ node }, message),
-    defer(eventPromise),
+    effects.defer(eventPromise),
   ]);
 };
 
