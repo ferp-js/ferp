@@ -20,6 +20,21 @@ const fixtures = {
       ]),
     ],
   },
+  arrayWithArrayState: {
+    before: [
+      [[1, 2], { type: 'EFFECT 1' }],
+      [[3, 4], { type: 'EFFECT 2' }],
+      [[5, 6], { type: 'EFFECT 3' }],
+    ],
+    expected: [
+      [[1, 2], [3, 4], [5, 6]],
+      batch([
+        { type: 'EFFECT 1' },
+        { type: 'EFFECT 2' },
+        { type: 'EFFECT 3' },
+      ]),
+    ],
+  },
   object: {
     before: {
       a: [1, { type: 'EFFECT 1' }],
@@ -39,6 +54,13 @@ const fixtures = {
 
 test('combineReducersFromArray returns a single tuple of state and effects', (t) => {
   t.deepEqual(combineReducersFromArray(fixtures.array.before), fixtures.array.expected);
+});
+
+test('combineReducersFromArray can maintain a state that is array-based', (t) => {
+  t.deepEqual(
+    combineReducersFromArray(fixtures.arrayWithArrayState.before),
+    fixtures.arrayWithArrayState.expected,
+  );
 });
 
 test('combineReducersFromObject returns a single tuple of state and effects', (t) => {

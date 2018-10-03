@@ -1,10 +1,14 @@
 import { batch } from '../effects/core.js';
 
 export const combineReducersFromArray = (result) => {
-  const { state, effects } = result.reduce((combined, item) => ({
-    state: combined.state.concat(item[0]),
-    effects: combined.effects.concat(item[1]),
-  }), { state: [], effects: [] });
+  const { state, effects } = result.reduce((combined, item) => {
+    const nextState = [...combined.state];
+    nextState.push(item[0]);
+    return {
+      state: nextState,
+      effects: combined.effects.concat(item[1]),
+    };
+  }, { state: [], effects: [] });
 
   return [state, batch(effects)];
 };
