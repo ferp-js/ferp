@@ -23,18 +23,19 @@ const router = routes => (message, state) => {
       return (() => {
         const parsed = url.parse(message.request.url);
         const matcher = requestToMatcher(message.request, parsed);
+
         const handler = routes[matcher] || routes['GET /not-found'];
-        if (handler) {
-          const [nextState, effect] = handler(message, state, parsed);
-          return [
-            nextState,
-            batch([
-              effect,
-              logEffect(new Date(), message.request, matcher),
-            ]),
-          ];
-        }
-        return [state, none()];
+        if (!handler) return [state, none()];
+
+        const [nextState, effect] = handler(message, state, parsed);
+
+        return [
+          nextState,
+          batch([
+            effect,
+            logEffect(new Date(), message.request, matcher),
+          ]),
+        ];
       })();
 
     case 'LOG':
@@ -49,5 +50,7 @@ const router = routes => (message, state) => {
 };
 
 module.exports = {
+  requestToMatcher,
+  logEffect,
   router,
 };

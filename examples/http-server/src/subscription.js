@@ -1,7 +1,5 @@
-const http = require('http');
-
-const serverSubscription = (port, messageType) => (dispatch) => {
-  const server = http.createServer((request, response) => {
+const serverSubscription = (createServer, port, messageType) => (dispatch) => {
+  const server = createServer((request, response) => {
     dispatch({ type: messageType, request, response });
   });
 

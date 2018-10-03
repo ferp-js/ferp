@@ -22,6 +22,7 @@
     ],
     "sources": [
       "src/**/*.js"
-    ]
+    ],
+    "verbose": true
   }
 }

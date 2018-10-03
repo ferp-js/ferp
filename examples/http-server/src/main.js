@@ -1,4 +1,6 @@
+const http = require('http');
 const ferp = require('ferp');
+
 const { router } = require('./router.js');
 const { serverSubscription } = require('./subscription.js');
 
@@ -21,10 +23,11 @@ const main = () => ferp.app({
   }),
 
   subscribe: () => [
-    [serverSubscription, 8080, 'ROUTE'],
+    [serverSubscription, http.createServer, 8080, 'ROUTE'],
   ],
 });
 
 module.exports = {
+  responseEffect,
   main,
 };
