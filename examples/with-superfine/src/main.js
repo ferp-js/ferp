@@ -32,35 +32,38 @@ const render = (state, dispatch) => (
 
 const initialState = { value: 0, node: null };
 
+const update = (message, state) => {
+  switch (message.type) {
+    case 'SET':
+      return (() => {
+        const nextState = { node: state.node, value: message.value };
+        return [
+          nextState,
+          superfineEffect(render, nextState, { type: 'UPDATE_NODE' }),
+        ];
+      })();
+
+    case 'UPDATE_NODE':
+      return [
+        { node: message.node, value: state.value },
+        none(),
+      ];
+
+    default:
+      return [state, none()];
+  }
+};
+
 const main = () => ferp.app({
   init: [
     initialState,
     superfineEffect(render, initialState, { type: 'UPDATE_NODE' }),
   ],
 
-  update: (message, state) => {
-    switch (message.type) {
-      case 'SET':
-        return (() => {
-          const nextState = { node: state.node, value: message.value };
-          return [
-            nextState,
-            superfineEffect(render, nextState, { type: 'UPDATE_NODE' }),
-          ];
-        })();
-
-      case 'UPDATE_NODE':
-        return [
-          { node: message.node, value: state.value },
-          none(),
-        ];
-
-      default:
-        return [state, none()];
-    }
-  },
+  update,
 });
 
 module.exports = {
+  update,
   main,
 };

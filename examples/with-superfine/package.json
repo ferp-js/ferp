@@ -10,12 +10,23 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "superfine": "^6.0.1",
-    "ferp": "^1.0.0"
+    "ferp": "^1.0.0",
+    "superfine": "^6.0.1"
   },
   "devDependencies": {
     "ava": "^0.25.0",
+    "browser-env": "^3.2.5",
     "nyc": "^13.0.1",
-    "parcel-bundler": "^1.9.7"
+    "parcel-bundler": "^1.9.7",
+    "sinon": "^6.3.4"
+  },
+  "ava": {
+    "files": [
+      "src/**/*.test.js"
+    ],
+    "sources": [
+      "src/**/*.js"
+    ],
+    "verbose": true
   }
 }
