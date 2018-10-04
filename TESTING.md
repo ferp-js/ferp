@@ -56,17 +56,3 @@ module.exports = {
 ```
 
 With `update` isolated, and `runApp` prevents our app from executing in the background of our tests.
-
-## Keep your updates simple
-
-TODO:
-
- - Isolated units of work are easier to reason about and test
-
-## Testing update results
-
-TODO:
-
- - Updates are [state, effect]
- - Gotchas testing effects
-  - It's better to test effect generator functions than update effects

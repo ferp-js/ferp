@@ -30,6 +30,19 @@ Like any great idea, it's based on other (much smarter) people's work, namely:
 npm install --save ferp
 ```
 
+Or grab it from unpkg
+
+```
+<script src="https://unpkg.com/ferp"></script>
+<script>
+  const { ferp } = window;
+</script>
+```
+
+## Migrating from 0.x to 1.x
+
+See this handy [migration guide](./MIGRATION.md)!
+
 ## Creating an app
 
 Here's an app that infinitely adds a counter, and logs it.
@@ -73,14 +86,14 @@ Elm and Redux have an interesting pattern of messages having a type along with a
 One thing to keep in mind is that messages are a mechanism to describe the update you want to do, messages shouldn't actually know anything about your state or general state model.
 For instance, a message shouldn't contain a copy of state with the changes you want to perform, but it could hold values you want to use in your update function.
 
-[Effects](./src/effects) are a way to fuel the update mechanism of your app.
+[Effects](./src/ferp/effects) are a way to fuel the update mechanism of your app.
 Both your init tuple and every branch of your update function must return both a state and an effect.
 If your update doesn't need to run a further update, you can use `ferp.effects.none()`.
 Other options are `ferp.effects.batch(arrayOfEffects)` which lets you run multiple effects at once, `ferp.effects.defer(aPromiseThatResolvesLater)` which lets you run asynchronous code, or `ferp.effects.thunk(method)` which lets you delay starting an effect until it is processed.
 The last option is that an effect can simply be a message that your update function can use.
 With these options, effects can be combined to do complex and interesting tasks.
 
-[Subscriptions](./src/subscriptions) are a way to inject effects into the app from an external source via a dispatch method.
+[Subscriptions](./src/ferp/subscriptions) are a way to inject effects into the app from an external source via a dispatch method.
 A subscription's method signature will look something like this:
 
 ```javascript
@@ -162,14 +175,14 @@ const update = (message, previousState) => {
 
 ## More docs
 
+ - [Testing Guide](./TESTING.md)
  - [Internals](./INTERNALS.md)
- - [Effects](./src/effects/README.md)
- - [Subscriptions](./src/subscriptions/README.md)
- - [Utility](./src/util/README.md)
+ - [Effects](./src/ferp/effects/README.md)
+ - [Subscriptions](./src/ferp/subscriptions/README.md)
+ - [Utility](./src/ferp/util/README.md)
 
 ## Still have questions?
 
  - [Open an issue](https://github.com/mrozbarry/ferp/issues/new), we're happy to answer any of your questions, or investigate how to fix a bug.
  - [Join us on reddit](https://www.reddit.com/r/ferp), show off what you're doing, post tutorials, or just hang out, but keep things ferp related please.
  - [Chat with us on gitter](https://gitter.im/mrozbarry/ferp), we'll try to be quick to respond.
- - [Catch me on a live-stream](https://twitch.tv/mrozbarry), I usually stream every Saturday around 17:00 EST, stop by and ask your questions live.
