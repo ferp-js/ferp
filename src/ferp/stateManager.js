@@ -6,7 +6,7 @@ export const stateManager = () => {
 
   const set = (nextState) => {
     state = nextState;
-    if (typeof callback === 'function') {
+    if (callback) {
       callback(freeze(state));
     }
     return state;

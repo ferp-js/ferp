@@ -1,25 +1,19 @@
 import { effectTypes } from './effects/core.js';
 
+const effectHandler = {
+  [effectTypes.none]: () => Promise.resolve(),
+  [effectTypes.batch]: (effect, manager) => effect.effects.reduce((chain, fx) => (
+    chain.then(() => manager(fx))
+  ), Promise.resolve()),
+  [effectTypes.defer]: (effect, manager) => effect.promise.then(manager),
+  [effectTypes.thunk]: (effect, manager) => manager(effect.method()),
+};
+
 export const effectManager = (dispatch) => {
   const manager = (effect) => {
-    switch (effect && effect.type) {
-      case effectTypes.none:
-        return Promise.resolve();
-
-      case effectTypes.batch:
-        return effect.effects.reduce((chain, fx) => (
-          chain.then(() => manager(fx))
-        ), Promise.resolve());
-
-      case effectTypes.defer:
-        return effect.promise.then(fx => manager(fx));
-
-      case effectTypes.thunk:
-        return manager(effect.method());
-
-      default:
-        return Promise.resolve(dispatch(effect));
-    }
+    const handler = effectHandler[effect && effect.type];
+    if (handler) return handler(effect, manager);
+    return Promise.resolve(dispatch(effect));
   };
 
   return manager;
