@@ -1,7 +1,8 @@
 [![npm version](https://badge.fury.io/js/ferp.svg)](https://badge.fury.io/js/ferp)
 [![Build Status](https://travis-ci.org/mrozbarry/ferp.svg?branch=master)](https://travis-ci.org/mrozbarry/ferp)
 ![Dependencies](https://david-dm.org/mrozbarry/ferp.svg)
-[![Known Vulnerabilities](https://snyk.io/test/github/mrozbarry/ferp/badge.svg)](https://snyk.io/test/github/mrozbarry/ferp)
+[![Known Vulnerabilities](https://snyk.io/test/github/mrozbarry/ferp/badge.svg)](https://snyk.io/test/github/mrozbarry/ferp) 
+[![Join the chat at https://gitter.im/mrozbarry/ferp](https://badges.gitter.im/mrozbarry/ferp.svg)](https://gitter.im/mrozbarry/ferp?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 # ferp
 
