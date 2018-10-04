@@ -1,6 +1,8 @@
+.DS_Store
 node_modules
 .cache
-dist
 .nyc_output
+dist
 coverage
 examples/**/package-lock.json
+ferp.js

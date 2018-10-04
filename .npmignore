@@ -1,0 +1,10 @@
+.nyc_output
+.cache
+coverage
+examples
+src/**/*.test.js
+.babelrc
+.eslint*
+.nvmrc
+.travis.yml
+rollup.config.js

@@ -2,7 +2,8 @@
 
 ## Summary
 
-This demonstrates how to integrate a ferp app with a front-end framework like [superfine](https://github.com/jorgebucaran/superfine).
+Demonstrates the idea of UI as a side effect.
+Implements a superfine side effect that can dispatch messages back into the app.
 
 ## Running locally
 
