@@ -1,6 +1,12 @@
 # Ferp Changelog
 
-## Unreleased - 2018-09-XX - [git](#https://github.com/mrozbarry/ferp/compare/619723b8b35676acaa1196629c35331bcb978b0f...todo)
+## v1.0.1 - 2018-10-22 - [git](https://github.com/mrozbarry/ferp/compare/1b48ab55f4d6e0a3a46a3576e03ce48ebde7f547...HEAD)
+
+### Bug fixes
+
+ - Fixes issue where the call stack would overflow when comparing big/self-referrential objects in subscription arguments.
+
+## v1.0.0 - 2018-10-04 - [git](https://github.com/mrozbarry/ferp/compare/619723b8b35676acaa1196629c35331bcb978b0f...1b48ab55f4d6e0a3a46a3576e03ce48ebde7f547)
 
 ### Breaking changes
 
