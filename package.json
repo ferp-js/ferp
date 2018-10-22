@@ -3,7 +3,7 @@
   "module": "src/ferp.js",
   "main": "ferp.js",
   "description": "Build functional and pure applications in NodeJS and the Browser!",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/mrozbarry/ferp.git"
