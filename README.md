@@ -1,7 +1,7 @@
 [![npm version](https://badge.fury.io/js/ferp.svg)](https://badge.fury.io/js/ferp)
-[![Build Status](https://travis-ci.org/mrozbarry/ferp.svg?branch=master)](https://travis-ci.org/mrozbarry/ferp)
-![Dependencies](https://david-dm.org/mrozbarry/ferp.svg)
-[![Known Vulnerabilities](https://snyk.io/test/github/mrozbarry/ferp/badge.svg)](https://snyk.io/test/github/mrozbarry/ferp) 
+[![Build Status](https://travis-ci.org/mrozbarry/ferp.svg?branch=master)](https://travis-ci.org/ferp-js/ferp)
+![Dependencies](https://david-dm.org/ferp-js/ferp.svg)
+[![Known Vulnerabilities](https://snyk.io/test/github/ferp-js/ferp/badge.svg)](https://snyk.io/test/github/ferp-js/ferp) 
 [![Join the chat at https://gitter.im/mrozbarry/ferp](https://badges.gitter.im/mrozbarry/ferp.svg)](https://gitter.im/mrozbarry/ferp?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 # ferp
@@ -184,6 +184,6 @@ const update = (message, previousState) => {
 
 ## Still have questions?
 
- - [Open an issue](https://github.com/mrozbarry/ferp/issues/new), we're happy to answer any of your questions, or investigate how to fix a bug.
+ - [Open an issue](https://github.com/ferp-js/ferp/issues/new), we're happy to answer any of your questions, or investigate how to fix a bug.
  - [Join us on reddit](https://www.reddit.com/r/ferp), show off what you're doing, post tutorials, or just hang out, but keep things ferp related please.
  - [Chat with us on gitter](https://gitter.im/mrozbarry/ferp), we'll try to be quick to respond.
