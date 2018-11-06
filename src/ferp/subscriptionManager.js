@@ -1,61 +1,67 @@
 import { freeze } from './freeze.js';
+import { compareArrays } from './util/compareArrays.js';
+import {
+  memoizeStore,
+  memoize,
+  getMemoized,
+} from './util/memoize.js';
 
-export const compareValue = (a, b) => a === b;
 
-export const subscriptionComparator = args => (subArgs) => {
-  if (args.length !== subArgs.length) {
-    return false;
-  }
-  return args.every((value, position) => compareValue(value, subArgs[position]));
-};
-
-const initSub = (args, dispatch) => {
-  const [method, ...trailing] = args;
-  return method(...trailing)(dispatch);
-};
-
-const toSubscription = (args, dispatch) => ({
-  isSub: subscriptionComparator(args),
-  detach: initSub(args, dispatch),
-  raw: args,
-});
-
-export const subscriptionUpdate = (prevSubs, subscriptions, dispatch) => {
+export const subscriptionUpdate = (previousStore, subscriptions, dispatch) => {
   const nextSubs = subscriptions.filter(Array.isArray);
 
+  const prevSubs = Array.from(previousStore.keys());
+
   const discontinuedSubs = prevSubs.filter(prevSub => (
-    nextSubs.every(sub => !prevSub.isSub(sub))
+    !nextSubs.some(sub => compareArrays(prevSub, sub))
   ));
 
   const continuedSubs = prevSubs.filter(prevSub => (
-    nextSubs.some(newSub => prevSub.isSub(newSub))
+    nextSubs.some(newSub => compareArrays(prevSub, newSub))
   ));
 
   const newSubs = nextSubs.filter(newSub => (
-    continuedSubs.every(sub => !sub.isSub(newSub))
+    continuedSubs.every(sub => (
+      !compareArrays(sub, newSub)
+    ))
   ));
 
-  discontinuedSubs.forEach(oldSub => oldSub.detach());
+  discontinuedSubs.forEach((sub) => {
+    const oldSub = getMemoized(sub, previousStore);
+    oldSub.result();
+  });
 
-  const addedSubs = newSubs.map(sub => toSubscription(sub, dispatch));
-  return continuedSubs.concat(addedSubs);
+  let nextStore = memoizeStore();
+  continuedSubs.forEach((sub) => {
+    const oldSub = getMemoized(sub, previousStore);
+    nextStore = memoize(sub, oldSub.result, nextStore);
+  });
+
+  newSubs.forEach((newSub) => {
+    const [method, ...args] = newSub;
+    const detach = method(...args)(dispatch);
+    nextStore = memoize(newSub, detach, nextStore);
+  });
+
+  return nextStore;
 };
 
 export const subscriptionManager = (dispatch, subscribe) => {
   if (typeof subscribe !== 'function') return { next: () => {}, detach: () => {} };
 
-  let subscriptions = [];
+  let store = memoizeStore();
 
   const next = (state) => {
-    subscriptions = subscriptionUpdate(
-      subscriptions,
+    store = subscriptionUpdate(
+      store,
       subscribe(freeze(state)),
       dispatch,
     );
   };
 
   const detach = () => {
-    subscriptions.forEach(subscription => subscription.detach());
+    const callbacks = Array.from(store.values());
+    callbacks.forEach(callback => callback());
   };
 
   return {
