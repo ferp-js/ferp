@@ -7,16 +7,16 @@ const getDetachFromSignatureAndDispatch = (signature, dispatch) => {
   return method(...args)(dispatch);
 };
 
-const uniqueEntries = (previousEntries, allEntries) => {
-  return allEntries.reduce((entries, entry) => {
+const uniqueEntries = (previousEntries, allEntries) => (
+  allEntries.reduce((entries, entry) => {
     const exists = entries.some(([signature]) => compareArrays(signature, entry[0]));
     if (exists) {
       return entries;
     }
 
     return [...entries, entry];
-  }, previousEntries);
-};
+  }, previousEntries)
+);
 
 export const subscriptionUpdate = (previousStore, subscriptions, dispatch) => {
   const nextSubs = subscriptions.filter(Array.isArray);
