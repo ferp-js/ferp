@@ -1,5 +1,13 @@
 const MAX_OBJECT_DEPTH = 2;
 
+const isPlainOldJavascriptObject = (object) => {
+  const isNull = object === null;
+  const isObjectType = typeof object === 'object';
+  return (isNull || !isObjectType)
+    ? false
+    : Object.getPrototypeOf(object) === Object.prototype;
+};
+
 const shallowCompareObjects = (obj1, obj2, depth) => {
   if (depth > MAX_OBJECT_DEPTH) {
     throw new Error('Ferp does not support object comparison deeper than 2. Consider storing the object for a fast object reference comparison instead.');
@@ -9,12 +17,12 @@ const shallowCompareObjects = (obj1, obj2, depth) => {
     return true;
   }
 
-  const keys1 = Object.keys(obj1);
-  const keys2 = Object.keys(obj2);
-
-  if (keys1.length === 0) {
+  if (!isPlainOldJavascriptObject(obj1) || !isPlainOldJavascriptObject(obj2)) {
     return obj1 === obj2;
   }
+
+  const keys1 = Object.keys(obj1);
+  const keys2 = Object.keys(obj2);
 
   if (keys1.length !== keys2.length) {
     return false;
