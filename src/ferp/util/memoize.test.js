@@ -54,11 +54,3 @@ test('getMemoized can return a not found result', (t) => {
   t.deepEqual(getMemoized([1, 'foo', { baz: 'wow', other: 'hmm' }], store), expected);
   t.deepEqual(getMemoized([1, true, { baz: 'wow', other: 'hmm' }], store), expected);
 });
-
-test('getMemoized can throw when comparing non-equal deep objects in array', (t) => {
-  const originalKey = [{ foo: { bar: { baz: 'test' } } }];
-  const store = memoize(originalKey, 'value', memoizeStore());
-
-  t.throws(() => getMemoized([{ foo: { bar: { baz: 'test' } } }], store));
-  t.notThrows(() => getMemoized(originalKey, store));
-});
