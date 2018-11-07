@@ -7,8 +7,8 @@ const pureWithMemoizedStore = (method, initialStore) => {
 
   const wrapped = (...args) => {
     const memoized = memoizeGet(args, store);
-    if (memoized.found) {
-      return memoized.result;
+    if (memoized) {
+      return memoized[1];
     }
     const result = method(...args);
     store = memoize(args, result, store);

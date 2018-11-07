@@ -11,6 +11,11 @@ test('memoizeStore can accept an initializer', (t) => {
   t.is(memoizeSize(store), 1);
 });
 
+test('memoizeStore filters out undefined values', (t) => {
+  const store = memoizeStore([[[1, 2, 3], undefined]]);
+  t.is(memoizeSize(store), 0);
+});
+
 test('memoizeSize reflects the current size', (t) => {
   const initialStore = memoizeStore();
   t.is(memoizeSize(initialStore), 0);
@@ -47,21 +52,31 @@ test('memoizeGet can find the correct array key', (t) => {
   const originalKey = [1, 'foo', { baz: 'test' }];
   const store = memoize(originalKey, 'value', memoizeStore());
 
-  const expected = { found: true, key: originalKey, result: 'value' };
+  const expected = [originalKey, 'value'];
 
   t.deepEqual(memoizeGet(originalKey, store), expected);
   t.deepEqual(memoizeGet([1, 'foo', { baz: 'test' }], store), expected);
 });
 
-test('memoizeGet can return a not found result', (t) => {
+test('memoizeGet returns undefined when the key is not found', (t) => {
   const originalKey = [1, 'foo', { baz: 'test' }];
   const store = memoize(originalKey, 'value', memoizeStore());
 
-  const expected = { found: false, key: undefined, result: undefined };
+  const expected = undefined;
 
   t.deepEqual(memoizeGet([], store), expected);
   t.deepEqual(memoizeGet(['test'], store), expected);
   t.deepEqual(memoizeGet([1, 'foo', { baz: 'wow' }], store), expected);
   t.deepEqual(memoizeGet([1, 'foo', { baz: 'wow', other: 'hmm' }], store), expected);
   t.deepEqual(memoizeGet([1, true, { baz: 'wow', other: 'hmm' }], store), expected);
+});
+
+test('memoizeGet removes the key/value when value is set to undefined', (t) => {
+  const initialStore = memoizeStore([[[1, 2, 3], 'test']]);
+
+  t.is(memoizeSize(initialStore), 1);
+
+  const updatedStore = memoize([1, 2, 3], undefined, initialStore);
+
+  t.is(memoizeSize(updatedStore), 0);
 });
