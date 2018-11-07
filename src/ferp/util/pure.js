@@ -1,6 +1,6 @@
 import { memoizeStore, memoize, memoizeGet } from './memoize.js';
 
-export const storeKey = Symbol('store');
+const getStoreKey = Symbol('getStore');
 
 const pureWithMemoizedStore = (method, initialStore) => {
   let store = initialStore;
@@ -15,9 +15,10 @@ const pureWithMemoizedStore = (method, initialStore) => {
     return result;
   };
 
-  wrapped[storeKey] = () => store;
+  wrapped[getStoreKey] = () => store;
 
   return wrapped;
 };
 
 export const pure = method => pureWithMemoizedStore(method, memoizeStore());
+export const pureGetStore = pureMethod => pureMethod[getStoreKey]();
