@@ -2,7 +2,9 @@ import { compareArrays } from './compareArrays.js';
 
 export const memoizeStore = initialMap => new Map(initialMap);
 
-export const getMemoized = (arr, store) => {
+export const memoizeSize = store => store.size;
+
+export const memoizeGet = (arr, store) => {
   for (const [storedArr, result] of store.entries()) { // eslint-disable-line no-restricted-syntax
     const isShallowMatch = compareArrays(arr, storedArr);
 
@@ -15,7 +17,7 @@ export const getMemoized = (arr, store) => {
 };
 
 export const memoize = (arr, result, store) => {
-  const memoized = getMemoized(arr, store);
+  const memoized = memoizeGet(arr, store);
 
   const key = memoized.found
     ? memoized.key

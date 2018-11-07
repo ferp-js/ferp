@@ -1,4 +1,4 @@
-import { memoizeStore, memoize, getMemoized } from './memoize.js';
+import { memoizeStore, memoize, memoizeGet } from './memoize.js';
 
 export const storeKey = Symbol('store');
 
@@ -6,7 +6,7 @@ const pureWithMemoizedStore = (method, initialStore) => {
   let store = initialStore;
 
   const wrapped = (...args) => {
-    const memoized = getMemoized(args, store);
+    const memoized = memoizeGet(args, store);
     if (memoized.found) {
       return memoized.result;
     }
