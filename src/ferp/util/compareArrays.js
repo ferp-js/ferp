@@ -10,7 +10,7 @@ const isPlainOldJavascriptObject = (object) => {
 
 const shallowCompareObjects = (obj1, obj2, depth) => {
   if (depth > MAX_OBJECT_DEPTH) {
-    console.warn('Ferp does not support object comparison deeper than 2. Consider storing the object for a fast object reference comparison instead.');
+    console.warn('Ferp does not support object comparison deeper than 2. Consider storing the object for a fast object reference comparison instead.'); // eslint-disable-line no-console
     return false;
   }
 
