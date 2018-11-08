@@ -2,7 +2,6 @@ import { subscriptionManager } from './subscriptionManager.js';
 import { stateManager } from './stateManager.js';
 import { effectManager } from './effectManager.js';
 import { messageManager } from './messageManager.js';
-import { pure } from './util/pure.js';
 
 export const app = ({
   init,
@@ -32,11 +31,3 @@ export const app = ({
     messages.onDispatch(null);
   };
 };
-
-app.impure = app;
-
-app.pure = ({
-  init,
-  update,
-  subscribe,
-}) => app({ init, update: pure(update), subscribe: pure(subscribe) });
