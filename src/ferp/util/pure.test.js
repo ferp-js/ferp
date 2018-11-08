@@ -1,8 +1,8 @@
 import test from 'ava';
 import sinon from 'sinon';
 
-import { pure, pureGetStore, pureSetStore } from './pure.js';
-import { memoizeStore, memoizeGet } from './memoize.js';
+import { pure, pureGetStore } from './pure.js';
+import { memoizeGet } from './memoize.js';
 
 test('returns a memoized version of the function', (t) => {
   const original = num => num;
