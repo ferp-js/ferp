@@ -1,6 +1,6 @@
 import { freeze } from './freeze.js';
 import { compareArrays } from './util/compareArrays.js';
-import { memoizeStore } from './util/memoize.js';
+import { memoizeStore, memoizeStoreToEntries } from './util/memoize.js';
 
 const getDetachFromSignatureAndDispatch = (signature, dispatch) => {
   const [method, ...args] = signature;
@@ -10,6 +10,7 @@ const getDetachFromSignatureAndDispatch = (signature, dispatch) => {
 const uniqueEntries = (previousEntries, allEntries) => (
   allEntries.reduce((entries, entry) => {
     const exists = entries.some(([signature]) => compareArrays(signature, entry[0]));
+
     if (exists) {
       return entries;
     }
@@ -22,7 +23,7 @@ export const subscriptionUpdate = (previousStore, subscriptions, dispatch) => {
   const nextSubs = subscriptions.filter(Array.isArray);
 
   const allMemoizedEntries = uniqueEntries(
-    Array.from(previousStore.entries()),
+    memoizeStoreToEntries(previousStore),
     nextSubs.map(signature => [signature, null]),
   );
 

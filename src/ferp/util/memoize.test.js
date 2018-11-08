@@ -1,6 +1,7 @@
 import test from 'ava';
 import {
   memoizeStore,
+  memoizeStoreToEntries,
   memoizeSize,
   memoize,
   memoizeGet,
@@ -14,6 +15,14 @@ test('memoizeStore can accept an initializer', (t) => {
 test('memoizeStore filters out undefined values', (t) => {
   const store = memoizeStore([[[1, 2, 3], undefined]]);
   t.is(memoizeSize(store), 0);
+});
+
+test('memoizeStoreToEntries returns an array of [key, value] tuples', (t) => {
+  t.deepEqual(memoizeStoreToEntries(memoizeStore()), []);
+
+  const store = memoize([1, 2, 3], 'test', memoizeStore());
+
+  t.deepEqual(memoizeStoreToEntries(store), [[[1, 2, 3], 'test']]);
 });
 
 test('memoizeSize reflects the current size', (t) => {

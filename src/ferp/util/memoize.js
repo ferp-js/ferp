@@ -4,6 +4,8 @@ export const memoizeStore = (initialMap = []) => new Map(
   initialMap.filter(entry => typeof entry[1] !== 'undefined'),
 );
 
+export const memoizeStoreToEntries = store => Array.from(store.entries());
+
 export const memoizeSize = store => store.size;
 
 export const memoizeGet = (arr, store) => {
@@ -19,7 +21,7 @@ export const memoizeGet = (arr, store) => {
 };
 
 export const memoize = (arr, result, store) => {
-  const entries = Array.from(store.entries())
+  const entries = memoizeStoreToEntries(store)
     .filter(entry => !compareArrays(arr, entry[0]));
 
   return memoizeStore([
