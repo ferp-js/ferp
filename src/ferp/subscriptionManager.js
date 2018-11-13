@@ -1,61 +1,65 @@
 import { freeze } from './freeze.js';
+import { compareArrays } from './util/compareArrays.js';
+import { memoizeStore, memoizeStoreToEntries } from './util/memoize.js';
 
-export const compareValue = (a, b) => a === b;
-
-export const subscriptionComparator = args => (subArgs) => {
-  if (args.length !== subArgs.length) {
-    return false;
-  }
-  return args.every((value, position) => compareValue(value, subArgs[position]));
+const getDetachFromSignatureAndDispatch = (signature, dispatch) => {
+  const [method, ...args] = signature;
+  return method(...args)(dispatch);
 };
 
-const initSub = (args, dispatch) => {
-  const [method, ...trailing] = args;
-  return method(...trailing)(dispatch);
-};
+const uniqueEntries = (previousEntries, allEntries) => (
+  allEntries.reduce((entries, entry) => {
+    const exists = entries.some(([signature]) => compareArrays(signature, entry[0]));
 
-const toSubscription = (args, dispatch) => ({
-  isSub: subscriptionComparator(args),
-  detach: initSub(args, dispatch),
-  raw: args,
-});
+    if (exists) {
+      return entries;
+    }
 
-export const subscriptionUpdate = (prevSubs, subscriptions, dispatch) => {
+    return [...entries, entry];
+  }, previousEntries)
+);
+
+export const subscriptionUpdate = (previousStore, subscriptions, dispatch) => {
   const nextSubs = subscriptions.filter(Array.isArray);
 
-  const discontinuedSubs = prevSubs.filter(prevSub => (
-    nextSubs.every(sub => !prevSub.isSub(sub))
-  ));
+  const allMemoizedEntries = uniqueEntries(
+    memoizeStoreToEntries(previousStore),
+    nextSubs.map(signature => [signature, null]),
+  );
 
-  const continuedSubs = prevSubs.filter(prevSub => (
-    nextSubs.some(newSub => prevSub.isSub(newSub))
-  ));
+  const nextEntries = allMemoizedEntries.reduce((entries, [signature, detach]) => {
+    if (!detach) {
+      return [...entries, [signature, getDetachFromSignatureAndDispatch(signature, dispatch)]];
+    }
 
-  const newSubs = nextSubs.filter(newSub => (
-    continuedSubs.every(sub => !sub.isSub(newSub))
-  ));
+    const isContinued = nextSubs.some(sub => compareArrays(sub, signature));
+    if (!isContinued) {
+      detach();
+      return entries;
+    }
 
-  discontinuedSubs.forEach(oldSub => oldSub.detach());
+    return [...entries, [signature, detach]];
+  }, []);
 
-  const addedSubs = newSubs.map(sub => toSubscription(sub, dispatch));
-  return continuedSubs.concat(addedSubs);
+  return memoizeStore(nextEntries);
 };
 
 export const subscriptionManager = (dispatch, subscribe) => {
   if (typeof subscribe !== 'function') return { next: () => {}, detach: () => {} };
 
-  let subscriptions = [];
+  let store = memoizeStore();
 
   const next = (state) => {
-    subscriptions = subscriptionUpdate(
-      subscriptions,
+    store = subscriptionUpdate(
+      store,
       subscribe(freeze(state)),
       dispatch,
     );
   };
 
   const detach = () => {
-    subscriptions.forEach(subscription => subscription.detach());
+    const callbacks = Array.from(store.values());
+    callbacks.forEach(callback => callback());
   };
 
   return {

@@ -4,6 +4,7 @@ import { delay } from './ferp/effects/delay.js';
 import { raf } from './ferp/effects/raf.js';
 import { every } from './ferp/subscriptions/every.js';
 import { combineReducers } from './ferp/util/combineReducers.js';
+import { pure } from './ferp/util/pure.js';
 
 export const app = appModule.app;
 
@@ -22,4 +23,5 @@ export const subscriptions = {
 
 export const util = {
   combineReducers,
+  pure,
 };
