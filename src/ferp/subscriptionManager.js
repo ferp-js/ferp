@@ -52,7 +52,7 @@ export const subscriptionManager = (dispatch, subscribe) => {
   const next = (state) => {
     store = subscriptionUpdate(
       store,
-      subscribe(state),
+      subscribe(freeze(state)),
       dispatch,
     );
   };
