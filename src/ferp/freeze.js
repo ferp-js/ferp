@@ -1,4 +1,6 @@
-export const freeze = (value) => {
+import { pure } from './util/pure.js';
+
+export const freeze = pure((value) => {
   if (typeof value !== 'object' || value === null) {
     return value;
   }
@@ -7,4 +9,4 @@ export const freeze = (value) => {
     get: (target, property) => freeze(target[property]),
     deleteProperty: () => false,
   });
-};
+});
