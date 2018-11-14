@@ -1,12 +1,32 @@
 # Ferp Changelog
 
-## v1.0.1 - 2018-10-22 - [git](https://github.com/mrozbarry/ferp/compare/1b48ab55f4d6e0a3a46a3576e03ce48ebde7f547...HEAD)
+## v1.1.0 - 2018-11-14
+
+### News
+
+ - WIP Gitbook documentation. Check it out @ [https://ferp-js.gitbook.io/ferp](https://ferp-js.gitbook.io/ferp). Will add to README once it's in better shape.
+ - Removes git revision links here in the changelog. The git tags and releases is more than enough in github.
+
+### Bug fixes
+
+ - Fixes issue where subscription object arguments were being re-wrapped in freeze() each state update, causing new subscription destroy/create cycles.
+
+### Features
+
+ - Adds `util.pure()`, a way to declare functions as pure, with memoized stores attached to them.
+
+### Internals
+
+ - Adds memoize store implementation
+ - Refactors and optimizes subscriptionHandler using memoize
+
+## v1.0.1 - 2018-10-22
 
 ### Bug fixes
 
  - Fixes issue where the call stack would overflow when comparing big/self-referrential objects in subscription arguments.
 
-## v1.0.0 - 2018-10-04 - [git](https://github.com/mrozbarry/ferp/compare/619723b8b35676acaa1196629c35331bcb978b0f...1b48ab55f4d6e0a3a46a3576e03ce48ebde7f547)
+## v1.0.0 - 2018-10-04
 
 ### Breaking changes
 
@@ -30,7 +50,7 @@
  - Adds `ferp.effects.thunk` effect primitive
 
 
-## v0.1.1 - 2018-09-20 - [git](https://github.com/mrozbarry/ferp/compare/4e1dbd1e8e82c8197be87ee59c7de827a6ca4741...619723b8b35676acaa1196629c35331bcb978b0f)
+## v0.1.1 - 2018-09-20
 
 ### Features
 
@@ -41,14 +61,14 @@
  - Issue where subscriptions that immediately dispatch could cause an infinite loop
 
 
-## v0.1.0 - 2018-09-16 - [git](https://github.com/mrozbarry/ferp/compare/da884fdcfeb8746af2e5b366cc1a7395c64f103d...4e1dbd1e8e82c8197be87ee59c7de827a6ca4741)
+## v0.1.0 - 2018-09-16
 
 ### Breaking changes
 
  - Updated subscriptions to not require an id prefix
 
 
-## v0.0.5 - 2018-09-09 - [git](https://github.com/mrozbarry/ferp/compare/9a51d0da69d68ddbbe2f86dbb325bb0e7f2e1e4e...da884fdcfeb8746af2e5b366cc1a7395c64f103d)
+## v0.0.5 - 2018-09-09
 
 ### Features
 
@@ -60,7 +80,7 @@
  - Fixes issue with effects not running in a deterministic order
 
 
-## v0.0.4 - 2018-09-08 - [git](https://github.com/mrozbarry/ferp/compare/4053daee2e434a9a66ad88d9de056e9d2621243b...9a51d0da69d68ddbbe2f86dbb325bb0e7f2e1e4e)
+## v0.0.4 - 2018-09-08
 
 ### Features
 
@@ -71,7 +91,7 @@
  - Issue where mapped effects weren't being executed properly
 
 
-## v0.0.3 - 2018-09-07 - [git](https://github.com/mrozbarry/ferp/compare/1efebd9c67e9ab76c4c44c63d2ab021af1cd2f96...4053daee2e434a9a66ad88d9de056e9d2621243b)
+## v0.0.3 - 2018-09-07
 
 ### Features
 
@@ -83,7 +103,7 @@
  - Fixed ava tests that were being cached unexpectedly
 
 
-## v0.0.2 - 2018-09-03 - [git](https://github.com/mrozbarry/ferp/compare/6b9a97ac89f8496a2efe865ea9197bcdf9856da3...1efebd9c67e9ab76c4c44c63d2ab021af1cd2f96)
+## v0.0.2 - 2018-09-03
 
 ### Features
 
