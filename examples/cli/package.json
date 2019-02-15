@@ -8,9 +8,9 @@
   "author": "",
   "license": "MIT",
   "devDependencies": {
-    "ava": "^0.25.0",
-    "nyc": "^13.0.1",
-    "sinon": "^6.3.4"
+    "ava": "^1.2.1",
+    "nyc": "^13.3.0",
+    "sinon": "^7.2.3"
   },
   "ava": {
     "files": [

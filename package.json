@@ -3,7 +3,7 @@
   "module": "src/ferp.js",
   "main": "ferp.js",
   "description": "Build functional and pure applications in NodeJS and the Browser!",
-  "version": "1.1.0",
+  "version": "1.1.2",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/mrozbarry/ferp.git"
@@ -27,21 +27,22 @@
     "test": "nyc ava",
     "lint": "eslint ./src",
     "build": "rollup -c",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run build",
+    "push": "yarn test && yarn publish"
   },
   "devDependencies": {
     "@ava/babel-preset-stage-4": "^2.0.0",
-    "@ava/babel-preset-transform-test-files": "^4.0.0",
+    "@ava/babel-preset-transform-test-files": "^4.0.1",
     "@babel/register": "^7.0.0",
-    "ava": "^1.0.0-beta.8",
-    "eslint": "^5.5.0",
+    "ava": "1.1.0",
+    "eslint": "^5.13.0",
     "eslint-config-airbnb-base": "^13.1.0",
     "eslint-plugin-import": "^2.14.0",
-    "nyc": "^13.0.1",
+    "nyc": "^13.3.0",
     "rollup": "^0.65.0",
     "rollup-plugin-babel-minify": "^6.0.0",
     "rollup-plugin-eslint": "^5.0.0",
-    "sinon": "^6.1.5"
+    "sinon": "^7.2.3"
   },
   "ava": {
     "files": [
