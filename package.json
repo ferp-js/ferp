@@ -27,13 +27,14 @@
     "test": "nyc ava",
     "lint": "eslint ./src",
     "build": "rollup -c",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run build",
+    "push": "yarn test && yarn publish"
   },
   "devDependencies": {
     "@ava/babel-preset-stage-4": "^2.0.0",
     "@ava/babel-preset-transform-test-files": "^4.0.1",
     "@babel/register": "^7.0.0",
-    "ava": "^1.2.1",
+    "ava": "1.1.0",
     "eslint": "^5.13.0",
     "eslint-config-airbnb-base": "^13.1.0",
     "eslint-plugin-import": "^2.14.0",
