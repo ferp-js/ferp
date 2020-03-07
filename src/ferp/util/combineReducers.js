@@ -15,7 +15,7 @@ export const combineReducersFromArray = (result) => {
 
 export const combineReducersFromObject = (result) => {
   const { state, effects } = Object.keys(result).reduce((combined, key) => ({
-    state: Object.assign({}, combined.state, { [key]: result[key][0] }),
+    state: { ...combined.state, [key]: result[key][0] },
     effects: combined.effects.concat(result[key][1]),
   }), { state: {}, effects: [] });
 

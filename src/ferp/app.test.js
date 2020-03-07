@@ -59,7 +59,7 @@ test.cb('app can enable a subscription which can dispatch an update', (t) => {
           return [state, none()];
       }
     },
-    subscribe: state => [
+    subscribe: (state) => [
       state && [emptySub],
     ],
   });

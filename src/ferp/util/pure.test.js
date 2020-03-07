@@ -5,13 +5,13 @@ import { pure, pureGetStore } from './pure.js';
 import { memoizeGet } from './memoize.js';
 
 test('returns a memoized version of the function', (t) => {
-  const original = num => num;
+  const original = (num) => num;
   const result = pure(original);
   t.is(typeof result, 'function');
 });
 
 test('populates an internal store', (t) => {
-  const pureFn = pure(n => n * 2);
+  const pureFn = pure((n) => n * 2);
 
   t.is(memoizeGet([5], pureGetStore(pureFn)), undefined);
 
@@ -21,7 +21,7 @@ test('populates an internal store', (t) => {
 });
 
 test('pure uses the memoized value when possible', (t) => {
-  const original = sinon.fake(num => num);
+  const original = sinon.fake((num) => num);
   const wrapped = pure(original);
 
   const firstValue = wrapped(5);
@@ -33,7 +33,7 @@ test('pure uses the memoized value when possible', (t) => {
 });
 
 test('impure functions wrapped in pure will always return first memoized value', (t) => {
-  const wrapped = pure(num => num + Math.random());
+  const wrapped = pure((num) => num + Math.random());
 
   const firstValue = wrapped(5);
   const secondValue = wrapped(5);

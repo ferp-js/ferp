@@ -29,7 +29,7 @@ const shallowCompareObjects = (obj1, obj2, depth) => {
     return false;
   }
 
-  return keys1.every(key => (
+  return keys1.every((key) => (
     shallowCompareObjects(obj1[key], obj2[key], depth + 1)
   ));
 };
