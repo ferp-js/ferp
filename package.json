@@ -27,7 +27,7 @@
     "test": "nyc ava",
     "lint": "eslint ./src",
     "build": "rollup -c",
-    "prepublishOnly": "npm run build",
+    "prepublishOnly": "yarn build",
     "push": "yarn test && yarn publish"
   },
   "devDependencies": {
