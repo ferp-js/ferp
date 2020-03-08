@@ -18,7 +18,7 @@ export const app = ({
     return manageEffects(nextEffect);
   };
 
-  messages.onDispatch(message => (
+  messages.onDispatch((message) => (
     runUpdate(update(message, state.get()))
   ));
 

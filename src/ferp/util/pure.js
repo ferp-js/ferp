@@ -20,5 +20,5 @@ const pureWithMemoizedStore = (method, initialStore) => {
   return wrapped;
 };
 
-export const pure = method => pureWithMemoizedStore(method, memoizeStore());
-export const pureGetStore = pureMethod => pureMethod[getStoreKey]();
+export const pure = (method) => pureWithMemoizedStore(method, memoizeStore());
+export const pureGetStore = (pureMethod) => pureMethod[getStoreKey]();

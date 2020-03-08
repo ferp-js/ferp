@@ -37,7 +37,7 @@ test('the generated method can handle a batch message effect', async (t) => {
 test('the generated method can handle a defer none effect', async (t) => {
   const fake = sinon.fake();
   const runner = effectManager(fake);
-  await t.notThrowsAsync(() => runner(defer(new Promise(resolve => resolve(none())))));
+  await t.notThrowsAsync(() => runner(defer(new Promise((resolve) => resolve(none())))));
   t.falsy(fake.called);
 });
 

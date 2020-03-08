@@ -35,7 +35,7 @@ test.cb('raf resolves the correct message with a lastTimestamp', (t) => {
 });
 
 test('getNextFrameMethod uses requestAnimationFrame when available', (t) => {
-  global.requestAnimationFrame = sinon.fake(cb => cb());
+  global.requestAnimationFrame = sinon.fake((cb) => cb());
 
   const nextMethod = getNextFrameMethod();
   nextMethod(() => {});

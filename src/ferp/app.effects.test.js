@@ -6,7 +6,7 @@ const { none, batch, defer } = ferp.effects;
 
 const defaultUpdate = (_, state) => [state, none()];
 
-const createApp = args => ferp.app({
+const createApp = (args) => ferp.app({
   init: args.init,
   update: args.update || defaultUpdate,
 });
@@ -100,7 +100,7 @@ test.cb('deferred effects run later', (t) => {
   createApp({
     init: [
       null,
-      defer(new Promise(resolve => resolve(laterMessage))),
+      defer(new Promise((resolve) => resolve(laterMessage))),
     ],
     update: (message, state) => {
       t.deepEqual(message, laterMessage);
@@ -124,10 +124,10 @@ test('detaching app cleans up subscriptions, and prevents further dispatches', a
     },
   });
 
-  await new Promise(resolve => setTimeout(resolve, 1000));
+  await new Promise((resolve) => setTimeout(resolve, 1000));
   detach();
   // Allow tick for next effects to get new dispatch
-  await new Promise(resolve => setTimeout(resolve, 0));
+  await new Promise((resolve) => setTimeout(resolve, 0));
   didDetach = true;
   t.pass('Detach prevented further dispatches');
 });
