@@ -49,6 +49,23 @@ Or grab it from unpkg
 </script>
 ```
 
+## Importing
+
+```js
+// es6
+import { app, effects, util } from 'ferp';
+
+// unpkg
+import { app, effects, util } from 'https://unpkg.com/ferp?module=1';
+
+// from a script tag
+// <script src="https://unpkg.com/ferp"></script>
+const { app, effects, util } = window.ferp;
+
+// es5/node
+const { app, effects, util } = require('ferp');
+```
+
 ## Migrating from 0.x to 1.x
 
 See this handy [migration guide](./MIGRATION.md)!
@@ -72,7 +89,8 @@ ferp.app({
         incrementMessage,
       ];
     }
-    return [state, ferp.effects.none()];
+
+    return [state, ferp.effects.none()]; // If we were ever to get a non-increment message, don't lose the state!
   },
 });
 ```
@@ -85,22 +103,13 @@ Effects are also an opportunity to run impure code in a controlled way.
 
 You can read more about setting up an application [here in the docs](./docs/index.md).
 
-## Examples
-
- - Command-line Examples
-   - [Timer using effects](./examples/cli/timer-with-effects.js), `cd examples/cli && node ./timer-with-effects.js`.
-   - [Timer using subscriptions](./examples/cli/timer-with-subscription), `cd examples/cli && node ./timer-with-subscription.js`.
-   - [File reader](./examples/cli/file-reader-node.js), `cd examples/cli && node ./file-reader-node.js`.
-   - [Http request](./examples/cli/xhr-request.js), `cd examples/cli && node ./xhr-request.js`.
- - [Node http server](./examples/http-server), `node ./examples/http-server/server.js`.
- - [Web example using superfine for vdom](./examples/with-serverfine), `cd ./examples/with-superfine && npm i && npm start`.
-
 ## More docs
 
- - [Extended overview](./docs/index.md)
  - [The (git) book](https://app.gitbook.com/@ferp-js/s/ferp/)
  - [Testing Guide](./TESTING.md)
+ - [Some examples (their dependencies may occasionally be outdated)](https://github.com/ferp-js/examples)
  - [Internals](./INTERNALS.md)
+ - [Extended anatomy of an app](./docs/index.md)
  - [Effects](./src/ferp/effects/README.md)
  - [Subscriptions](./src/ferp/subscriptions/README.md)
  - [Utility](./src/ferp/util/README.md)
