@@ -4,6 +4,10 @@
 [![Known Vulnerabilities](https://snyk.io/test/github/ferp-js/ferp/badge.svg)](https://snyk.io/test/github/ferp-js/ferp) 
 [![Join the chat at https://gitter.im/mrozbarry/ferp](https://badges.gitter.im/mrozbarry/ferp.svg)](https://gitter.im/mrozbarry/ferp?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
+<p align="center">
+  <img src="./docs/f%3D>rp.jpg" />
+</p>
+
 # ferp
 
 Ferp is the easiest, functional-reactive, zero dependency javascript app framework for nodejs and modern browsers.
@@ -23,7 +27,7 @@ Ferp is the easiest, functional-reactive, zero dependency javascript app framewo
 
 Like any great idea, it's based on other (much smarter) people's work, namely:
  - [Evan Czaplicki](https://github.com/evancz)'s [Elm](https://elm-lang.org/), the language that made me see the power of the ~dark side~ functional reactive programming.
- - [Jorge Bucaran](https://github.com/jorgebucaran)'s [hyperapp](https://github.com/hyperapp/hyperapp), a tiny but powerful functional front-end framework.
+ - [Jorge Bucaran](https://github.com/jorgebucaran)'s [hyperapp](https://github.com/jorgebucaran/hyperapp), a tiny but powerful functional front-end framework.
 
 ## Installing
 
