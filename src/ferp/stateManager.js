@@ -1,5 +1,3 @@
-import { freeze } from './freeze.js';
-
 export const stateManager = () => {
   let state;
   let callback;
@@ -7,7 +5,7 @@ export const stateManager = () => {
   const set = (nextState) => {
     state = nextState;
     if (callback) {
-      callback(freeze(state));
+      callback(state);
     }
     return state;
   };
