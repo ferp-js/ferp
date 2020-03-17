@@ -1,5 +1,18 @@
 # Ferp Changelog
 
+## v1.1.5 - 2020-03-17
+
+### News
+
+ - The ferp github has been published to [ferp.mrbarry.com](https://ferp.mrbarry.com).
+Please give it a read and leave me feedback.
+
+### Performance fixes
+
+ - I noticed that ther was a very quick buildup of performance and memory issues using freeze in stateManaager, so that's gone.
+I'll need to investigate more if it's an issue with `pure()` or `Proxy`.
+Both are probably expensive.
+
 ## v1.1.0 - 2018-11-14
 
 ### News
