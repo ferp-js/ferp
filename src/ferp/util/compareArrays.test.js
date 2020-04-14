@@ -25,6 +25,12 @@ test('does a quick object comparison when two objects are the same', (t) => {
   t.is(compareArrays([deepObject], [deepObject]), true);
 });
 
+test('return false when two objects have different key lengths', (t) => {
+  const objectA = { foo: true };
+  const objectB = { foo: true, bar: false };
+  t.is(compareArrays([objectA], [objectB]), false);
+});
+
 test('recursively tests object values', (t) => {
   const a = [{ foo: { bar: 'baz' } }];
   const b = [{ foo: { bar: 'baz' } }];

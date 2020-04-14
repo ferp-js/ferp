@@ -1,6 +1,4 @@
-import { freeze } from './freeze.js';
 import { compareArrays } from './util/compareArrays.js';
-import { memoizeStore, memoizeStoreToEntries } from './util/memoize.js';
 
 const getDetachFromSignatureAndDispatch = (signature, dispatch) => {
   const [method, ...args] = signature;
@@ -23,7 +21,7 @@ export const subscriptionUpdate = (previousStore, subscriptions, dispatch) => {
   const nextSubs = subscriptions.filter(Array.isArray);
 
   const allMemoizedEntries = uniqueEntries(
-    memoizeStoreToEntries(previousStore),
+    previousStore,
     nextSubs.map((signature) => [signature, null]),
   );
 
@@ -41,25 +39,24 @@ export const subscriptionUpdate = (previousStore, subscriptions, dispatch) => {
     return [...entries, [signature, detach]];
   }, []);
 
-  return memoizeStore(nextEntries);
+  return nextEntries;
 };
 
 export const subscriptionManager = (dispatch, subscribe) => {
   if (typeof subscribe !== 'function') return { next: () => {}, detach: () => {} };
 
-  let store = memoizeStore();
+  let store = [];
 
   const next = (state) => {
     store = subscriptionUpdate(
       store,
-      subscribe(freeze(state)),
+      subscribe(state),
       dispatch,
     );
   };
 
   const detach = () => {
-    const callbacks = Array.from(store.values());
-    callbacks.forEach((callback) => callback());
+    store.forEach((arr) => arr[1]());
   };
 
   return {
