@@ -1,5 +1,12 @@
 # Ferp Changelog
 
+## v1.2.0 - 2020-04-14
+
+### Performance fixes
+
+ - Pure and memoize were known but accepted memory leaks, but I've finally decided these are quite bad for long running applications.
+They have now been removed, which should noticably improve memory and speed issues.
+
 ## v1.1.5 - 2020-03-17
 
 ### News
