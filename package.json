@@ -24,7 +24,7 @@
   },
   "homepage": "https://github.com/mrozbarry/ferp#readme",
   "scripts": {
-    "test": "ava",
+    "test": "ava --verbose",
     "test:coverage": "nyc ava",
     "lint": "eslint ./src",
     "build": "rollup -c",
