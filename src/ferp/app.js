@@ -1,33 +1,24 @@
-import { subscriptionManager } from './subscriptionManager.js';
 import { stateManager } from './stateManager.js';
 import { effectManager } from './effectManager.js';
 import { messageManager } from './messageManager.js';
+import { ofStateManager } from './ofStateManager.js';
 
 export const app = ({
   init,
-  update,
-  subscribe,
+  ofState,
 }) => {
   const state = stateManager();
   const messages = messageManager();
   const manageEffects = effectManager(messages.dispatch);
-  const subscriptions = subscriptionManager(messages.dispatch, subscribe);
+  const manageOfState = ofStateManager(messages.dispatch, ofState);
 
   const runUpdate = ([nextState, nextEffect]) => {
     state.set(nextState);
+    manageOfState.next(nextState);
     return manageEffects(nextEffect);
   };
 
-  messages.onDispatch((message) => (
-    runUpdate(update(message, state.get()))
-  ));
-
-  state.onChange(subscriptions.next);
-
   runUpdate(init);
 
-  return () => {
-    subscriptions.detach();
-    messages.onDispatch(null);
-  };
+  return messages.dispatch;
 };
