@@ -24,7 +24,8 @@
   },
   "homepage": "https://github.com/mrozbarry/ferp#readme",
   "scripts": {
-    "test": "nyc ava",
+    "test": "ava",
+    "test:coverage": "nyc ava",
     "lint": "eslint ./src",
     "build": "rollup -c",
     "prepublishOnly": "yarn build",
@@ -49,13 +50,8 @@
     "files": [
       "src/**/**/*.test.js"
     ],
-    "sources": [
-      "src/**/*.js"
-    ],
     "require": [
       "esm"
-    ],
-    "failFast": true,
-    "compileEnhancements": false
+    ]
   }
 }
