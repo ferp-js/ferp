@@ -24,7 +24,17 @@ function* ofStateGenerator(dispatch, ofState) {
   }
 }
 
+function* nullGenerator() {
+  while (true) {
+    yield;
+  }
+}
+
 export const ofStateManager = (dispatch, initialState, ofState) => {
+  if (!ofState) {
+    return nullGenerator();
+  }
+
   const generator = ofStateGenerator(dispatch, ofState);
   generator.next();
   generator.next(initialState);
