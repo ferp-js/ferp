@@ -10,7 +10,7 @@ test('exposes dispatch and onDispatch', (t) => {
 
 test('will queue many messages when no onDispatch is available', async (t) => {
   const messages = messageManager();
-  messages.dispatch('A').catch(() => {});
+  messages.dispatch('A');
 
   const dispatch = sinon.fake.returns(Promise.resolve());
 

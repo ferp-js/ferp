@@ -1,6 +1,6 @@
 /* eslint-disable no-restricted-syntax */
 
-import { make } from './make';
+import { make, stop, STOP_GENERATOR } from './make';
 
 class Subscription {
   static isSubscription(subscription) {
@@ -10,23 +10,23 @@ class Subscription {
   constructor([subscriptionFn, ...params]) {
     this.subscriptionFn = subscriptionFn;
     this.params = params;
-    this.generator = null;
+    this.instance = null;
   }
 
   valueOf() {
     return {
       subscriptionFn: this.subscriptionFn,
       params: [...this.params],
-      generator: this.generator,
+      instance: this.instance,
     };
   }
 
   start(dispatch) {
-    this.generator = this.susbcriptionFn(dispatch, ...this.params);
+    this.instance = this.subscriptionFn(dispatch, ...this.params);
   }
 
   stop() {
-    this.generator.return();
+    return this.instance();
   }
 
   isSameAs(otherSubscription) {
@@ -61,7 +61,7 @@ const toSubscriptionList = (subscriptions) => subscriptions.reduce(
 const subscribeDiff = (previous, current) => current.reduce(
   (memo, currentSubscription) => {
     const previousIndex = memo.toStop.findIndex(
-      (prev) => prev.isSameSubscription(currentSubscription),
+      (prev) => prev.isSameAs(currentSubscription),
     );
 
     if (previousIndex >= 0) {
@@ -87,6 +87,7 @@ function* subscribeGenerator(dispatch, subscribeFn) {
 
   while (true) {
     const state = yield subscriptions;
+    if (state === STOP_GENERATOR) break;
 
     const current = toSubscriptionList(subscribeFn(state));
     const { all, toStart, toStop } = subscribeDiff(subscriptions, current);
@@ -94,6 +95,9 @@ function* subscribeGenerator(dispatch, subscribeFn) {
     toStop.forEach((sub) => sub.stop());
     subscriptions = all;
   }
+
+  subscriptions.forEach((sub) => sub.stop());
 }
 
 export const subscribe = (dispatch, subscribeFn) => make(dispatch, subscribeGenerator, subscribeFn);
+export const unsubscribe = (subscribeIterator) => stop(subscribeIterator);
