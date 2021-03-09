@@ -1,5 +1,31 @@
 # Ferp Changelog
 
+## 1.3.0 - 2021-03-**
+
+### News
+
+ - Ferp is getting even smaller, without breaking the feature bank.
+
+### Breaking Changes
+
+ - Ferp update messages should be functions that accept state and return a `[newState, nextEffect]` tuple.
+ - No `update` in your ferp app signature.
+ - Ferp returns the dispatch function instead of `{ detach, dispatch }` - detach can be implemented in userland.
+ - Removed auxillery effects `delay` and `raf`
+ - Remove auxillery subscription `every`
+
+### Features
+
+ - New app signature, `{ init: [state, effect], subscribe: (state) => [], observe: ([state, effect], actionName) => {} }`
+   - `init` is what you've always known it to be, the initialization of the app
+   - `subscribe` continues to create/manage subscriptions
+   - `observe` is a callback that is ran every new state change, and may provide a reasonable way to hook into external systems in a much easier way.
+
+### Performance fixes
+
+ - Ferp does not wait for asynchronous effects anymore, which means `defer`ed effects cannot guarantee order of their dispatched results.
+ - Dispatch is not wrapped in a fixed `setTimeout(doDispatch, 0)`.
+
 ## v1.2.0 - 2020-04-14
 
 ### Performance fixes
