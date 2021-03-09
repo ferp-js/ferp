@@ -1,6 +1,6 @@
-import { effectTypes, act, none } from './effects/core.js';
+import { effectTypes, act, none } from '../effects/core.js';
 
-export const runEffect = (dispatch, effect) => {
+const runEffect = (dispatch, effect) => {
   switch (effect && effect.type) {
     case effectTypes.none:
       return undefined;
@@ -27,4 +27,10 @@ export const runEffect = (dispatch, effect) => {
       break;
   }
   return dispatch(none());
+};
+
+export const effectStage = (effect, dispatch) => (action) => {
+  runEffect(dispatch, effect.get());
+
+  return action;
 };

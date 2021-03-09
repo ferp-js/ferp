@@ -22,3 +22,8 @@ test('thunk has a method', (t) => {
   const effect = core.thunk(() => ({}));
   t.truthy(typeof effect.method, 'function');
 });
+
+test('act has an action', (t) => {
+  const effect = core.act((state) => [state, core.none()]);
+  t.truthy(typeof effect.action, 'function');
+});

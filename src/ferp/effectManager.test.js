@@ -1,97 +1,74 @@
 import test from 'ava';
 import sinon from 'sinon';
 
-import { effectManager } from './effectManager.js';
+import { runEffect } from './effectManager.js';
 import {
   none,
   batch,
   defer,
   thunk,
+  act,
 } from './effects/core.js';
 
-test('effectManager returns a generator', (t) => {
-  const generator = effectManager(sinon.fake());
-
-  t.is(typeof generator.next, 'function');
-  t.is(typeof generator.return, 'function');
-
-  generator.return();
-});
-
-test('effectManager can handle a none effect', (t) => {
+test('can handle a none effect', (t) => {
   const dispatch = sinon.fake();
 
-  const generator = effectManager(dispatch);
-  generator.next(none());
+  runEffect(dispatch, none());
 
   t.is(dispatch.callCount, 0);
-
-  generator.return();
 });
 
 test('effectManager can handle a batch effect', async (t) => {
   const dispatch = sinon.fake();
 
-  const a = () => {};
-  const b = () => {};
+  const a = () => [null, none()];
+  const b = () => [null, none()];
 
-  const generator = effectManager(dispatch);
-  generator.next(batch([
-    a,
-    b,
+  runEffect(dispatch, batch([
+    act(a),
+    act(b),
   ]));
 
   t.is(dispatch.callCount, 2);
-  t.truthy(dispatch.calledWithExactly(a));
-  t.truthy(dispatch.calledWithExactly(b));
-
-  generator.return();
+  t.truthy(dispatch.calledWith(a));
+  t.truthy(dispatch.calledWith(b));
 });
 
 test('effectManager can handle a defer effect', async (t) => {
   const dispatch = sinon.fake();
 
-  const a = () => {};
+  const action = () => [null, none()];
+  const a = (resolve) => resolve(act(action));
 
-  const generator = effectManager(dispatch);
-  generator.next(defer(a));
-
-  t.is(dispatch.callCount, 0);
-
-  await new Promise((resolve) => setTimeout(resolve, 0));
+  runEffect(dispatch, defer(a));
+  await new Promise((resolve) => setTimeout(resolve, 1));
 
   t.is(dispatch.callCount, 1);
 
-  t.truthy(dispatch.calledWithExactly(a));
-
-  generator.return();
+  t.truthy(dispatch.calledWithExactly(action));
 });
 
 test('effectManager can handle a thunk effect', (t) => {
   const dispatch = sinon.fake();
 
-  const a = () => {};
+  const a = () => [null, none()];
 
-  const generator = effectManager(dispatch);
-  generator.next(thunk(() => a));
+  runEffect(dispatch, thunk(() => act(a)));
 
   t.is(dispatch.callCount, 1);
 
   t.truthy(dispatch.calledWithExactly(a));
-
-  generator.return();
 });
 
 test('effectManager can compose effects through batch', async (t) => {
   const dispatch = sinon.fake();
 
-  const a = () => {};
-  const b = () => {};
+  const a = () => [null, none()];
+  const b = () => [null, none()];
 
-  const generator = effectManager(dispatch);
-  generator.next(batch([
-    thunk(() => a),
-    defer(b),
+  runEffect(dispatch, batch([
+    thunk(() => act(a)),
+    act(b),
   ]));
 
   await new Promise((resolve) => setTimeout(resolve, 0));
@@ -99,20 +76,5 @@ test('effectManager can compose effects through batch', async (t) => {
   t.is(dispatch.callCount, 2);
   t.truthy(dispatch.calledWithExactly(a));
   t.truthy(dispatch.calledWithExactly(b));
-
-  generator.return();
 });
 
-test('effectManager can pass through an action', (t) => {
-  const dispatch = sinon.fake();
-
-  const a = () => {};
-
-  const generator = effectManager(dispatch);
-  generator.next(a);
-
-  t.is(dispatch.callCount, 1);
-  t.truthy(dispatch.calledWithExactly(a));
-
-  generator.return();
-});

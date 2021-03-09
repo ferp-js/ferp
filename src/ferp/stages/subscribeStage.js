@@ -1,7 +1,3 @@
-/* eslint-disable no-restricted-syntax */
-
-import { make, stop, STOP_GENERATOR } from './make';
-
 class Subscription {
   static isSubscription(subscription) {
     return Array.isArray(subscription) && typeof subscription[0] === 'function';
@@ -82,22 +78,18 @@ const subscribeDiff = (previous, current) => current.reduce(
   },
 );
 
-function* subscribeGenerator(dispatch, subscribeFn) {
-  let subscriptions = [];
+export const subscribeStage = (subscriptions, state, subscribe) => (action) => {
+  if (!subscribe) return action;
 
-  while (true) {
-    const state = yield subscriptions;
-    if (state === STOP_GENERATOR) break;
+  const { all, toStart, toStop } = subscribeDiff(
+    subscriptions.get(),
+    subscribe(state.get()),
+  );
 
-    const current = toSubscriptionList(subscribeFn(state));
-    const { all, toStart, toStop } = subscribeDiff(subscriptions, current);
-    toStart.forEach((sub) => sub.start(dispatch));
-    toStop.forEach((sub) => sub.stop());
-    subscriptions = all;
-  }
+  toStart.forEach((sub) => sub.start());
+  toStop.forEach((sub) => sub.stop());
 
-  subscriptions.forEach((sub) => sub.stop());
-}
+  subscriptions.set(all);
 
-export const subscribe = (dispatch, subscribeFn) => make(dispatch, subscribeGenerator, subscribeFn);
-export const unsubscribe = (subscribeIterator) => stop(subscribeIterator);
+  return action;
+};

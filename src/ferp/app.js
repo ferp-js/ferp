@@ -1,50 +1,26 @@
-import { stateManager } from './stateManager.js';
-import { effectManager } from './effectManager.js';
-import { messageManager } from './messageManager.js';
-import { ofStateManager } from './ofStateManager.js';
+import { actionStage } from './stages/actionStage.js';
+import { subscribeStage } from './stages/subscribeStage.js';
+import { observeStage } from './stages/observeStage.js';
+import { effectStage } from './stages/effectStage.js';
 
-export const app = ({
-  init,
-  ofState,
-  observe,
-}) => {
-  const state = stateManager();
-  const messages = messageManager();
+import { pipeline } from './util/pipeline.js';
+import { mutable } from './util/mutable.js';
 
-  const observeFn = observe || (() => {});
-  const dispatch = (params) => {
-    setTimeout(() => {
-      messages.dispatch(params);
-    }, 0);
+export const app = ({ init, subscribe, observe }) => {
+  const state = mutable();
+  const effect = mutable();
+  const subscriptions = mutable([]);
+
+  const dispatch = (action) => {
+    pipeline(
+      actionStage(state, effect),
+      subscribeStage(subscriptions, state, subscribe),
+      observeStage(state, effect, observe),
+      effectStage(effect, dispatch),
+    )(action);
   };
 
-  const manageEffects = effectManager(dispatch);
-  const manageOfState = ofStateManager(dispatch, init[0], ofState);
+  dispatch(function ferpInit() { return init; }); // eslint-disable-line prefer-arrow-callback
 
-  const runUpdate = (message) => {
-    observeFn(message);
-    if (typeof message === 'function') {
-      dispatch(message(state.get()));
-      return;
-    }
-    const [nextState, nextEffect] = message;
-    if (!nextEffect) {
-      throw new ReferenceError(`App.init or each action must be an [state, effect] tuple, but you gave [${nextState}, ${nextEffect}]`);
-    }
-    state.set(nextState);
-    manageOfState.next(nextState);
-    manageEffects.next(nextEffect);
-  };
-
-  messages.onDispatch(runUpdate);
-
-  runUpdate(init);
-
-  return {
-    dispatch,
-    detach: () => {
-      manageEffects.return();
-      manageOfState.return();
-    },
-  };
+  return dispatch;
 };

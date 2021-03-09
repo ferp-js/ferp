@@ -2,132 +2,80 @@ import test from 'ava';
 
 import * as ferp from '../ferp.js';
 
-const { none, batch, defer } = ferp.effects;
+const { none, batch, defer, thunk, act } = ferp.effects;
 
-const defaultUpdate = (_, state) => [state, none()];
-
-const createApp = (args) => ferp.app({
-  init: args.init,
-  update: args.update || defaultUpdate,
-});
-
-test.cb('update does not get called with no init effect', (t) => {
-  t.plan(0);
-
-  let timeout = null;
-  const callEndSoon = () => {
-    if (timeout) clearTimeout(timeout);
-    timeout = setTimeout(t.end, 10);
-  };
-
-  callEndSoon();
-  createApp({
-    init: [null, none()],
-    update: (message, state) => {
-      t.fail('should not update');
-      return [state, none()];
-    },
-  });
-});
-
-test.cb('initial effect calls update', (t) => {
+test.cb('runs an action function as an effect', (t) => {
   t.plan(1);
 
-  createApp({
-    init: [null, { type: 'TEST' }],
-    update: (message, state) => {
-      t.deepEqual(message, { type: 'TEST' });
-      t.end();
-      return [state, none()];
-    },
+  const testAction = function x(oldState) {
+    t.is(oldState, false);
+    t.end();
+    return [true, none()];
+  };
+
+  ferp.app({
+    init: [false, act(testAction)],
   });
 });
 
-test.cb('an initial mapped set of effects calls update multiple times', (t) => {
-  t.plan(3);
+test.cb('an initial batch of effects runs in order', (t) => {
+  t.plan(6);
 
-  const expectedOrder = ['TEST1', 'TEST2', 'TEST3'];
+  const expectedActions = [];
 
-  createApp({
-    init: [
-      null,
-      batch([
-        { type: 'TEST1' },
-        { type: 'TEST2' },
-        { type: 'TEST3' },
-      ]),
-    ],
-    update: (message, state) => {
-      const expectedType = expectedOrder.shift();
-      t.is(message.type, expectedType);
-      if (expectedOrder.length === 0) t.end();
+  const action = (count) => {
+    const innerAction = (state) => {
+      t.is(state, count - 1);
+      const expectedAction = expectedActions.shift();
+      t.is(innerAction, expectedAction);
+      if (expectedActions.length === 0) {
+        t.end();
+      }
+      return [count, none()];
+    };
 
-      return [state, none()];
-    },
-  });
-});
+    return innerAction;
+  };
 
-test.cb('effects run in a deterministic order', (t) => {
-  const expectedOrder = ['TEST3', 'TEST2', 'TEST4', 'TEST1'];
-  t.plan(expectedOrder.length);
+  expectedActions.push(action(1));
+  expectedActions.push(action(2));
+  expectedActions.push(action(3));
 
-  createApp({
-    init: [
-      null,
-      batch([
-        batch([
-          { type: 'TEST3' },
-          batch([
-            { type: 'TEST2' },
-            { type: 'TEST4' },
-          ]),
-        ]),
-        { type: 'TEST1' },
-      ]),
-    ],
-    update: (message, state) => {
-      const expectedType = expectedOrder.shift();
-      t.is(message.type, expectedType);
-      if (expectedOrder.length === 0) t.end();
-
-      return [state, none()];
-    },
+  ferp.app({
+    init: [0, batch(expectedActions.map(act))],
   });
 });
 
 test.cb('deferred effects run later', (t) => {
-  const laterMessage = { type: 'from promise' };
-  createApp({
+  const delay = (fx) => thunk(() => defer((resolve) => {
+    setTimeout(resolve, 1, fx);
+  }));
+
+  const expectedValues = [
+    Math.random() * 1000,
+    Math.random() * 1000,
+  ];
+
+  const setNum = (num) => {
+    const innerAction = () => {
+      const expectedValue = expectedValues.shift();
+      t.is(num, expectedValue);
+      if (expectedValues.length === 0) {
+        t.end();
+      }
+      return [num, none()];
+    };
+
+    return innerAction;
+  };
+
+  ferp.app({
     init: [
-      null,
-      defer(new Promise((resolve) => resolve(laterMessage))),
+      0,
+      batch([
+        delay(act(setNum(expectedValues[1]))),
+        act(setNum(expectedValues[0])),
+      ]),
     ],
-    update: (message, state) => {
-      t.deepEqual(message, laterMessage);
-      t.end();
-
-      return [state, none()];
-    },
   });
-});
-
-test('detaching app cleans up subscriptions, and prevents further dispatches', async (t) => {
-  let didDetach = false;
-  const detach = createApp({
-    init: [
-      null,
-      'keep going',
-    ],
-    update: (message, state) => {
-      if (didDetach) t.fail('Detached, but updates are still active');
-      return [state, 'keep going'];
-    },
-  });
-
-  await new Promise((resolve) => setTimeout(resolve, 1000));
-  detach();
-  // Allow tick for next effects to get new dispatch
-  await new Promise((resolve) => setTimeout(resolve, 0));
-  didDetach = true;
-  t.pass('Detach prevented further dispatches');
 });
