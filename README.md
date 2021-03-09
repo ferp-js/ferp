@@ -53,10 +53,10 @@ Or grab it from unpkg
 
 ```js
 // es6
-import { app, effects, util } from 'ferp';
+import { app, effects } from 'ferp';
 
 // unpkg
-import { app, effects, util } from 'https://unpkg.com/ferp?module=1';
+import { app, effects } from 'https://unpkg.com/ferp?module=1';
 
 // from a script tag
 // <script src="https://unpkg.com/ferp"></script>
@@ -78,28 +78,18 @@ Here's an app that infinitely adds a counter, and logs it.
 const ferp = require('ferp');
 
 const initialState = 0;
-const incrementMessage = 1;
+
+const incrementAction = (state) => [state + 1, ferp.effects.act(incrementAction)];
 
 ferp.app({
-  init: [initialState, incrementMessage],
-  update: (message, state) => {
-    if (message === incrementMessage) {
-      return [
-        state + 1,
-        incrementMessage,
-      ];
-    }
-
-    return [state, ferp.effects.none()]; // If we were ever to get a non-increment message, don't lose the state!
-  },
+  init: [initialState, ferp.effects.act(incrementAction)],
 });
 ```
 
 ### Quick anatomy of an app
 
-Every app needs `init` and `update` functions.
-Both of these functions must return an array where the first element is the latest state, and the second is an effect you'd like to run, just like `[state, ferp.effects.none()]`.
-Effects are also an opportunity to run impure code in a controlled way.
+Every app needs an `init` tuple, with the initial state, and initial side effect (or `ferp.effects.none()` if there isn't one).
+There is also a `subscribe` method for managing long-term side-effects, like intervals or websocket communication, and `observe` to watch for application changes.
 
 You can read more about setting up an application [here in the docs](./docs/index.md).
 
@@ -112,7 +102,6 @@ You can read more about setting up an application [here in the docs](./docs/inde
  - [Extended anatomy of an app](./docs/index.md)
  - [Effects](./src/ferp/effects/README.md)
  - [Subscriptions](./src/ferp/subscriptions/README.md)
- - [Utility](./src/ferp/util/README.md)
 
 ## Still have questions?
 
