@@ -14,7 +14,7 @@ export const app = ({ init, subscribe, observe }) => {
   const dispatch = (action) => {
     pipeline(
       actionStage(state, effect),
-      subscribeStage(subscriptions, state, subscribe),
+      subscribeStage(subscriptions, state, dispatch, subscribe),
       observeStage(state, effect, observe),
       effectStage(effect, dispatch),
     )(action);
