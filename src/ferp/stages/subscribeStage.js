@@ -1,95 +1,40 @@
-class Subscription {
-  static isSubscription(subscription) {
-    return Array.isArray(subscription) && typeof subscription[0] === 'function';
-  }
-
-  constructor([subscriptionFn, ...params]) {
-    this.subscriptionFn = subscriptionFn;
-    this.params = params;
-    this.instance = null;
-  }
-
-  valueOf() {
-    return {
-      subscriptionFn: this.subscriptionFn,
-      params: [...this.params],
-      instance: this.instance,
-    };
-  }
-
-  start(dispatch) {
-    this.instance = this.subscriptionFn(dispatch, ...this.params);
-  }
-
-  stop() {
-    return this.instance();
-  }
-
-  isSameAs(otherSubscription) {
-    return this.isSameFn(otherSubscription) && this.isSameParams(otherSubscription);
-  }
-
-  isSameFn(otherSubscription) {
-    return otherSubscription.subscriptionFn === this.subscriptionFn;
-  }
-
-  isSameParams(otherSubscription) {
-    const sameParamCount = this.params.length === otherSubscription.params.length;
-    return sameParamCount && otherSubscription.params.every((otherParam, index) => (
-      this.params[index] == otherParam // eslint-disable-line eqeqeq
-    ));
-  }
-}
-
-const toSubscriptionList = (subscriptions) => subscriptions.reduce(
-  (memo, subscription) => {
-    if (!subscription) return memo;
-
-    const toAppend = Subscription.isSubscription(subscription)
-      ? [new Subscription(subscription)]
-      : toSubscriptionList(subscription);
-
-    return [...memo, ...toAppend];
-  },
-  [],
-);
+import * as subscription from '../subscriptions/core.js';
 
 const subscribeDiff = (previous, current) => current.reduce(
   (memo, currentSubscription) => {
     const previousIndex = memo.toStop.findIndex(
-      (prev) => prev.isSameAs(currentSubscription),
+      (prev) => subscription.isSame(prev, currentSubscription),
     );
 
     if (previousIndex >= 0) {
       const previousSubscription = memo.toStop[previousIndex];
       memo.toStop.splice(previousIndex, 1);
-      memo.all.push(previousSubscription);
+      memo.toContinue.push(previousSubscription);
     } else {
       memo.toStart.push(currentSubscription);
-      memo.all.push(currentSubscription);
     }
 
     return memo;
   },
   {
-    all: [],
+    toContinue: [],
     toStart: [],
     toStop: [...previous],
   },
 );
 
-export const subscribeStage = (subscriptions, state, subscribe) => (action) => {
+export const subscribeStage = (subscriptions, state, dispatch, subscribe) => (action) => {
   if (!subscribe) return action;
 
-  const { all, toStart, toStop } = subscribeDiff(
+  const { toContinue, toStart, toStop } = subscribeDiff(
     subscriptions.get(),
-    subscribe(state.get()),
+    subscription.collect(subscribe(state.get())),
   );
 
-  toStart.forEach((sub) => sub.start());
-  toStop.forEach((sub) => sub.stop());
+  const newSubs = toStart.map(subscription.start(dispatch));
+  toStop.forEach(subscription.stop);
 
-  subscriptions.set(all);
+  subscriptions.set(toContinue.concat(newSubs));
 
   return action;
 };
