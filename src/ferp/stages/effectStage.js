@@ -1,4 +1,5 @@
 import { effectTypes, act, none } from '../effects/core.js';
+import { log } from '../util/log.js';
 
 const runEffect = (dispatch, effect) => {
   switch (effect && effect.type) {
@@ -19,11 +20,11 @@ const runEffect = (dispatch, effect) => {
 
     default:
       if (typeof effect === 'function') {
-        console.warn('DEPRECATION', 'Instead of being able to pass messages directly, you must use ferp.effects.act(yourActionHere)');
-        console.warn(' -- ', 'For now, ferp will behave as if you have used the act effect, but in the future, this will produce an error');
+        log.stdwarn('DEPRECATION', 'Instead of being able to pass messages directly, you must use ferp.effects.act(yourActionHere)');
+        log.stdwarn(' -- ', 'For now, ferp will behave as if you have used the act effect, but in the future, this will produce an error');
         return dispatch(act(effect));
       }
-      console.warn('*** unable to run effect', effect, effect && effect.toString(), ' ***');
+      log.stdwarn('*** unable to run effect', effect, effect && effect.toString(), ' ***');
       break;
   }
   return dispatch(none());

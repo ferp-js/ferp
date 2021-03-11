@@ -18,6 +18,16 @@ test('defer has a promise', (t) => {
   t.truthy(effect.promise instanceof Promise);
 });
 
+test('defer can accept a promise', (t) => {
+  const effect = core.defer(new Promise((resolve) => resolve()));
+  t.truthy(effect.promise instanceof Promise);
+});
+
+test('defer can accept a promise constructor function', (t) => {
+  const effect = core.defer((resolve) => resolve());
+  t.truthy(effect.promise instanceof Promise);
+});
+
 test('thunk has a method', (t) => {
   const effect = core.thunk(() => ({}));
   t.truthy(typeof effect.method, 'function');
