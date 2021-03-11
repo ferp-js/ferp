@@ -6,3 +6,5 @@ dist
 coverage
 examples/**/package-lock.json
 ferp.js
+ferp.min.js
+ferp.esm.js
