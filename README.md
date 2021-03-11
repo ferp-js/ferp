@@ -60,10 +60,10 @@ import { app, effects } from 'https://unpkg.com/ferp?module=1';
 
 // from a script tag
 // <script src="https://unpkg.com/ferp"></script>
-const { app, effects, util } = window.ferp;
+const { app, effects } = window.ferp;
 
 // es5/node
-const { app, effects, util } = require('ferp');
+const { app, effects } = require('ferp');
 ```
 
 ## Migrating from 0.x to 1.x
@@ -91,20 +91,14 @@ ferp.app({
 Every app needs an `init` tuple, with the initial state, and initial side effect (or `ferp.effects.none()` if there isn't one).
 There is also a `subscribe` method for managing long-term side-effects, like intervals or websocket communication, and `observe` to watch for application changes.
 
-You can read more about setting up an application [here in the docs](./docs/index.md).
+You can read more about setting up an application [here in the docs](https://ferp.mrbarry.com/).
 
 ## More docs
 
- - [The (git) book](https://app.gitbook.com/@ferp-js/s/ferp/)
- - [Testing Guide](./TESTING.md)
+ - [The (git) book](https://ferp.mrbarry.com/)
  - [Some examples (their dependencies may occasionally be outdated)](https://github.com/ferp-js/examples)
- - [Internals](./INTERNALS.md)
- - [Extended anatomy of an app](./docs/index.md)
- - [Effects](./src/ferp/effects/README.md)
- - [Subscriptions](./src/ferp/subscriptions/README.md)
 
 ## Still have questions?
 
  - [Open an issue](https://github.com/ferp-js/ferp/issues/new), we're happy to answer any of your questions, or investigate how to fix a bug.
- - [Join us on reddit](https://www.reddit.com/r/ferp), show off what you're doing, post tutorials, or just hang out, but keep things ferp related please.
  - [Chat with us on gitter](https://gitter.im/mrozbarry/ferp), we'll try to be quick to respond.
