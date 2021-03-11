@@ -1,7 +1,6 @@
 import test from 'ava';
 
 import * as ferp from '../ferp.js';
-
 const { none, batch, defer, thunk, act } = ferp.effects;
 
 test.cb('runs an action function as an effect', (t) => {
@@ -18,31 +17,34 @@ test.cb('runs an action function as an effect', (t) => {
   });
 });
 
-test.cb('an initial batch of effects runs in order', (t) => {
-  t.plan(6);
+test('an initial batch of effects runs in order', (t) => {
+  t.plan(4);
 
-  const expectedActions = [];
+  const firstAction = () => [1, none()];
+  const secondAction = () => [2, none()];
+  const thirdAction = () => [3, none()];
 
-  const action = (count) => {
-    const innerAction = (state) => {
-      t.is(state, count - 1);
-      const expectedAction = expectedActions.shift();
-      t.is(innerAction, expectedAction);
-      if (expectedActions.length === 0) {
-        t.end();
-      }
-      return [count, none()];
-    };
 
-    return innerAction;
-  };
-
-  expectedActions.push(action(1));
-  expectedActions.push(action(2));
-  expectedActions.push(action(3));
+  const expectedActionNames = [
+    'ferpAppInitialize',
+    'firstAction',
+    'secondAction',
+    'thirdAction',
+  ];
 
   ferp.app({
-    init: [0, batch(expectedActions.map(act))],
+    init: [
+      0,
+      batch([
+        act(firstAction),
+        act(secondAction),
+        act(thirdAction),
+      ]),
+    ],
+    observe: (_, actionName) => {
+      const expectedActionName = expectedActionNames.shift();
+      t.is(actionName, expectedActionName);
+    },
   });
 });
 

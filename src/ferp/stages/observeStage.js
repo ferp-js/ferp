@@ -1,9 +1,9 @@
-export const observeStage = (state, effect, observe) => (action) => {
+export const observeStage = (state, effect, annotation, observe) => (action) => {
   if (observe) {
     observe([
       state.get(),
       effect.get(),
-    ], action.name || 'AnonymousAction');
+    ], annotation);
   }
 
   return action;

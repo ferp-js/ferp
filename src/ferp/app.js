@@ -11,16 +11,14 @@ export const app = ({ init, subscribe, observe }) => {
   const effect = mutable();
   const subscriptions = mutable([]);
 
-  const dispatch = (action) => {
-    pipeline(
-      actionStage(state, effect),
-      subscribeStage(subscriptions, state, dispatch, subscribe),
-      observeStage(state, effect, observe),
-      effectStage(effect, dispatch),
-    )(action);
-  };
+  const dispatch = (action, annotation) => pipeline(
+    actionStage(state, effect),
+    subscribeStage(subscriptions, state, dispatch, subscribe),
+    observeStage(state, effect, annotation, observe),
+    effectStage(effect, dispatch),
+  )(action);
 
-  dispatch(function ferpInit() { return init; }); // eslint-disable-line prefer-arrow-callback
+  dispatch(() => init, 'ferpAppInitialize');
 
   return dispatch;
 };

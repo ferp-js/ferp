@@ -20,6 +20,7 @@
    - `init` is what you've always known it to be, the initialization of the app
    - `subscribe` continues to create/manage subscriptions
    - `observe` is a callback that is ran every new state change, and may provide a reasonable way to hook into external systems in a much easier way.
+ - Effects are synchronous by default (except defer), so you may not need to async/await that call to dispatch
 
 ### Performance fixes
 

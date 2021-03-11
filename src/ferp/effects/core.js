@@ -16,4 +16,8 @@ export const none = () => ({ type: effectTypes.none });
 export const batch = (effects) => ({ type: effectTypes.batch, effects: [].concat(effects) });
 export const defer = (promise) => ({ type: effectTypes.defer, promise: asPromise(promise) });
 export const thunk = (method) => ({ type: effectTypes.thunk, method });
-export const act = (action) => ({ type: effectTypes.act, action });
+export const act = (action, ...params) => ({
+  type: effectTypes.act,
+  action: params.length > 0 ? action(...params) : action,
+  name: action.alias || action.name,
+});

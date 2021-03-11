@@ -1,4 +1,4 @@
-import * as app from './ferp/app.js';
+import { app } from './ferp/app.js';
 import * as core from './ferp/effects/core.js';
 import { sub } from './ferp/subscriptions/core.js';
 
