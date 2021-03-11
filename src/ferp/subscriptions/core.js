@@ -45,4 +45,4 @@ export const collect = (list) => list.reduce(
   [],
 );
 
-export const fx = (subscriptionFunction, ...params) => [subscriptionFunction, ...params];
+export const sub = (subscriptionFunction, ...params) => [subscriptionFunction, ...params];
