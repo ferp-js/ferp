@@ -20,17 +20,7 @@ test('calls observe with the state-effect tuple, and the current action name', (
   const myAction = () => [];
   const observe = sinon.fake();
 
-  observeStage(state, effect, observe)(myAction);
+  observeStage(state, effect, 'myAction', observe)(myAction);
 
   t.truthy(observe.calledOnceWithExactly(['state', none()], 'myAction'));
-});
-
-test('calls observe with the state-effect tuple, but fills in anonymous action name', (t) => {
-  const state = mutable('state');
-  const effect = mutable(none());
-  const observe = sinon.fake();
-
-  observeStage(state, effect, observe)(() => [null, none()]);
-
-  t.truthy(observe.calledOnceWithExactly(['state', none()], 'AnonymousAction'));
 });

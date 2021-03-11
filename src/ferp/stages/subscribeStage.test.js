@@ -1,6 +1,6 @@
 import test from 'ava';
 import sinon from 'sinon';
-import { fx } from '../subscriptions/core.js';
+import { sub } from '../subscriptions/core.js';
 import { subscribeStage } from './subscribeStage.js';
 import { mutable } from '../util/mutable.js';
 
@@ -39,7 +39,7 @@ test('starts and stops a subscription', (t) => {
     return cancel;
   });
   const subscribeFn = (toggle) => [
-    toggle && fx(mySub),
+    toggle && sub(mySub),
   ];
 
   subscribeStage(subscriptions, state, dispatch, subscribeFn)(action);
@@ -63,7 +63,7 @@ test('restarts a subscription', (t) => {
   const cancel = sinon.fake();
   const mySub = sinon.fake(() => cancel);
   const subscribeFn = ({ toggle, value }) => [
-    toggle && fx(mySub, value),
+    toggle && sub(mySub, value),
   ];
 
   subscribeStage(subscriptions, state, dispatch, subscribeFn)(action);
