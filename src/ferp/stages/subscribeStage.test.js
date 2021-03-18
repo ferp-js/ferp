@@ -83,3 +83,33 @@ test('restarts a subscription', (t) => {
   subscribeStage(subscriptions, state, dispatch, subscribeFn)(action);
   t.is(cancel.callCount, 2);
 });
+
+test('runs a subscription for multiple state updates', (t) => {
+  const dispatch = sinon.fake();
+  const subscriptions = mutable([]);
+  const state = mutable(1);
+  const action = {};
+
+  const cancel = sinon.fake();
+  const mySub = sinon.fake(() => cancel);
+  const subscribeFn = (currentState) => [
+    currentState > 0 && sub(mySub, 1),
+  ];
+
+  subscribeStage(subscriptions, state, dispatch, subscribeFn)(action);
+
+  t.is(mySub.callCount, 1);
+  t.truthy(mySub.calledWithExactly(dispatch, 1), 'Subscription started with dispatch and value');
+  t.falsy(cancel.calledOnce, 'Subscription not cancelled');
+
+  state.set(2);
+  subscribeStage(subscriptions, state, dispatch, subscribeFn)(action);
+
+  t.is(mySub.callCount, 1);
+  t.truthy(mySub.calledWithExactly(dispatch, 1), 'Subscription unchanged');
+  t.falsy(cancel.calledOnce, 'Subscription not cancelled');
+
+  state.set(0);
+  subscribeStage(subscriptions, state, dispatch, subscribeFn)(action);
+  t.is(cancel.callCount, 1);
+});
