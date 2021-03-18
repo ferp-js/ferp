@@ -17,6 +17,10 @@ export const app = ({ init, subscribe, observe }) => {
     observeStage(state, effect, annotation, observe),
     effectStage(effect, dispatch),
   )(action);
+  dispatch.after = (action, annotation) => setTimeout(
+    () => dispatch(action, annotation),
+    0,
+  );
 
   dispatch(() => init, 'ferpAppInitialize');
 
