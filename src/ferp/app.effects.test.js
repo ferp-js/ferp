@@ -1,7 +1,14 @@
 import test from 'ava';
 
 import * as ferp from '../ferp.js';
-const { none, batch, defer, thunk, act } = ferp.effects;
+
+const {
+  none,
+  batch,
+  defer,
+  thunk,
+  act,
+} = ferp.effects;
 
 test.cb('runs an action function as an effect', (t) => {
   t.plan(1);
@@ -78,6 +85,33 @@ test.cb('deferred effects run later', (t) => {
         delay(act(setNum(expectedValues[1]))),
         act(setNum(expectedValues[0])),
       ]),
+    ],
+  });
+});
+
+test.cb.only('subscription runs', (t) => {
+  t.plan(3);
+
+  const expectedValues = [2, 1];
+
+  const Decrement = (state) => [state - 1, none()];
+
+  const mySub = (dispatch, a) => {
+    const expectedValue = expectedValues.shift();
+    t.is(a, expectedValue);
+
+    dispatch.after(Decrement);
+
+    return () => {
+      t.pass();
+      t.end();
+    };
+  };
+
+  ferp.app({
+    init: [2, none()],
+    subscribe: (state) => [
+      state > 0 && [mySub, state],
     ],
   });
 });

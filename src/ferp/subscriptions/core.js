@@ -24,7 +24,8 @@ const isSameFunction = (subA, subB) => subA.function === subB.function;
 
 const isSameParameters = (subA, subB) => {
   const sameLength = subA.parameters.length === subB.parameters.length;
-  return sameLength && subA.parameters.every((value, index) => value === subB.parameters[index]);
+  return sameLength
+    && subA.parameters.every((value, index) => value === subB.parameters[index]);
 };
 
 export const isSame = (subA, subB) => (
