@@ -35,3 +35,13 @@ test('can start a subscription', (t) => {
   t.deepEqual(startedSub.parameters, idleSub.parameters);
   t.truthy(subFn.calledOnceWith(dispatch), 'Subscription started with dispatch parameter');
 });
+
+test('collect flattens nested subscriptions', (t) => {
+  const sub = () => {};
+
+  const list = [[[sub, {}]]];
+
+  t.deepEqual(core.collect(list), [
+    { function: sub, parameters: [{}], cancel: null },
+  ])
+});
