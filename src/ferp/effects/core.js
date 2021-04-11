@@ -6,6 +6,9 @@ export const effectTypes = {
   act: Symbol('act'),
 };
 
+const thunkMethodKey = Symbol('method');
+export const runThunk = (thunk) => thunk[thunkMethodKey];
+
 const asPromise = (value) => {
   if (value instanceof Promise) return value;
   if (typeof value === 'function') return new Promise(value);
@@ -15,7 +18,11 @@ const asPromise = (value) => {
 export const none = () => ({ type: effectTypes.none });
 export const batch = (effects) => ({ type: effectTypes.batch, effects: [].concat(effects) });
 export const defer = (promise) => ({ type: effectTypes.defer, promise: asPromise(promise) });
-export const thunk = (method) => ({ type: effectTypes.thunk, method });
+export const thunk = (method, methodName) => ({
+  type: effectTypes.thunk,
+  [thunkMethodKey]: method,
+  methodName: method.alias || method.name || methodName,
+});
 export const act = (action, ...params) => ({
   type: effectTypes.act,
   action,
