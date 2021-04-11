@@ -73,3 +73,17 @@ test('can run a thunk effect with act', (t) => {
 
   t.is(dispatch.callCount, 1);
 });
+
+test('can act from effect with params', (t) => {
+  const dispatch = sinon.fake();
+  const innerAction = sinon.fake((state) => [state, none()]);
+  const action = sinon.fake(() => innerAction);
+
+  const effect = mutable(act(action, 1, 2));
+
+  effectStage(effect, dispatch)();
+
+  t.is(dispatch.callCount, 1);
+  t.truthy(action.calledOnceWithExactly(1, 2), 'action was called');
+  t.is(innerAction.callCount, 0);
+});

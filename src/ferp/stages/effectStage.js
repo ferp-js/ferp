@@ -15,7 +15,12 @@ const runEffect = (dispatch, effect) => {
       return runEffect(dispatch, effect.method());
 
     case effectTypes.act:
-      return dispatch(effect.action, effect.name);
+      return dispatch(
+        effect.params.length > 0
+          ? effect.action(...effect.params)
+          : effect.action,
+        effect.name,
+      );
 
     default: {
       if (typeof effect === 'function') {
