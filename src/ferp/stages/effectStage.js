@@ -1,4 +1,4 @@
-import { effectTypes, act } from '../effects/core.js';
+import { effectTypes, runThunk, act } from '../effects/core.js';
 
 const runEffect = (dispatch, effect) => {
   switch (effect && effect.type) {
@@ -12,7 +12,7 @@ const runEffect = (dispatch, effect) => {
       return effect.promise.then((fx) => runEffect(dispatch, fx));
 
     case effectTypes.thunk:
-      return runEffect(dispatch, effect.method());
+      return runEffect(dispatch, runThunk(effect));
 
     case effectTypes.act:
       return dispatch(
