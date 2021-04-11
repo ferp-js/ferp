@@ -3,7 +3,7 @@
   "module": "ferp.esm.js",
   "main": "ferp.min.js",
   "description": "Build functional and pure applications in NodeJS and the Browser!",
-  "version": "2.0.0-beta.2",
+  "version": "2.0.0-beta.3",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ferp-js/ferp.git"
