@@ -7,7 +7,7 @@ export const effectTypes = {
 };
 
 const thunkMethodKey = Symbol('method');
-export const runThunk = (thunk) => thunk[thunkMethodKey];
+export const runThunk = (thunk) => thunk[thunkMethodKey]();
 
 const asPromise = (value) => {
   if (value instanceof Promise) return value;
