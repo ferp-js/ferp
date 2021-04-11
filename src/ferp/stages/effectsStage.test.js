@@ -67,11 +67,13 @@ test('can run a deferred effect with act', async (t) => {
 
 test('can run a thunk effect with act', (t) => {
   const dispatch = sinon.fake();
-  const effect = mutable(thunk(() => act(() => [])));
+  const action = () => {};
+  const effect = mutable(thunk(() => act(action)));
 
   effectStage(effect, dispatch)();
 
   t.is(dispatch.callCount, 1);
+  t.deepEqual(dispatch.getCall(0).args[0], action);
 });
 
 test('can act from effect with params', (t) => {
@@ -87,3 +89,4 @@ test('can act from effect with params', (t) => {
   t.truthy(action.calledOnceWithExactly(1, 2), 'action was called');
   t.is(innerAction.callCount, 0);
 });
+
