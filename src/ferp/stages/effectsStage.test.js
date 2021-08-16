@@ -1,7 +1,13 @@
 import test from 'ava';
 import sinon from 'sinon';
 
-import { none, act, batch, defer, thunk } from '../effects/core.js';
+import {
+  none,
+  act,
+  batch,
+  defer,
+  thunk,
+} from '../effects/core.js';
 import { effectStage } from './effectStage.js';
 import { mutable } from '../util/mutable.js';
 
@@ -53,7 +59,7 @@ test('can run batched effect with act', async (t) => {
   t.is(dispatch.callCount, 2);
 });
 
-test('can run a deferred effect with act', async (t) => {
+test('can run a deferred effect with promise->act', async (t) => {
   const dispatch = sinon.fake();
   const promise = new Promise((resolve) => resolve(act(() => [])));
   const effect = mutable(defer(promise));
@@ -61,6 +67,26 @@ test('can run a deferred effect with act', async (t) => {
   effectStage(effect, dispatch)();
 
   await promise;
+
+  t.is(dispatch.callCount, 1);
+});
+
+test('can run a deferred effect with promise constructor function->act', async (t) => {
+  const dispatch = sinon.fake();
+  const promise = (resolve) => resolve(act(() => []));
+  const effect = mutable(defer(promise));
+
+  await effectStage(effect, dispatch)();
+
+  t.is(dispatch.callCount, 1);
+});
+
+test('can run a deferred effect with an effect->act', async (t) => {
+  const dispatch = sinon.fake();
+  const promise = act(() => []);
+  const effect = mutable(defer(promise));
+
+  await effectStage(effect, dispatch)();
 
   t.is(dispatch.callCount, 1);
 });

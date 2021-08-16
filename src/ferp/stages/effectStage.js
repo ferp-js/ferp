@@ -1,4 +1,10 @@
-import { effectTypes, runThunk, act } from '../effects/core.js';
+import { effectTypes, act } from '../effects/core.js';
+
+const asPromise = (value) => {
+  if (value instanceof Promise) return value;
+  if (typeof value === 'function') return new Promise(value);
+  return Promise.resolve(value);
+};
 
 const runEffect = (dispatch, effect) => {
   switch (effect && effect.type) {
@@ -9,10 +15,10 @@ const runEffect = (dispatch, effect) => {
       return effect.effects.forEach((fx) => runEffect(dispatch, fx));
 
     case effectTypes.defer:
-      return effect.promise.then((fx) => runEffect(dispatch, fx));
+      return asPromise(effect.promise).then((fx) => runEffect(dispatch, fx));
 
     case effectTypes.thunk:
-      return runEffect(dispatch, runThunk(effect));
+      return runEffect(dispatch, effect.method());
 
     case effectTypes.act:
       return dispatch(

@@ -13,18 +13,8 @@ test('batch has an array of effects', (t) => {
   t.deepEqual(effect.effects, ['a', 'b']);
 });
 
-test('defer has a promise', (t) => {
-  const effect = core.defer(1);
-  t.truthy(effect.promise instanceof Promise);
-});
-
 test('defer can accept a promise', (t) => {
   const effect = core.defer(new Promise((resolve) => resolve()));
-  t.truthy(effect.promise instanceof Promise);
-});
-
-test('defer can accept a promise constructor function', (t) => {
-  const effect = core.defer((resolve) => resolve());
   t.truthy(effect.promise instanceof Promise);
 });
 
