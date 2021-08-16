@@ -12,7 +12,7 @@ import { effectStage } from './effectStage.js';
 import { mutable } from '../util/mutable.js';
 
 test.before((t) => {
-  t.context.sandbox = sinon.createSandbox();
+  t.context.sandbox = sinon.createSandbox(); // eslint-disable-line no-param-reassign
   t.context.sandbox.stub(console, 'warn');
 });
 
@@ -115,4 +115,3 @@ test('can act from effect with params', (t) => {
   t.truthy(action.calledOnceWithExactly(1, 2), 'action was called');
   t.is(innerAction.callCount, 0);
 });
-

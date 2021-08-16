@@ -43,5 +43,5 @@ test('collect flattens nested subscriptions', (t) => {
 
   t.deepEqual(core.collect(list), [
     { function: sub, parameters: [{}], cancel: null },
-  ])
+  ]);
 });

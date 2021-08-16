@@ -31,7 +31,6 @@ test('an initial batch of effects runs in order', (t) => {
   const secondAction = () => [2, none()];
   const thirdAction = () => [3, none()];
 
-
   const expectedActionNames = [
     'ferpAppInitialize',
     'firstAction',
