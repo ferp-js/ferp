@@ -22,9 +22,7 @@ const runEffect = (dispatch, effect) => {
 
     case effectTypes.act:
       return dispatch(
-        effect.params.length > 0
-          ? effect.action(...effect.params)
-          : effect.action,
+        effect.action,
         effect.name,
       );
 
