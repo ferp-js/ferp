@@ -14,9 +14,8 @@ export const thunk = (method, methodName) => ({
   method,
   methodName: methodName || method.alias || method.name,
 });
-export const act = (action, ...params) => ({
+export const act = (action, methodName) => ({
   type: effectTypes.act,
   action,
-  params,
-  name: action.alias || action.name,
+  name: methodName || action.alias || action.name,
 });
