@@ -107,7 +107,7 @@ test('can act from effect with params', (t) => {
   const innerAction = sinon.fake((state) => [state, none()]);
   const action = sinon.fake(() => innerAction);
 
-  const effect = mutable(act(action, 1, 2));
+  const effect = mutable(act(action(1, 2)));
 
   effectStage(effect, dispatch)();
 
