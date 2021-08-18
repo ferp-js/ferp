@@ -88,7 +88,7 @@ test.cb('deferred effects run later', (t) => {
   });
 });
 
-test.cb.only('subscription runs', (t) => {
+test.cb('subscription runs', (t) => {
   t.plan(3);
 
   const expectedValues = [2, 1];
