@@ -1,6 +1,6 @@
 # Ferp Changelog
 
-## 1.3.0 - 2021-03-**
+## 2.0.0 - 2021-08-18
 
 ### News
 
@@ -20,7 +20,8 @@
    - `init` is what you've always known it to be, the initialization of the app
    - `subscribe` continues to create/manage subscriptions
    - `observe` is a callback that is ran every new state change, and may provide a reasonable way to hook into external systems in a much easier way.
- - Effects are synchronous by default (except defer), so you may not need to async/await that call to dispatch
+ - Effects guaranteed to run in series, but keep in mind that `defer` will complete asynchronously.
+ - New `effects.act()` to run an action in side-effects.
 
 ### Performance fixes
 
