@@ -1,3 +1,73 @@
+# Migrating from ferp 1.x to 2.x
+
+## No more app({ update })
+
+Previously, your app entry code may have looked like this:
+
+```javascript
+const ferp = require('ferp');
+
+ferp.app({
+  init: [initialState, initialEffect],
+  update: (message, previousState) => [previousState, ferp.effects.none()],
+  subscribe: (state) => [],
+});
+```
+
+But gone are the days of update+message.
+There were some advantages to this, but ultimately it made testing harder, and encouraged users to expose internal functionality for tests.
+With no update, you might be wondering how to push state changes and new effects into ferp for processing.
+The answer is actions and action builders.
+
+Actions are methods that accept a state, and return `[newState, nextSideEffect]`, just like what update used to return.
+The main difference is that actions are intentionally isolated and much more testable.
+
+For instance, here's is what a basic counter app could look like:
+
+```javascript
+const ferp = require('ferp');
+
+const Increment = (state) => [
+  { ...state, counter: state.counter + 1 },
+  ferp.effects.none(),
+];
+
+const dispatch = ferp.app({
+  init: [{ counter: 0 }, ferp.effects.none()],
+});
+
+dispatch(Increment);
+```
+
+Action builders are very similar, they are functions that return an action function, pre-populated with some contextual variables:
+
+```javascript
+const IncrementBy = (value) => (state) => [
+  { ...state, counter: state.counter + value },
+  effects.none(),
+];
+
+dispatch(IncrementBy(10));
+```
+
+## New act effect
+
+Previously, messages were a type of effect, but with effects having a discrete structure, there could be instances where a message could look like an effect.
+Instead of fighting with that, I thought it would be much easier to code, and to read, a discrete effect for actions.
+
+```javascript
+const Action = (state) => [{ ...state, foo: 'bar' }, effects.none()];
+const ActionBuilder = (value) => (state) => [{ ...state, value }, effects.none()];
+
+const RunActionAndBuilder = (state) => [
+  state,
+  effects.batch([
+    effects.act(Action),
+    effects.act(ActionBuilder(123)),
+  ]),
+];
+```
+
 # Migrating from ferp 0.x to 1.x
 
 ## Minor changes to app initialization
