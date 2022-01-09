@@ -3,19 +3,20 @@
   "module": "ferp.esm.js",
   "main": "ferp.min.js",
   "description": "Build functional and pure applications in NodeJS and the Browser!",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ferp-js/ferp.git"
   },
   "keywords": [
-    "function",
+    "functional",
     "reactive",
     "programming",
     "frp",
     "framework",
     "elm-like",
-    "application"
+    "application",
+    "declarative"
   ],
   "author": "Alex Barry",
   "license": "MIT",

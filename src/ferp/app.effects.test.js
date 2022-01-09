@@ -47,9 +47,9 @@ test('an initial batch of effects runs in order', (t) => {
         act(thirdAction),
       ]),
     ],
-    observe: (_, actionName) => {
+    observe: (props) => {
       const expectedActionName = expectedActionNames.shift();
-      t.is(actionName, expectedActionName);
+      t.is(props.annotation, expectedActionName);
     },
   });
 });

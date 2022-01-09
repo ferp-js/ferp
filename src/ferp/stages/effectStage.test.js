@@ -9,7 +9,6 @@ import {
   thunk,
 } from '../effects/core.js';
 import { effectStage } from './effectStage.js';
-import { mutable } from '../util/mutable.js';
 
 test.before((t) => {
   t.context.sandbox = sinon.createSandbox(); // eslint-disable-line no-param-reassign
@@ -20,41 +19,25 @@ test.after((t) => {
   t.context.sandbox.restore();
 });
 
-test('reports a deprecation warning when an action-function is dispatched', (t) => {
+test('throws if non-effect passed as effect', (t) => {
   const dispatch = sinon.fake();
-  const action = {};
 
-  const actionFn = () => [null, none()];
-  const effect = mutable(actionFn);
+  const effect = {}
+  const props = {
+    fx: {},
+  };
 
-  const result = effectStage(effect, dispatch)(action);
-
-  t.deepEqual(action, result);
-
-  t.truthy(console.warn.calledWith('DEPRECATION')); // eslint-disable-line no-console
-  t.truthy(dispatch.calledOnceWithExactly(act(actionFn)));
+  t.throws(() => effectStage(dispatch)(props));
+  t.truthy(dispatch.notCalled);
 });
 
-test('throws TypeError when there is an unrecognized effect', (t) => {
+test('can run batched effect with act', (t) => {
   const dispatch = sinon.fake();
+  const props = {
+    fx: batch([act(() => []), act(() => [])]),
+  }
 
-  const effect = mutable('foo');
-
-  const error = t.throws(
-    () => effectStage(effect, dispatch)(),
-    {
-      instanceOf: TypeError,
-      message: 'Unable to run effect',
-    },
-  );
-  t.is(error.effect, 'foo');
-});
-
-test('can run batched effect with act', async (t) => {
-  const dispatch = sinon.fake();
-  const effect = mutable(batch([act(() => []), act(() => [])]));
-
-  effectStage(effect, dispatch)();
+  effectStage(dispatch)(props);
 
   t.is(dispatch.callCount, 2);
 });
@@ -62,9 +45,11 @@ test('can run batched effect with act', async (t) => {
 test('can run a deferred effect with promise->act', async (t) => {
   const dispatch = sinon.fake();
   const promise = new Promise((resolve) => resolve(act(() => [])));
-  const effect = mutable(defer(promise));
+  const props = {
+    fx: defer(promise),
+  };
 
-  effectStage(effect, dispatch)();
+  effectStage(dispatch)(props);
 
   await promise;
 
@@ -74,19 +59,23 @@ test('can run a deferred effect with promise->act', async (t) => {
 test('can run a deferred effect with promise constructor function->act', async (t) => {
   const dispatch = sinon.fake();
   const promise = (resolve) => resolve(act(() => []));
-  const effect = mutable(defer(promise));
+  const props = {
+    fx: defer(promise),
+  };
 
-  await effectStage(effect, dispatch)();
+  await effectStage(dispatch)(props);
 
   t.is(dispatch.callCount, 1);
 });
 
 test('can run a deferred effect with an effect->act', async (t) => {
   const dispatch = sinon.fake();
-  const promise = act(() => []);
-  const effect = mutable(defer(promise));
+  const actEffect = act(() => []);
+  const props = {
+    fx: defer(actEffect),
+  };
 
-  await effectStage(effect, dispatch)();
+  await effectStage(dispatch)(props);
 
   t.is(dispatch.callCount, 1);
 });
@@ -94,9 +83,11 @@ test('can run a deferred effect with an effect->act', async (t) => {
 test('can run a thunk effect with act', (t) => {
   const dispatch = sinon.fake();
   const action = () => {};
-  const effect = mutable(thunk(() => act(action)));
+  const props = {
+    fx: thunk(() => act(action)),
+  };
 
-  effectStage(effect, dispatch)();
+  effectStage(dispatch)(props);
 
   t.is(dispatch.callCount, 1);
   t.deepEqual(dispatch.getCall(0).args[0], action);
@@ -107,9 +98,11 @@ test('can act from effect with params', (t) => {
   const innerAction = sinon.fake((state) => [state, none()]);
   const action = sinon.fake(() => innerAction);
 
-  const effect = mutable(act(action(1, 2)));
+  const props = {
+    fx: act(action(1, 2)),
+  };
 
-  effectStage(effect, dispatch)();
+  effectStage(dispatch)(props);
 
   t.is(dispatch.callCount, 1);
   t.truthy(action.calledOnceWithExactly(1, 2), 'action was called');

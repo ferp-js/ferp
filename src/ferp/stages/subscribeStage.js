@@ -22,16 +22,22 @@ const subscribeDiff = (previous, current) => current.reduce(
   },
 );
 
-export const subscribeStage = (subscriptions, state, dispatch, subscribe) => (action) => {
-  if (subscribe) {
+export const subscribeStage = (setSubscriptions, dispatch, subscribe) => (props) => {
+  if (!subscribe) return props;
+
+  let subscriptions = [];
     const { active, stopped } = subscribeDiff(
-      subscriptions.get(),
-      subscription.collect(subscribe(state.get())),
+      props.subscriptions,
+      subscription.collect(subscribe(props.state)),
     );
 
-    subscriptions.set(active.map((sub) => (sub.cancel ? sub : subscription.start(dispatch)(sub))));
-    stopped.forEach(subscription.stop);
-  }
+    subscriptions = active.map((sub) => (sub.cancel ? sub : subscription.start(dispatch)(sub)));
 
-  return action;
+    setSubscriptions(subscriptions);
+    stopped.forEach(subscription.stop);
+
+  return {
+    ...props,
+    subscriptions,
+  };
 };

@@ -1,8 +1,17 @@
-export const actionStage = (state, effect) => (action) => {
-  const [nextState, nextEffect] = action(state.get());
+export const actionStage = (setState) => (props) => {
+  const [state, fx] = props.action(props.state);
 
-  state.set(nextState);
-  effect.set(nextEffect);
+  if (!fx) {
+    const error = new ReferenceError('No effect given');
+    error.data = props;
+    throw error;
+  }
 
-  return action;
+  setState(state);
+
+  return {
+    ...props,
+    state,
+    fx,
+  };
 };

@@ -27,7 +27,15 @@ The first easy win is extracting and testing the action.
 You can see in the `ferp.effects.act()` call, we have an action, so let's extract that.
 
 ```javascript
-export const addOne = (state) => [state + 1, ferp.effects.none()];
+export const addOne = (state) => [{ ...state, count: state + 1 }, ferp.effects.none()];
+
+export const sendData = (state) => [
+  state,
+  ferp.effects.thunk(() => {
+    state.socket.send(`count=${state.count}`);
+    return ferp.effects.none();
+  }),
+];
 ```
 
 I'd also make sure you can export it.
@@ -38,16 +46,50 @@ If I were using something like jest, the test would look like this:
 
 ```javascript
 import { effects } from 'ferp';
-import { addOne } from './actions.js';
+import * as testing from 'ferp/testing';
+import { addOne, sendData } from './actions.js';
 
 describe('actions.js', () => {
+  // No side-effects
   describe('addOne', () => {
-    it('adds one to the state, and has no follow-up effect', () => {
-      expect(addOne(0)).toDeepEqual([1, effects.none()]);
+    it('adds one to the state', async () => {
+      const dispatch = jest.fn();
+      const [state, effect] = addOne({ count: 0 });
+      
+      expect(state).toDeepEqual(1);
+
+      await testing.runEffect(effect, dispatch);
+
+      expect(dispatch.mock.callCount).toBe(0);
+    });
+  });
+
+  // With a side-effect
+  describe('sendData', () => {
+    it('sends count data through websocket', async () => {
+      const socket = { send: jest.fn() };
+      const initialState = { count: 10, socket };
+
+      const [state, effect] = sendData(initialState);
+      
+      expect(state).toDeepEqual(1);
+
+      await testing.runEffect(effect);
+
+      expect(socket.mock.callCount).toBe(1);
+      expect(socket.mock.calls[0]).toDeepEqual(['count=10']);
     });
   });
 });
 ```
+
+#### A note about side-effects
+
+The more often you can place objects in your state that generate side-effects, the easier it will be to test them.
+The benefits are that you don't need to mock a series of imports, and all of your test code can life directly inside a test scenario.
+
+If you cannot put the object in state, you may consider creating a subscription that does contain the object along with an event listener, and have a pairing effect that would emit an event that the subscription could handle.
+
 
 ### Test your application
 

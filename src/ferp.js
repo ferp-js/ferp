@@ -1,6 +1,7 @@
 import { app } from './ferp/app.js';
 import * as core from './ferp/effects/core.js';
 import { sub } from './ferp/subscriptions/core.js';
+import { effectTester } from './testing/index.js';
 
 const effects = {
   none: core.none,
@@ -14,4 +15,5 @@ export {
   app,
   effects,
   sub,
+  effectTester,
 };

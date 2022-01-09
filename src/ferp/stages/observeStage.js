@@ -1,10 +1,7 @@
-export const observeStage = (state, effect, annotation, observe) => (action) => {
+export const observeStage = (observe) => (props) => {
   if (observe) {
-    observe([
-      state.get(),
-      effect.get(),
-    ], annotation);
+    observe(props);
   }
 
-  return action;
+  return props;
 };
