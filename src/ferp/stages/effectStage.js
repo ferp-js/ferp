@@ -1,8 +1,7 @@
 import { effectTypes } from '../effects/core.js';
 
 const asPromise = (value) => {
-  if (value instanceof Promise) return value;
-  if (typeof value === 'function') return new Promise(value);
+  if (value instanceof Promise) return value; if (typeof value === 'function') return new Promise(value);
   return Promise.resolve(value);
 };
 
@@ -34,8 +33,8 @@ export const runEffect = (dispatch, effect) => {
   }
 };
 
-export const effectStage = (dispatch) => (props) => {
-  runEffect(dispatch, props.fx);
+export const effectStage = (props) => {
+  runEffect(props.dispatch, props.effect);
 
   return props;
 };

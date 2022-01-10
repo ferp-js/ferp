@@ -1,38 +1,65 @@
 import { runEffect } from '../ferp/stages/effectStage.js';
-import { effectTypes, act } from '../ferp/effects/core.js';
+import { none, thunk, defer, act } from '../ferp/effects/core.js';
 
 export const effectTester = (initialState) => {
   let expectations = [];
   let state = initialState;
-  let dispatch = () => {};
 
-  const makeDispatch = (deep) => (action, name) => {
+  const run = (dispatch, fx) => {
     const expectationIndex = expectations.findIndex(e => (
-      e.type === effectTypes.act
-      && e.name === name
+      e.type === fx.type
+      && e.annotation == fx.annotation
     ));
     expectations.splice(expectationIndex, 1);
+    return runEffect(dispatch, fx);
+  };
+
+  const makeDispatch = (deep) => (action, _name) => {
     const [nextState, nextEffect] = action(state);
     state = nextState;
     if (deep) {
-      runEffect(dispatch, nextEffect);
+      return run(dispatch, nextEffect);
     }
   };
 
 
+  let dispatch = makeDispatch(false);
+
   const dispatcher = {
-    willAct: (action) => {
-      expectations.push(act(action));
-      return dispatcher;
-    },
-    
-    execute: (fx, deep = true) => {
-      dispatch = makeDispatch(deep);
-      runEffect(dispatch, fx);
+    resolveAllEffects: () => {
+      dispatch = makeDispatch(true);
       return dispatcher;
     },
 
-    remainingExpectations: () => expectations,
+    willAct: (annotation) => {
+      const fakeAction = state => [state, none()];
+      expectations.push(act(fakeAction, annotation));
+      return dispatcher;
+    },
+
+    willThunk: (annotation) => {
+      const fakeThunk = () => none();
+      expectations.push(thunk(fakeThunk, annotation));
+      return dispatcher; },
+
+    willDefer: () => {
+      const fakeDefer = (resolve) => resolve(none());
+      expectations.push(defer(fakeDefer));
+      return dispatcher;
+    },
+
+    fromEffect: async (fx) => {
+      await run(dispatch, fx);
+      return dispatcher;
+    },
+
+    fromAction: (action) => {
+      return dispatcher.fromEffect(act(action));
+    },
+
+    ok: () => expectations.length === 0,
+
+    failedOn: () => expectations.map(e => ({ type: e.type, annotation: e.annotation })),
   }
 
   return dispatcher;

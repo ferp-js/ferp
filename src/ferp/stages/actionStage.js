@@ -1,7 +1,7 @@
 export const actionStage = (setState) => (props) => {
-  const [state, fx] = props.action(props.state);
+  const [state, effect] = props.action(props.state);
 
-  if (!fx) {
+  if (!effect) {
     const error = new ReferenceError('No effect given');
     error.data = props;
     throw error;
@@ -12,6 +12,6 @@ export const actionStage = (setState) => (props) => {
   return {
     ...props,
     state,
-    fx,
+    effect,
   };
 };

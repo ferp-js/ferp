@@ -2,26 +2,47 @@ import test from 'ava';
 import { effectTester } from './index.js';
 import * as effects from '../ferp/effects/core.js';
 
-test('effectTester does shallow testing', (t) => {
+test('shallow testing', async (t) => {
   const deepAction = (state) => [state, effects.none()];
   const action = (state) => [{ state: state.counter + 1 }, effects.act(deepAction)];
 
-  const tester = effectTester({ counter: 0 })
-    .willAct(effects.act(action, 'action'))
-    .willAct(effects.act(deepAction, 'deepAction'))
-    .execute(effects.thunk(() => effects.act(action)), false);
+  const tester = await effectTester({ counter: 0 })
+    .willAct('action')
+    .willAct('deepAction')
+    .fromAction(action);
 
-  t.is(tester.remainingExpectations().length, 1);
+  t.falsy(tester.ok());
+  t.deepEqual(tester.failedOn(), [
+    { type: effects.effectTypes.act, annotation: 'deepAction' },
+  ]);
 });
 
-test('effectTester does deep testing', (t) => {
+test('deep testing', async (t) => {
   const deepAction = (state) => [state, effects.none()];
   const action = (state) => [{ state: state.counter + 1 }, effects.act(deepAction)];
 
-  const tester = effectTester({ counter: 0 })
-    .willAct(effects.act(action, 'action'))
-    .willAct(effects.act(deepAction, 'deepAction'))
-    .execute(effects.thunk(() => effects.act(action)), true);
+  const tester = await effectTester({ counter: 0 })
+    .resolveAllEffects()
+    .willThunk('init')
+    .willAct('action')
+    .willAct('deepAction')
+    .fromEffect(effects.thunk(() => effects.act(action), 'init'));
 
-  t.is(tester.remainingExpectations().length, 0);
+  t.truthy(tester.ok());
+});
+
+test('will wait for promises to resolve', async (t) => {
+  const action = state => [state, effects.none()];
+  const delay = (action) => effects.defer((resolve) => setTimeout(
+    () => resolve(effects.act(action)),
+    100,
+  ));
+
+  const tester = await effectTester({})
+    .resolveAllEffects()
+    .willDefer()
+    .willAct('action')
+    .fromEffect(delay(action));
+
+  t.truthy(tester.ok());
 });

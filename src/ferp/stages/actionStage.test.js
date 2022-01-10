@@ -21,7 +21,7 @@ test('sets the state, and updates in the pipeline', (t) => {
     actionStage(setState, action)(initialProps),
     {
       state: { count: 1 },
-      fx: effects.none(),
+      effect: effects.none(),
       subscriptions: [],
       action,
     },

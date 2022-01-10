@@ -19,12 +19,13 @@ export const app = ({ init, subscribe, observe }) => {
 
   const dispatch = (action, annotation) => pipeline(
     actionStage(setState, action),
-    subscribeStage(setSubscriptions, dispatch, subscribe),
+    subscribeStage(setSubscriptions, subscribe),
     observeStage(observe),
-    effectStage(dispatch),
+    effectStage,
   )({
+    dispatch,
     action,
-    annotation,
+    annotation: annotation || action.alias || action.name,
     state,
     subscriptions,
   });

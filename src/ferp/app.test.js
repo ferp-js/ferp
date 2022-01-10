@@ -20,7 +20,7 @@ test('app calls dispatch immediately with state and effect', (t) => {
     init,
     observe: (props) => {
       t.deepEqual(props.state, init[0]);
-      t.deepEqual(props.fx, none());
+      t.deepEqual(props.effect, none());
     },
   });
 });

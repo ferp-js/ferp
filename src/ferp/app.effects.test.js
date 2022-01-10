@@ -24,7 +24,7 @@ test.cb('runs an action function as an effect', (t) => {
   });
 });
 
-test('an initial batch of effects runs in order', (t) => {
+test.cb('an initial batch of effects runs in order', (t) => {
   t.plan(4);
 
   const firstAction = () => [1, none()];
@@ -50,6 +50,9 @@ test('an initial batch of effects runs in order', (t) => {
     observe: (props) => {
       const expectedActionName = expectedActionNames.shift();
       t.is(props.annotation, expectedActionName);
+      if (expectedActionNames.length === 0) {
+        t.end();
+      }
     },
   });
 });

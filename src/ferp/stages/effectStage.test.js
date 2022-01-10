@@ -22,22 +22,23 @@ test.after((t) => {
 test('throws if non-effect passed as effect', (t) => {
   const dispatch = sinon.fake();
 
-  const effect = {}
   const props = {
-    fx: {},
+    effect: {},
+    dispatch,
   };
 
-  t.throws(() => effectStage(dispatch)(props));
+  t.throws(() => effectStage(props));
   t.truthy(dispatch.notCalled);
 });
 
 test('can run batched effect with act', (t) => {
   const dispatch = sinon.fake();
   const props = {
-    fx: batch([act(() => []), act(() => [])]),
+    effect: batch([act(() => []), act(() => [])]),
+    dispatch,
   }
 
-  effectStage(dispatch)(props);
+  effectStage(props);
 
   t.is(dispatch.callCount, 2);
 });
@@ -46,10 +47,11 @@ test('can run a deferred effect with promise->act', async (t) => {
   const dispatch = sinon.fake();
   const promise = new Promise((resolve) => resolve(act(() => [])));
   const props = {
-    fx: defer(promise),
+    effect: defer(promise),
+    dispatch,
   };
 
-  effectStage(dispatch)(props);
+  effectStage(props);
 
   await promise;
 
@@ -60,10 +62,11 @@ test('can run a deferred effect with promise constructor function->act', async (
   const dispatch = sinon.fake();
   const promise = (resolve) => resolve(act(() => []));
   const props = {
-    fx: defer(promise),
+    effect: defer(promise),
+    dispatch,
   };
 
-  await effectStage(dispatch)(props);
+  await effectStage(props);
 
   t.is(dispatch.callCount, 1);
 });
@@ -72,10 +75,11 @@ test('can run a deferred effect with an effect->act', async (t) => {
   const dispatch = sinon.fake();
   const actEffect = act(() => []);
   const props = {
-    fx: defer(actEffect),
+    effect: defer(actEffect),
+    dispatch,
   };
 
-  await effectStage(dispatch)(props);
+  await effectStage(props);
 
   t.is(dispatch.callCount, 1);
 });
@@ -84,10 +88,11 @@ test('can run a thunk effect with act', (t) => {
   const dispatch = sinon.fake();
   const action = () => {};
   const props = {
-    fx: thunk(() => act(action)),
+    effect: thunk(() => act(action)),
+    dispatch,
   };
 
-  effectStage(dispatch)(props);
+  effectStage(props);
 
   t.is(dispatch.callCount, 1);
   t.deepEqual(dispatch.getCall(0).args[0], action);
@@ -99,10 +104,11 @@ test('can act from effect with params', (t) => {
   const action = sinon.fake(() => innerAction);
 
   const props = {
-    fx: act(action(1, 2)),
+    effect: act(action(1, 2)),
+    dispatch,
   };
 
-  effectStage(dispatch)(props);
+  effectStage(props);
 
   t.is(dispatch.callCount, 1);
   t.truthy(action.calledOnceWithExactly(1, 2), 'action was called');

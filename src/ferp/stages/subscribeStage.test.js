@@ -8,11 +8,12 @@ test('works with no previous or new subscriptions', (t) => {
   const props = {
     state: {},
     subscriptions: [],
+    dispatch,
   };
   const subscribeFn = () => [];
   const setSubscriptions = sinon.fake(() => {});
 
-  t.notThrows(() => subscribeStage(setSubscriptions, dispatch, subscribeFn)(props));
+  t.notThrows(() => subscribeStage(setSubscriptions, subscribeFn)(props));
   t.truthy(dispatch.notCalled);
 });
 
@@ -21,11 +22,12 @@ test('early exits when there is no subscribe function', (t) => {
   const props = {
     state: {},
     subscriptions: [],
+    dispatch,
   };
   const subscribeFn = undefined;
   const setSubscriptions = sinon.fake(() => {});
 
-  const { subscriptions } = subscribeStage(setSubscriptions, dispatch, subscribeFn)(props);
+  const { subscriptions } = subscribeStage(setSubscriptions, subscribeFn)(props);
 
   t.truthy(setSubscriptions.notCalled);
 });
@@ -35,6 +37,7 @@ test('starts and stops a subscription', (t) => {
   let props = {
     state: true,
     subscriptions: [],
+    dispatch,
   };
 
   const cancel = sinon.fake();
@@ -48,7 +51,7 @@ test('starts and stops a subscription', (t) => {
   ];
   const setSubscriptions = sinon.fake((subs) => props.subscriptions = subs);
 
-  props = subscribeStage(setSubscriptions, dispatch, subscribeFn)(props);
+  props = subscribeStage(setSubscriptions, subscribeFn)(props);
 
   t.truthy(mySub.calledWithExactly(dispatch, 'abc'), 'Subscription started with dispatch');
   t.truthy(mySub.calledWithExactly(dispatch, 'def'), 'Subscription started with dispatch');
@@ -56,7 +59,7 @@ test('starts and stops a subscription', (t) => {
   t.falsy(cancel.calledOnce, 'Subscription not cancelled');
 
   props.state = false;
-  subscribeStage(setSubscriptions, dispatch, subscribeFn)(props);
+  subscribeStage(setSubscriptions, subscribeFn)(props);
 
   t.truthy(cancel.calledOnce, 'Subscription cancelled');
 });
