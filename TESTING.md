@@ -204,10 +204,12 @@ The current standard in javascript is the `fetch` mechanism, so let's pretend th
 ```javascript
 import { effects } from 'ferp';
 
-export const apiFx = ({ endpoint, onSuccess, onFailure }) => effects.defer(() => fetch(`/api${endpoint}`)
-  .then((response) => response.json())
-  .then((data) => effects.act(onSuccess(data)), 'fetchSuccess')
-  .catch((err) => effects.act(onFailure(err)), 'fetchFailure')
+export const apiFx = ({ endpoint, onSuccess, onFailure }) => effects.defer(
+  () => fetch(`/api${endpoint}`)
+    .then((response) => response.json())
+    .then((data) => effects.act(onSuccess(data), 'fetchSuccess'))
+    .catch((err) => effects.act(onFailure(err), 'fetchFailure')),
+  'apiFx',
 );
 ```
 
@@ -220,8 +222,8 @@ import { effects } from 'ferp';
 export const apiFx = ({ endpoint, onSuccess, onFailure, fetchFn = fetch }) => effects.defer(
   () => fetchFn(`/api${endpoint}`)
     .then((response) => response.json())
-    .then((data) => effects.act(onSuccess(data)), 'fetchSuccess')
-    .catch((err) => effects.act(onFailure(err)), 'fetchFailure'),
+    .then((data) => effects.act(onSuccess(data), 'fetchSuccess'))
+    .catch((err) => effects.act(onFailure(err), 'fetchFailure')),
   'apiFx',
 );
 ```
@@ -285,11 +287,11 @@ export const countdownSubscription = sub((dispatch, seconds, onTick, timeout = {
 
     value = Math.max(0, value - 1);
 
-    dispatch(act(onTick(value), 'onTick'));
+    dispatch(onTick(value), 'onTick');
     schedule(tick);
   };
 
-  dispatch.after(act(onTick(value), 'onTick'));
+  dispatch.after(onTick(value), 'onTick');
   schedule(tick);
 
   return () => {
