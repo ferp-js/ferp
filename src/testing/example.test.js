@@ -1,10 +1,12 @@
 import test from 'ava';
+import * as sinon from 'sinon';
 import { tester as ferpTester } from './index.js';
 import * as effects from '../ferp/effects/core.js';
+import { sub } from '../ferp/subscriptions/core.js';
 
 test('shallow testing', async (t) => {
-  const deepAction = (state) => [state, effects.none()];
-  const action = (state) => [{ state: state.counter + 1 }, effects.act(deepAction)];
+  const deepAction = (state) => [{ ...state, counter: state.counter + 5 }, effects.none()];
+  const action = (state) => [{ ...state, counter: state.counter + 1 }, effects.act(deepAction)];
 
   const tester = await ferpTester({ counter: 0 })
     .willAct('action')
@@ -15,6 +17,9 @@ test('shallow testing', async (t) => {
   t.deepEqual(tester.failedOn(), [
     { type: effects.effectTypes.act, annotation: 'deepAction' },
   ]);
+  t.deepEqual(tester.state(), {
+    counter: 1,
+  });
 });
 
 test('deep testing', async (t) => {
@@ -45,4 +50,66 @@ test('will wait for promises to resolve', async (t) => {
     .fromEffect(delay(action));
 
   t.truthy(tester.ok());
+});
+
+test('will batch actions', async (t) => {
+  const action1 = (state) => [state, effects.none()];
+  const action2 = (state) => [state, effects.none()];
+  const action3 = (state) => [state, effects.none()];
+
+  const tester = await ferpTester({ counter: 0 })
+    .resolveAllEffects()
+    .willBatch('multi')
+    .willAct('action1')
+    .willAct('action2')
+    .willAct('action3')
+    .fromEffect(effects.batch([
+      effects.act(action1),
+      effects.act(action2),
+      effects.act(action3),
+    ], 'multi'));
+
+  t.truthy(tester.ok());
+});
+
+test('can test a subscription', (t) => {
+  const mySub = (dispatch, clickElement, onClick) => {
+    const clickHandler = () => {
+      dispatch(onClick, 'onClick');
+    };
+    clickElement.addEventListener('click', clickHandler);
+
+    return () => {
+      clickElement.removeEventListener('click', clickHandler);
+    };
+  };
+
+  let handler = () => {};
+  const element = {
+    addEventListener: sinon.fake((_type, fn) => {
+      handler = fn;
+    }),
+    removeEventListener: sinon.fake((_type, fn) => {
+      handler = () => {};
+    }),
+  };
+
+  const action = state => [state, effects.none()];
+
+  const tester = ferpTester()
+    .resolveAllEffects()
+    .willAct('onClick')
+    .fromSubscription(sub(mySub, element, action));
+
+  t.is(typeof tester.cancel, 'function');
+
+  t.truthy(element.addEventListener.calledOnceWith('click', sinon.match.any));
+  t.falsy(tester.ok());
+
+  handler();
+
+  t.truthy(tester.ok());
+
+  tester.cancel();
+  t.truthy(element.removeEventListener.calledOnceWith('click', sinon.match.any));
 });
