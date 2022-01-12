@@ -1,7 +1,8 @@
 import { effectTypes } from '../effects/core.js';
 
 const asPromise = (value) => {
-  if (value instanceof Promise) return value; if (typeof value === 'function') return new Promise(value);
+  if (value instanceof Promise) return value;
+  if (typeof value === 'function') return new Promise(value);
   return Promise.resolve(value);
 };
 

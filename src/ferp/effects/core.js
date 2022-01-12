@@ -7,7 +7,7 @@ export const effectTypes = {
 };
 
 export const none = () => ({ type: effectTypes.none });
-export const batch = (effects) => ({ type: effectTypes.batch, effects });
+export const batch = (effects, annotation) => ({ type: effectTypes.batch, effects, annotation });
 export const defer = (promise, annotation) => ({ type: effectTypes.defer, promise, annotation });
 export const thunk = (method, annotation) => ({
   type: effectTypes.thunk,

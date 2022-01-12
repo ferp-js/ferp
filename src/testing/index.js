@@ -1,7 +1,7 @@
 import { runEffect } from '../ferp/stages/effectStage.js';
-import { none, thunk, defer, act } from '../ferp/effects/core.js';
+import { none, thunk, defer, act, batch } from '../ferp/effects/core.js';
 
-export const effectTester = (initialState) => {
+export const tester = (initialState = {}) => {
   let expectations = [];
   let state = initialState;
 
@@ -22,7 +22,6 @@ export const effectTester = (initialState) => {
     }
   };
 
-
   let dispatch = makeDispatch(false);
 
   const dispatcher = {
@@ -42,9 +41,14 @@ export const effectTester = (initialState) => {
       expectations.push(thunk(fakeThunk, annotation));
       return dispatcher; },
 
-    willDefer: () => {
+    willDefer: (annotation) => {
       const fakeDefer = (resolve) => resolve(none());
-      expectations.push(defer(fakeDefer));
+      expectations.push(defer(fakeDefer, annotation));
+      return dispatcher;
+    },
+
+    willBatch: (annotation) => {
+      expectations.push(batch([], annotation));
       return dispatcher;
     },
 
@@ -57,9 +61,18 @@ export const effectTester = (initialState) => {
       return dispatcher.fromEffect(act(action));
     },
 
+    fromSubscription: ([subFx, ...props]) => {
+      return {
+        ...dispatcher,
+        cancel: subFx(dispatch, ...props),
+      };
+    },
+
     ok: () => expectations.length === 0,
 
     failedOn: () => expectations.map(e => ({ type: e.type, annotation: e.annotation })),
+
+    state: () => ({ ...state }),
   }
 
   return dispatcher;
