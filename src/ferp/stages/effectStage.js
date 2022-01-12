@@ -9,7 +9,7 @@ const asPromise = (value) => {
 export const runEffect = (dispatch, effect) => {
   switch (effect.type) {
     case effectTypes.none:
-      return (void 0);
+      return undefined;
 
     case effectTypes.batch:
       return effect.effects.forEach((fx) => runEffect(dispatch, fx));

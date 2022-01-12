@@ -36,7 +36,7 @@ test('can run batched effect with act', (t) => {
   const props = {
     effect: batch([act(() => []), act(() => [])]),
     dispatch,
-  }
+  };
 
   effectStage(props);
 

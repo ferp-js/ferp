@@ -1,28 +1,32 @@
 import { runEffect } from '../ferp/stages/effectStage.js';
-import { none, thunk, defer, act, batch } from '../ferp/effects/core.js';
+import {
+  none, thunk, defer, act, batch,
+} from '../ferp/effects/core.js';
 
 export const tester = (initialState = {}) => {
-  let expectations = [];
+  const expectations = [];
   let state = initialState;
+  let dispatch = () => {};
 
-  const run = (dispatch, fx) => {
-    const expectationIndex = expectations.findIndex(e => (
+  const run = (dispatcher, fx) => {
+    const expectationIndex = expectations.findIndex((e) => (
       e.type === fx.type
-      && e.annotation == fx.annotation
+      && e.annotation == fx.annotation // eslint-disable-line eqeqeq
     ));
     expectations.splice(expectationIndex, 1);
-    return runEffect(dispatch, fx);
+    return runEffect(dispatcher, fx);
   };
 
-  const makeDispatch = (deep) => (action, _name) => {
+  const makeDispatch = (deep) => (action) => {
     const [nextState, nextEffect] = action(state);
     state = nextState;
     if (deep) {
       return run(dispatch, nextEffect);
     }
+    return undefined;
   };
 
-  let dispatch = makeDispatch(false);
+  dispatch = makeDispatch(false);
 
   const dispatcher = {
     resolveAllEffects: () => {
@@ -31,7 +35,7 @@ export const tester = (initialState = {}) => {
     },
 
     willAct: (annotation) => {
-      const fakeAction = state => [state, none()];
+      const fakeAction = (newState) => [newState, none()];
       expectations.push(act(fakeAction, annotation));
       return dispatcher;
     },
@@ -39,7 +43,8 @@ export const tester = (initialState = {}) => {
     willThunk: (annotation) => {
       const fakeThunk = () => none();
       expectations.push(thunk(fakeThunk, annotation));
-      return dispatcher; },
+      return dispatcher;
+    },
 
     willDefer: (annotation) => {
       const fakeDefer = (resolve) => resolve(none());
@@ -57,23 +62,19 @@ export const tester = (initialState = {}) => {
       return dispatcher;
     },
 
-    fromAction: (action) => {
-      return dispatcher.fromEffect(act(action));
-    },
+    fromAction: (action) => dispatcher.fromEffect(act(action)),
 
-    fromSubscription: ([subFx, ...props]) => {
-      return {
-        ...dispatcher,
-        cancel: subFx(dispatch, ...props),
-      };
-    },
+    fromSubscription: ([subFx, ...props]) => ({
+      ...dispatcher,
+      cancel: subFx(dispatch, ...props),
+    }),
 
     ok: () => expectations.length === 0,
 
-    failedOn: () => expectations.map(e => ({ type: e.type, annotation: e.annotation })),
+    failedOn: () => expectations.map((e) => ({ type: e.type, annotation: e.annotation })),
 
     state: () => ({ ...state }),
-  }
+  };
 
   return dispatcher;
 };

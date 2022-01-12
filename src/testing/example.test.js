@@ -37,9 +37,9 @@ test('deep testing', async (t) => {
 });
 
 test('will wait for promises to resolve', async (t) => {
-  const action = state => [state, effects.none()];
-  const delay = (action) => effects.defer((resolve) => setTimeout(
-    () => resolve(effects.act(action)),
+  const action = (state) => [state, effects.none()];
+  const delay = (act) => effects.defer((resolve) => setTimeout(
+    () => resolve(effects.act(act)),
     100,
   ));
 
@@ -86,15 +86,15 @@ test('can test a subscription', (t) => {
 
   let handler = () => {};
   const element = {
-    addEventListener: sinon.fake((_type, fn) => {
+    addEventListener: sinon.fake((_, fn) => {
       handler = fn;
     }),
-    removeEventListener: sinon.fake((_type, fn) => {
+    removeEventListener: sinon.fake(() => {
       handler = () => {};
     }),
   };
 
-  const action = state => [state, effects.none()];
+  const action = (state) => [state, effects.none()];
 
   const tester = ferpTester()
     .resolveAllEffects()

@@ -26,15 +26,15 @@ export const subscribeStage = (setSubscriptions, subscribe) => (props) => {
   if (!subscribe) return props;
 
   let subscriptions = [];
-    const { active, stopped } = subscribeDiff(
-      props.subscriptions,
-      subscription.collect(subscribe(props.state)),
-    );
+  const { active, stopped } = subscribeDiff(
+    props.subscriptions,
+    subscription.collect(subscribe(props.state)),
+  );
 
-    subscriptions = active.map((sub) => (sub.cancel ? sub : subscription.start(props.dispatch)(sub)));
+  subscriptions = active.map((sub) => (sub.cancel ? sub : subscription.start(props.dispatch)(sub)));
 
-    setSubscriptions(subscriptions);
-    stopped.forEach(subscription.stop);
+  setSubscriptions(subscriptions);
+  stopped.forEach(subscription.stop);
 
   return {
     ...props,

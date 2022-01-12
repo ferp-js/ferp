@@ -30,6 +30,7 @@ test('early exits when there is no subscribe function', (t) => {
   const { subscriptions } = subscribeStage(setSubscriptions, subscribeFn)(props);
 
   t.truthy(setSubscriptions.notCalled);
+  t.deepEqual(subscriptions, []);
 });
 
 test('starts and stops a subscription', (t) => {
@@ -41,7 +42,7 @@ test('starts and stops a subscription', (t) => {
   };
 
   const cancel = sinon.fake();
-  const mySub = sinon.fake((d, foo) => {
+  const mySub = sinon.fake((d) => {
     d('test');
     return cancel;
   });
@@ -49,7 +50,7 @@ test('starts and stops a subscription', (t) => {
     toggle && sub(mySub, 'abc'),
     sub(mySub, 'def'),
   ];
-  const setSubscriptions = sinon.fake((subs) => props.subscriptions = subs);
+  const setSubscriptions = sinon.fake((subs) => { props.subscriptions = subs; });
 
   props = subscribeStage(setSubscriptions, subscribeFn)(props);
 
