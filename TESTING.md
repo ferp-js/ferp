@@ -1,19 +1,34 @@
 # Ferp testing guide
 
+This is strictly a guide, [click here](./docs/tester/reference.md) for a reference page.
+
 Having a tested app means having a reliable app, and any app in the wild needs to be reliable.
 
 ## Build with testing in mind
 
 Keep your actions and methods isolated.
 
-
 Let's look at this simple example:
 
 ```javascript
 const ferp = require('ferp');
 
-const dispatch = ferp.app({
-  init: [0, ferp.effects.act((state) => [state + 1, ferp.effects.none()])],
+ferp.app({
+  init: [
+    {
+      count: 0,
+      socket: makeSocket(),
+    },
+    ferp.effects.act(
+      (state) => [
+        { ...state, count: state.count + 1 },
+        ferp.effects.thunk(() => {
+          state.socket.send(state.count);
+          return ferp.effects.none();
+        }),
+      ],
+    ),
+  ],
 });
 ```
 
@@ -21,29 +36,100 @@ How do you test that the program works?
 If there were no such thing as a testing framework, you'd probably try and log out the state each tick, and manually verify, but that won't scale.
 Instead, let's divide the program up into smaller digestable pieces.
 
-### Test your actions
+### Isolate Actions and Effects
 
 The first easy win is extracting and testing the action.
 You can see in the `ferp.effects.act()` call, we have an action, so let's extract that.
 
 ```javascript
-export const addOne = (state) => [state + 1, ferp.effects.none()];
+export const sendFx = (socket, count) => ferp.effects.thunk(() => {
+    socket.send(`count=${count}`);
+    return ferp.effects.none();
+}, 'sendFx');
+
+export const addOne = (state) => {
+  const count = state.count + 1;
+  return [
+    { ...state, count },
+    sendFx(state.socket, count),
+  ];
+};
+
+export const init = (socket) => [
+  { count: 0, socket },
+  ferp.effects.act(addOne),
+];
+
+ferp.app({
+  init: init(makeSocket()),
+});
 ```
 
-I'd also make sure you can export it.
-In fact, I usually make an `actions.js` file, and put all of my actions in there, but if your application is small, you can probably get away with putting all of your code in an `app.js` file.
+If the application is pretty small, you can get away with keeping all the actions and effects in a single file with your application.
+If it gets bigger, I tend to follow this flow (which will avoid circular dependencies):
+ - `effects.js` contains all effects. This does not import any actions, and instead, effects take actions as parameters as needed.
+ - `actions.js` contains all actions, and imports `effects.js`, so actions can return those effects as part of the tuple.
 
-Now testing this is very simple.
-If I were using something like jest, the test would look like this:
+### Test Actions
+
+Using the above code example (and assuming all things are exported from `index.js`):
 
 ```javascript
-import { effects } from 'ferp';
-import { addOne } from './actions.js';
+import { effects, tester } from 'ferp';
+import { addOne, sendFx } from './index.js';
 
-describe('actions.js', () => {
+// This assumes you are using something like jest, but the principles here
+// should work in any testing framework.
+
+describe('action only, manual testing result', () => {
   describe('addOne', () => {
-    it('adds one to the state, and has no follow-up effect', () => {
-      expect(addOne(0)).toDeepEqual([1, effects.none()]);
+    it('adds one to the state', () => {
+      const initialState = {
+        count: 0,
+        socket: {},
+      };
+
+      const [state, _ignoredEffect] = addOne({ count: 0 });
+      
+      expect(state).toDeepEqual({ count: 1, socket: initialState.socket });
+    });
+  });
+});
+
+describe('actions+effects using the tester', () => {
+  describe('addOne', () => {
+    it('adds one to the state, and sends new count via the socket', async () => {
+      const initialState = {
+        count: 0,
+        socket: {
+          send: jest.fn(),
+        },
+      };
+
+      const t = await tester(initialState)
+        .resolveAllEffects() // keep running effects until there are none left
+        .willThunk('sendFx') // expect thunk with annotation 'sendFx' to be ran
+        .fromAction(addOne); // start the test from an action
+
+      expect(t.ok()).toBeTruthy(); // all expected effects ran
+      expect(t.state()).toDeepEqual({ count: 1, socket: initialState.socket });
+      expect(initialState.socket.send).toBeCalledWith(1);
+    });
+  });
+});
+
+describe('effects only, using the tester', () => {
+  describe('sendFx', () => {
+    it('sends the count over the socket', () => {
+      const socket = { send: jest.fn() };
+      const count = Math.floor(Math.random() * 1000);
+
+      const t = await tester()
+        .resolveAllEffects() // keep running effects until there are none left
+        .fromEffect(sendFx(socket, count)); // start the test from an effect
+
+      expect(t.ok()).toBeTruthy(); // all expected effects ran
+      expect(socket.send).toBeCalledWith(count);
     });
   });
 });
@@ -57,33 +143,41 @@ Let's wrap our application in a function, and export it from `app.js`.
 
 ```javascript
 import { app, effects } from 'ferp';
-import * as actions from './actions.js';
 
-export const application = (observe) => app({
+// ...action and effects still live here...
+
+export const appProps = {
   init: [0, effects.act(actions.addOne)],
   observe,
-});
+};
+
+export const run = () => app(appProps);
 ```
 
-Notice how I added the observe application property - this will allow us to make assertions on the current state of the application, and ensure it is doing what we expect.
-Here's how you can test it:
+With the `appProps` exposed, we can inject an `observe` function to see what the application is doing, and make assertions on it
 
 ```javascript
-import { effects } from 'ferp';
-import { application } from './app.js';
-import * as actions from './actions.js';
+import { app, effects } from 'ferp';
+import { appProps, addOne, sendFx } from './app.js';
 
 describe('app.js', () => {
   describe('application', () => {
-    it('increments the state by one', () => {
-      const tupleExpectations = [
-        [0, effects.act(actions.addOne)],
-        [1, effects.none()];
+    it('increments the state by one', (done) => {
+      const expectations = [
+        { annotation: 'ferpAppInitialize' },
+        { annotation: 'addOne' },
+        { annotation: 'sendFx' },
       ];
-      
-      application((tuple) => {
-        const expectedTuple = tupleExpectations.shift();
-        expect(tuple).toDeepEqual(expectedTuple);
+
+      app({
+        ...appProps,
+        observe: ({ annotation }) => {
+          const expected = expectations.unshift();
+          expect(expected.annotation).toBe(annotation);
+          if (expectations.length === 0) {
+            done();
+          }
+        },
       });
     });
   });
@@ -100,19 +194,23 @@ To get around this, you will need to create mocks or doubles around interfaces t
 
 To summarize, your custom side-effects will require per-situation testing logic, but I'm going to try and cover some reasonably common examples.
 
-#### Custom Effects
+#### Custom Effects with External Responses
 
-##### Http Requests
+When you're using effects, there's a good possibility your code is talking to something external, and waiting for a response.
 
+For example, http requests wait on an external response.
 The current standard in javascript is the `fetch` mechanism, so let's pretend that we've built an effect to make get requests to our server:
 
 ```javascript
 import { effects } from 'ferp';
 
-export const apiFx = ({ endpoint, onSuccess, onFailure }) => effects.defer(() => fetch(`/api${endpoint}`)
-  .then((response) => response.json())
-  .then((data) => effects.act(onSuccess(data)))
-  .catch((err) => effects.act(onFailure(err)));
+export const apiFx = ({ endpoint, onSuccess, onFailure }) => effects.defer(
+  () => fetch(`/api${endpoint}`)
+    .then((response) => response.json())
+    .then((data) => effects.act(onSuccess(data), 'fetchSuccess'))
+    .catch((err) => effects.act(onFailure(err), 'fetchFailure')),
+  'apiFx',
+);
 ```
 
 This isn't super intuitive to test, because fetch is unpredictable when it interacts with the real world.
@@ -121,97 +219,162 @@ Instead, let's add the ability to swap it out for our test:
 ```javascript
 import { effects } from 'ferp';
 
-export const apiFx = ({ endpoint, onSuccess, onFailure, fetchFn = fetch }) => effects.defer(() => fetchFn(`/api${endpoint}`)
-  .then((response) => response.json())
-  .then((data) => effects.act(onSuccess(data)))
-  .catch((err) => effects.act(onFailure(err)));
+export const apiFx = ({ endpoint, onSuccess, onFailure, fetchFn = fetch }) => effects.defer(
+  () => fetchFn(`/api${endpoint}`)
+    .then((response) => response.json())
+    .then((data) => effects.act(onSuccess(data), 'fetchSuccess'))
+    .catch((err) => effects.act(onFailure(err), 'fetchFailure')),
+  'apiFx',
+);
 ```
 
 Now we can test!
 
 ```javascript
-import { app, effects } from 'ferp';
-import { apiFx } from './fx.js';
+import { app, effects, tester } from 'ferp';
+import { apiFx } from './effects.js';
 
 
 describe('fx.js', () => {
   describe('apiFx', () => {
-    const testSuccessfulFetch = (data) => jest.fake((...params) => Promise.resolve({ json: () => successData }));
+    const testSuccessfulFetch = (data) => jest.fn((...params) => Promise.resolve({ json: () => data }));
+    const testFailedFetch = (data) => jest.fn((...params) => Promise.reject(new Error()));
 
-    const completeTest = (assertions, done) => (state) => [
-      state,
-      effects.thunk(() => {
-        assertions.forEach((assert) => assert(state));
-        done();
-        return effects.none();
-      }),
-    ];
+    it('hits the correct endpoint and calls the onSuccess action with the json data result', async () => {
+      const data = { json: () => data };
+      const testSuccessfulFetch = jest.fn((...params) => Promise.resolve(data));
+      const testFailedFetch = jest.fn();
 
-    it('hits the correct endpoint and calls the onSuccess action with the json data result', (done) => {
       const successData = { your: 'data' };
       const testFetch = testSuccessfulFetch(successData);
 
-      const onFailure = jest.fake(() => [null, effects.act(completeTest([
-        () => expect(onFailure).not.toHaveBeenCalled(),
-      ], done))]);
+      const t = await tester()
+        .willDefer('apiFx')
+        .willct('fetchSuccess')
+        .fromEffect(apiFx({
+          endpoint: '',
+          onSuccess: (state) => [state, efffects.none()],
+        }));
 
-      const onSuccess = (data) => () => [data, effects.act(completeTest([
-        (finalState) => expect(finalState).toDeepEqual(successData),
-        () => expect(onFailure).not.toHaveBeenCalled(),
-        () => expect(testFetch).toHaveBeenCalledWith('/api/foo'),
-      ], done))];
-
-
-      app({
-        init: [null, apiFx({
-          endpoint: '/foo',
-          onSuccess,
-          onFailure,
-          fetchFn: testFetch,
-      });
+      expect(t.ok()).toBeTruthy();
+      expect(testSuccessfulFetch).toBeCalled();
+      expect(TestFailedFetch).toNotBeCalled();
     });
   });
 });
 ```
 
-You can see that testing side-effects will almost always have overhead.
-Building smaller tools and utilities can dramatically help make testing your side-effects, too!
-
 #### Subscriptions
 
 Subscriptions have two testing surface areas, testing that the subscription does the right things, and that the application starts/stops/restarts it appropriately.
-Both of these are even more challenging than basic side effects, because the nature of a subscription is that it is a long-running method with multiple side effects.
+Let's focus on testing that the subscription does the right thing first.
 
-Let's make an example subscription:
+Here's an example subscription we can use:
 
 ```javascript
 import { sub } from 'ferp';
 
-export const countdownSubscription = sub((dispatch, countFrom, delay, onTick, onDone) => {
+export const countdownSubscription = sub((dispatch, seconds, onTick, timeout = { start: setTimeout, cancel: clearTimeout }) => {
   let value = countFrom;
-  let exit = false;
   let handle = null;
 
-  const tick = () => {
-    if (exit) return;
-
-    value = value - 1;
-
-    if (value === 0) {
-      dispatch(act(onDone));
-      return;
-    }
-
-    dispatch(act(onTick(value)));
-    handle = setTimeout(tick, delay);
+  let schedule = fn => {
+    handle = timeout.start(fn, 1000);
   };
 
-  dispatch(act(onTick(value));
-  handle = setTimeout(tick, delay);
+  const tick = () => {
+    if (value === 0) return;
+
+    value = Math.max(0, value - 1);
+
+    dispatch(onTick(value), 'onTick');
+    schedule(tick);
+  };
+
+  dispatch.after(onTick(value), 'onTick');
+  schedule(tick);
 
   return () => {
-    exit = true;
-    clearTimeout(handle);
+    schedule = () => {};
+    timeout.cancel(handle);
   };
+});
+```
+
+To efficently test this subscription, we need to identify the external events we are using.
+In this case, it's `setTimeout` and `clearTimeout`, which have already been identified in the subscription parameters.
+
+```javascript
+import { tester, effects } from 'ferp';
+import { countdownSubscription } from './subscriptions.js';
+
+describe('subscriptions', () => {
+  describe('countdownSubscription', () => {
+    it('dispatches onTick immediately with the total seconds', async () => {
+      const tickAction = jest.fn(state => [state, effects.none()]);
+
+      const timeout = {
+        start: jest.fn((timeoutFn) => {
+          timeoutFn();
+        }),
+        cancel: jest.fn(),
+      };
+
+      const t = await tester
+        .willAct('onTick')
+        .willAct('onTick')
+        .willAct('onTick')
+        .fromSubscription(countdownSubscription(3, tickAction, timeout))
+
+      t.cancel();
+
+      expect(timeout.start).toHaveBeenCalledTimes(3);
+      expect(timeout.cancel).toHaveBeenCalledTimes(1);
+    });
+  });
+});
+```
+
+Testing the application's `subscribe` method is pretty straight forward, all you'll need to do is a deep array comparison.
+
+If the application looks like:
+
+```javascript
+import { app, effects } from 'ferp';
+import { countdownSubscription } from './subscriptions.js';
+import * as actions from './actions.js';
+
+export const appProps = {
+  init: [
+    { secondsRemaining: 3, total: 3 },
+    effects.none(),
+  ],
+
+  subscribe: (state) => [
+    state.secondsRemaining > 0 && countdownSubscription(state.total, actions.decrementSecondsRemaining)
+  ],
+};
+```
+
+The test would be:
+
+```javascript
+import { appProps } from './app.js';
+import * as actions from './actions.js';
+
+describe('application', () => {
+  describe('subscribe', () => {
+    it('starts the countdown subscription', () => {
+      expect(appProps.subscribe({ secondsRemaining: 1, total: 3 })).toDeepEqual([
+        countdownSubscription(3, actions.decrementSecondsRemaining),
+      ]);
+    });
+
+    it('stops the countdown subscription when the secondsRemaining is 0', () => {
+      expect(appProps.subscribe({ secondsRemaining: 0, total: 3 })).toDeepEqual([
+        false,
+      ]);
+    });
+  });
 });
 ```

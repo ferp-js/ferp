@@ -95,6 +95,8 @@ You can read more about setting up an application [here in the docs](https://fer
 
 ## More docs
 
+ - [Testing Guide](./TESTING.md)
+ - [Testing Reference](./docs/tester/reference.md)
  - [The (git) book](https://ferp.mrbarry.com/)
  - [Some examples (their dependencies may occasionally be outdated)](https://github.com/ferp-js/examples)
 

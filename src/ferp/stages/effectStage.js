@@ -1,4 +1,4 @@
-import { effectTypes, act } from '../effects/core.js';
+import { effectTypes } from '../effects/core.js';
 
 const asPromise = (value) => {
   if (value instanceof Promise) return value;
@@ -6,8 +6,8 @@ const asPromise = (value) => {
   return Promise.resolve(value);
 };
 
-const runEffect = (dispatch, effect) => {
-  switch (effect && effect.type) {
+export const runEffect = (dispatch, effect) => {
+  switch (effect.type) {
     case effectTypes.none:
       return undefined;
 
@@ -27,24 +27,15 @@ const runEffect = (dispatch, effect) => {
       );
 
     default: {
-      if (typeof effect === 'function') {
-        console.warn( // eslint-disable-line no-console
-          'DEPRECATION',
-          `Instead of being able to pass messages directly, you must use ferp.effects.act(yourActionHere)
-For now, ferp will behave as if you have used the act effect, but in the future, this will produce an error`,
-        );
-        return dispatch(act(effect));
-      }
+      const error = new TypeError('Unable to run effect');
+      error.effect = effect;
+      throw error;
     }
   }
-
-  const error = new TypeError('Unable to run effect');
-  error.effect = effect;
-  throw error;
 };
 
-export const effectStage = (effect, dispatch) => (action) => {
-  runEffect(dispatch, effect.get());
+export const effectStage = (props) => {
+  runEffect(props.dispatch, props.effect);
 
-  return action;
+  return props;
 };

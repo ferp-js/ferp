@@ -7,15 +7,15 @@ export const effectTypes = {
 };
 
 export const none = () => ({ type: effectTypes.none });
-export const batch = (effects) => ({ type: effectTypes.batch, effects });
-export const defer = (promise) => ({ type: effectTypes.defer, promise });
-export const thunk = (method, methodName) => ({
+export const batch = (effects, annotation) => ({ type: effectTypes.batch, effects, annotation });
+export const defer = (promise, annotation) => ({ type: effectTypes.defer, promise, annotation });
+export const thunk = (method, annotation) => ({
   type: effectTypes.thunk,
   method,
-  methodName: methodName || method.alias || method.name,
+  annotation: annotation || method.alias || method.name,
 });
-export const act = (action, methodName) => ({
+export const act = (action, annotation) => ({
   type: effectTypes.act,
   action,
-  name: methodName || action.alias || action.name,
+  annotation: annotation || action.alias || action.name,
 });

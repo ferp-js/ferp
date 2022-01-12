@@ -2,36 +2,44 @@ import test from 'ava';
 import sinon from 'sinon';
 import { sub } from '../subscriptions/core.js';
 import { subscribeStage } from './subscribeStage.js';
-import { mutable } from '../util/mutable.js';
 
 test('works with no previous or new subscriptions', (t) => {
-  const dispatch = () => {};
-  const subscriptions = mutable([]);
-  const state = mutable({});
+  const dispatch = sinon.fake(() => {});
+  const props = {
+    state: {},
+    subscriptions: [],
+    dispatch,
+  };
   const subscribeFn = () => [];
-  const action = {};
+  const setSubscriptions = sinon.fake(() => {});
 
-  const result = subscribeStage(subscriptions, state, dispatch, subscribeFn)(action);
-
-  t.deepEqual(result, action);
+  t.notThrows(() => subscribeStage(setSubscriptions, subscribeFn)(props));
+  t.truthy(dispatch.notCalled);
 });
 
 test('early exits when there is no subscribe function', (t) => {
-  const dispatch = () => {};
-  const subscriptions = mutable([]);
-  const state = mutable({});
-  const action = {};
+  const dispatch = sinon.fake(() => {});
+  const props = {
+    state: {},
+    subscriptions: [],
+    dispatch,
+  };
+  const subscribeFn = undefined;
+  const setSubscriptions = sinon.fake(() => {});
 
-  const result = subscribeStage(subscriptions, state, dispatch)(action);
+  const { subscriptions } = subscribeStage(setSubscriptions, subscribeFn)(props);
 
-  t.deepEqual(result, action);
+  t.truthy(setSubscriptions.notCalled);
+  t.deepEqual(subscriptions, []);
 });
 
 test('starts and stops a subscription', (t) => {
   const dispatch = sinon.fake();
-  const subscriptions = mutable([]);
-  const state = mutable(true);
-  const action = {};
+  let props = {
+    state: true,
+    subscriptions: [],
+    dispatch,
+  };
 
   const cancel = sinon.fake();
   const mySub = sinon.fake((d) => {
@@ -39,77 +47,20 @@ test('starts and stops a subscription', (t) => {
     return cancel;
   });
   const subscribeFn = (toggle) => [
-    toggle && sub(mySub),
+    toggle && sub(mySub, 'abc'),
+    sub(mySub, 'def'),
   ];
+  const setSubscriptions = sinon.fake((subs) => { props.subscriptions = subs; });
 
-  subscribeStage(subscriptions, state, dispatch, subscribeFn)(action);
+  props = subscribeStage(setSubscriptions, subscribeFn)(props);
 
-  t.truthy(mySub.calledWithExactly(dispatch), 'Subscription started with dispatch');
-  t.truthy(dispatch.calledOnceWithExactly('test'), 'Subscription gets a copy of dispatch');
+  t.truthy(mySub.calledWithExactly(dispatch, 'abc'), 'Subscription started with dispatch');
+  t.truthy(mySub.calledWithExactly(dispatch, 'def'), 'Subscription started with dispatch');
+  t.truthy(dispatch.calledWithExactly('test'), 'Subscription gets a copy of dispatch');
   t.falsy(cancel.calledOnce, 'Subscription not cancelled');
 
-  state.set(false);
-  subscribeStage(subscriptions, state, dispatch, subscribeFn)(action);
+  props.state = false;
+  subscribeStage(setSubscriptions, subscribeFn)(props);
 
   t.truthy(cancel.calledOnce, 'Subscription cancelled');
-});
-
-test('restarts a subscription', (t) => {
-  const dispatch = sinon.fake();
-  const subscriptions = mutable([]);
-  const state = mutable({ toggle: true, value: 1 });
-  const action = {};
-
-  const cancel = sinon.fake();
-  const mySub = sinon.fake(() => cancel);
-  const subscribeFn = ({ toggle, value }) => [
-    toggle && sub(mySub, value),
-  ];
-
-  subscribeStage(subscriptions, state, dispatch, subscribeFn)(action);
-
-  t.is(mySub.callCount, 1);
-  t.truthy(mySub.calledWithExactly(dispatch, 1), 'Subscription started with dispatch and value');
-  t.falsy(cancel.calledOnce, 'Subscription not cancelled');
-
-  state.set({ toggle: true, value: 2 });
-  subscribeStage(subscriptions, state, dispatch, subscribeFn)(action);
-
-  t.is(mySub.callCount, 2);
-  t.truthy(mySub.calledWithExactly(dispatch, 2), 'Subscription restarted with dispatch and new value');
-  t.truthy(cancel.calledOnce, 'Old subscription cancelled');
-
-  state.set({ toggle: false, value: 2 });
-  subscribeStage(subscriptions, state, dispatch, subscribeFn)(action);
-  t.is(cancel.callCount, 2);
-});
-
-test('runs a subscription for multiple state updates', (t) => {
-  const dispatch = sinon.fake();
-  const subscriptions = mutable([]);
-  const state = mutable(1);
-  const action = {};
-
-  const cancel = sinon.fake();
-  const mySub = sinon.fake(() => cancel);
-  const subscribeFn = (currentState) => [
-    currentState > 0 && sub(mySub, 1),
-  ];
-
-  subscribeStage(subscriptions, state, dispatch, subscribeFn)(action);
-
-  t.is(mySub.callCount, 1);
-  t.truthy(mySub.calledWithExactly(dispatch, 1), 'Subscription started with dispatch and value');
-  t.falsy(cancel.calledOnce, 'Subscription not cancelled');
-
-  state.set(2);
-  subscribeStage(subscriptions, state, dispatch, subscribeFn)(action);
-
-  t.is(mySub.callCount, 1);
-  t.truthy(mySub.calledWithExactly(dispatch, 1), 'Subscription unchanged');
-  t.falsy(cancel.calledOnce, 'Subscription not cancelled');
-
-  state.set(0);
-  subscribeStage(subscriptions, state, dispatch, subscribeFn)(action);
-  t.is(cancel.callCount, 1);
 });
