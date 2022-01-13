@@ -62,7 +62,6 @@ test('will batch actions', async (t) => {
     .willBatch('multi')
     .willAct('action1')
     .willAct('action2')
-    .willAct('action3')
     .fromEffect(effects.batch([
       effects.act(action1),
       effects.act(action2),
@@ -70,6 +69,10 @@ test('will batch actions', async (t) => {
     ], 'multi'));
 
   t.truthy(tester.ok());
+
+  t.deepEqual(tester.missed(), [
+    { type: 'Symbol(act)', annotation: 'action3' },
+  ]);
 });
 
 test('can test a subscription', (t) => {
