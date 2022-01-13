@@ -1,23 +1,38 @@
 import { runEffect } from '../ferp/stages/effectStage.js';
 import {
-  none, thunk, defer, act, batch,
+  none, thunk, defer, act, batch, effectTypes,
 } from '../ferp/effects/core.js';
 
 export const tester = (initialState = {}) => {
   const expectations = [];
+  const missed = [];
   let state = initialState;
   let dispatch = () => {};
 
-  const run = (dispatcher, fx) => {
+  const manageExpectations = (type, annotation) => {
     const expectationIndex = expectations.findIndex((e) => (
-      e.type === fx.type
-      && e.annotation == fx.annotation // eslint-disable-line eqeqeq
+      e.type === type
+      && e.annotation == annotation // eslint-disable-line eqeqeq
     ));
-    expectations.splice(expectationIndex, 1);
+    if (expectationIndex >= 0) {
+      expectations.splice(expectationIndex, 1);
+    }
+
+    if (type !== effectTypes.none && expectationIndex === -1) {
+      missed.push({
+        type: type.toString(),
+        annotation,
+      });
+    }
+  };
+
+  const run = (dispatcher, fx) => {
+    manageExpectations(fx.type, fx.annotation);
     return runEffect(dispatcher, fx);
   };
 
-  const makeDispatch = (deep) => (action) => {
+  const makeDispatch = (deep) => (action, annotation) => {
+    manageExpectations(effectTypes.act, annotation || action.alias || action.name);
     const [nextState, nextEffect] = action(state);
     state = nextState;
     if (deep) {
@@ -72,6 +87,8 @@ export const tester = (initialState = {}) => {
     ok: () => expectations.length === 0,
 
     failedOn: () => expectations.map((e) => ({ type: e.type, annotation: e.annotation })),
+
+    missed: () => missed,
 
     state: () => ({ ...state }),
   };

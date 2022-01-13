@@ -63,6 +63,11 @@ If all expectations were met, this will return `true`, otherwise it will return 
 
 This returns an array of failed expectations, in the form of `[{ type: effectType, annotation: '' }, ...]`.
 
+#### `t.missed()`
+
+This returns an array of missed expectations, in the form of `[{ type: effectType, annotation: '' }, ...]`.
+These can be ignored, but may hint at further expecations you can add to your test.
+
 #### `t.state()`
 
 If an initial state was set in the exported `tester()` function, `state()` will return a copy of state with any modifications ran by any actions during the test.
