@@ -6,25 +6,33 @@ const asPromise = (value) => {
   return Promise.resolve(value);
 };
 
-export const runEffect = (dispatch, effect) => {
-  switch (effect.type) {
+const defaultMiddleware = (v) => v;
+
+export const runEffect = (dispatch, effect, middleware = defaultMiddleware) => {
+  const {
+    type,
+    effects,
+    promise,
+    method,
+    action,
+    name,
+  } = middleware(effect);
+
+  switch (type) {
     case effectTypes.none:
       return undefined;
 
     case effectTypes.batch:
-      return effect.effects.forEach((fx) => runEffect(dispatch, fx));
+      return effects.forEach((fx) => runEffect(dispatch, fx, middleware));
 
     case effectTypes.defer:
-      return asPromise(effect.promise).then((fx) => runEffect(dispatch, fx));
+      return asPromise(promise).then((fx) => runEffect(dispatch, fx, middleware));
 
     case effectTypes.thunk:
-      return runEffect(dispatch, effect.method());
+      return runEffect(dispatch, method(), middleware);
 
     case effectTypes.act:
-      return dispatch(
-        effect.action,
-        effect.name,
-      );
+      return dispatch(action, name);
 
     default: {
       const error = new TypeError('Unable to run effect');
