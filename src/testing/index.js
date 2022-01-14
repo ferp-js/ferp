@@ -1,92 +1,100 @@
 import { runEffect } from '../ferp/stages/effectStage.js';
-import {
-  none, thunk, defer, act, batch, effectTypes,
-} from '../ferp/effects/core.js';
+import { act, effectTypes } from '../ferp/effects/core.js';
 
 export const tester = (initialState = {}) => {
   const expectations = [];
+  const hit = [];
   const missed = [];
   let state = initialState;
-  let dispatch = () => {};
+  let dispatchFn = () => {};
 
-  const manageExpectations = (type, annotation) => {
+  const fxToString = (fx) => `${fx.type.toString()}:${fx.annotation || '_unset_'}`;
+
+  const manageExpectations = (fx) => {
+    if (!fx) return fx;
     const expectationIndex = expectations.findIndex((e) => (
-      e.type === type
-      && e.annotation == annotation // eslint-disable-line eqeqeq
+      e.type === fx.type
+      && e.annotation == fx.annotation // eslint-disable-line eqeqeq
     ));
+
     if (expectationIndex >= 0) {
+      hit.push(fxToString(fx));
       expectations.splice(expectationIndex, 1);
     }
 
-    if (type !== effectTypes.none && expectationIndex === -1) {
-      missed.push({
-        type: type.toString(),
-        annotation,
-      });
+    if (expectationIndex === -1) {
+      missed.push(fxToString(fx));
     }
+
+    return fx;
   };
 
-  const run = (dispatcher, fx) => {
-    manageExpectations(fx.type, fx.annotation);
-    return runEffect(dispatcher, fx);
-  };
+  const run = (dispatch, fx) => runEffect(dispatch, fx, manageExpectations);
 
-  const makeDispatch = (deep) => (action, annotation) => {
-    manageExpectations(effectTypes.act, annotation || action.alias || action.name);
+  const makeDispatch = (deep) => function self(action, annotation) {
     const [nextState, nextEffect] = action(state);
     state = nextState;
+
+    manageExpectations(act(action, annotation || action.alias || action.name));
+
     if (deep) {
-      return run(dispatch, nextEffect);
+      return run(self, nextEffect);
     }
     return undefined;
   };
 
-  dispatch = makeDispatch(false);
+  dispatchFn = makeDispatch(false);
+
+  const tick = () => new Promise((resolve) => setTimeout(resolve, 0));
 
   const dispatcher = {
     resolveAllEffects: () => {
-      dispatch = makeDispatch(true);
+      dispatchFn = makeDispatch(true);
       return dispatcher;
     },
 
     willAct: (annotation) => {
-      const fakeAction = (newState) => [newState, none()];
-      expectations.push(act(fakeAction, annotation));
+      expectations.push({ type: effectTypes.act, annotation });
       return dispatcher;
     },
 
     willThunk: (annotation) => {
-      const fakeThunk = () => none();
-      expectations.push(thunk(fakeThunk, annotation));
+      expectations.push({ type: effectTypes.thunk, annotation });
       return dispatcher;
     },
 
     willDefer: (annotation) => {
-      const fakeDefer = (resolve) => resolve(none());
-      expectations.push(defer(fakeDefer, annotation));
+      expectations.push({ type: effectTypes.defer, annotation });
       return dispatcher;
     },
 
     willBatch: (annotation) => {
-      expectations.push(batch([], annotation));
+      expectations.push({ type: effectTypes.batch, annotation });
       return dispatcher;
     },
 
     fromEffect: async (fx) => {
-      await run(dispatch, fx);
+      await run(dispatchFn, fx);
+      await tick();
       return dispatcher;
     },
 
-    fromAction: (action) => dispatcher.fromEffect(act(action)),
+    fromAction: async (action, annotation) => {
+      dispatchFn(action, annotation || action.alias || action.name);
+      await tick();
+      return dispatcher;
+    },
 
     fromSubscription: ([subFx, ...props]) => ({
       ...dispatcher,
-      cancel: subFx(dispatch, ...props),
+      cancel: subFx(dispatchFn, ...props),
     }),
 
     ok: () => expectations.length === 0,
 
-    failedOn: () => expectations.map((e) => ({ type: e.type, annotation: e.annotation })),
+    failedOn: () => expectations.map(fxToString),
+
+    hit: () => hit,
 
     missed: () => missed,
 
