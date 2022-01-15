@@ -6,7 +6,7 @@ export const effectTypes = {
   act: Symbol('act'),
 };
 
-export const none = () => ({ type: effectTypes.none });
+export const none = (annotation) => ({ type: effectTypes.none, annotation });
 export const batch = (effects, annotation) => ({ type: effectTypes.batch, effects, annotation });
 export const defer = (promise, annotation) => ({ type: effectTypes.defer, promise, annotation });
 export const thunk = (method, annotation) => ({

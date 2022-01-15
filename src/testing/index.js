@@ -5,20 +5,23 @@ export const tester = (initialState = {}) => {
   const expectations = [];
   const hit = [];
   const missed = [];
+  let ignoreNone = true;
   let state = initialState;
-  let dispatchFn = () => {};
 
   const fxToString = (fx) => `${fx.type.toString()}:${fx.annotation || '_unset_'}`;
 
   const manageExpectations = (fx) => {
-    if (!fx) return fx;
+    if (fx.completed) return fx;
+    if (ignoreNone && fx.type === effectTypes.none) return fx;
+
+    hit.push(fxToString(fx));
+
     const expectationIndex = expectations.findIndex((e) => (
       e.type === fx.type
       && e.annotation == fx.annotation // eslint-disable-line eqeqeq
     ));
 
     if (expectationIndex >= 0) {
-      hit.push(fxToString(fx));
       expectations.splice(expectationIndex, 1);
     }
 
@@ -26,30 +29,25 @@ export const tester = (initialState = {}) => {
       missed.push(fxToString(fx));
     }
 
-    return fx;
+    return { ...fx, completed: true };
   };
 
   const run = (dispatch, fx) => runEffect(dispatch, fx, manageExpectations);
 
-  const makeDispatch = (deep) => function self(action, annotation) {
-    const [nextState, nextEffect] = action(state);
+  const dispatch = (action, annotation) => {
+    let [nextState, nextEffect] = action(state);
     state = nextState;
 
     manageExpectations(act(action, annotation || action.alias || action.name));
 
-    if (deep) {
-      return run(self, nextEffect);
-    }
-    return undefined;
+    return run(dispatch, nextEffect);
   };
-
-  dispatchFn = makeDispatch(false);
 
   const tick = () => new Promise((resolve) => setTimeout(resolve, 0));
 
   const dispatcher = {
-    resolveAllEffects: () => {
-      dispatchFn = makeDispatch(true);
+    includeEffectNone: () => {
+      ignoreNone = false;
       return dispatcher;
     },
 
@@ -73,21 +71,26 @@ export const tester = (initialState = {}) => {
       return dispatcher;
     },
 
+    willNone: (annotation) => {
+      expectations.push({ type: effectTypes.none, annotation });
+      return dispatcher;
+    },
+
     fromEffect: async (fx) => {
-      await run(dispatchFn, fx);
+      await run(dispatch, manageExpectations(fx));
       await tick();
       return dispatcher;
     },
 
     fromAction: async (action, annotation) => {
-      dispatchFn(action, annotation || action.alias || action.name);
+      dispatch(action, annotation);
       await tick();
       return dispatcher;
     },
 
     fromSubscription: ([subFx, ...props]) => ({
       ...dispatcher,
-      cancel: subFx(dispatchFn, ...props),
+      cancel: subFx(dispatch, ...props),
     }),
 
     ok: () => expectations.length === 0,
@@ -98,7 +101,7 @@ export const tester = (initialState = {}) => {
 
     missed: () => missed,
 
-    state: () => ({ ...state }),
+    state: () => state,
   };
 
   return dispatcher;
