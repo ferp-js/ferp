@@ -11,10 +11,10 @@ It can accept an initial state, but that's optional.
 
 The setup functions will always return the tester object for chaining.
 
-#### `t.resolveAllEffects()`
+#### `t.includeEffectNone()`
 
-`resolveAllEffects` will ensure that every effect is ran.
-If this function is not called, then only the top-level effect is ran.
+By default, the test interface does not include checking against `none` effects, since they only represent when there are no more effects to chain.
+Calling `includeEffectNone` disables this behaviour.
 
 #### `t.willAct(actionAnnotation)`
 
