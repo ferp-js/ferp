@@ -35,7 +35,7 @@ export const tester = (initialState = {}) => {
   const run = (dispatch, fx) => runEffect(dispatch, fx, manageExpectations);
 
   const dispatch = (action, annotation) => {
-    let [nextState, nextEffect] = action(state);
+    const [nextState, nextEffect] = action(state);
     state = nextState;
 
     manageExpectations(act(action, annotation || action.alias || action.name));
