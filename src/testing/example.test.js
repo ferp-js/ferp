@@ -95,7 +95,6 @@ test('fromAction will detect action name from annotation, alias, or name', async
   let result = { ok: () => false };
 
   result = await ferpTester().willAct('foo').fromAction(((s) => [s, effects.none()]), 'foo');
-  t.log({ missed: result.missed(), failedOn: result.failedOn() });
   t.truthy(result.ok(), 'from annotation');
 
   const actionWithAlias = (s) => [s, effects.none()];
@@ -103,7 +102,7 @@ test('fromAction will detect action name from annotation, alias, or name', async
   result = await ferpTester().willAct('foo').fromAction(actionWithAlias);
   t.truthy(result.ok(), 'from alias');
 
-  result = await ferpTester().willAct('foo').fromAction(function foo(s) {
+  result = await ferpTester().willAct('foo').fromAction(function foo(s) { // eslint-disable-line prefer-arrow-callback
     return [s, effects.none()];
   });
   t.truthy(result.ok(), 'from name');
@@ -112,11 +111,9 @@ test('fromAction will detect action name from annotation, alias, or name', async
 test('reports all hits', async (t) => {
   const { hit } = await ferpTester()
     .fromEffect(effects.batch([
-      effects.thunk(() => {
-        return effects.batch([
-          effects.act(() => [null, effects.none()], 'act1'),
-        ], 'batch2');
-      }, 'thunk1'),
+      effects.thunk(() => effects.batch([
+        effects.act(() => [null, effects.none()], 'act1'),
+      ], 'batch2'), 'thunk1'),
       effects.act(() => [null, effects.none()], 'act2'),
     ], 'batch1'));
 
@@ -131,7 +128,7 @@ test('reports all hits', async (t) => {
 
 test('tracks state', async (t) => {
   const initialState = { count: 0 };
-  const incrementCount = s => [{ ...s, count: s.count + 1 }, effects.none()];
+  const incrementCount = (s) => [{ ...s, count: s.count + 1 }, effects.none()];
 
   const { ok, state } = await ferpTester(initialState)
     .willAct('incrementCount')

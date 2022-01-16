@@ -15,10 +15,11 @@ export const runEffect = (dispatch, effect, middleware = defaultMiddleware) => {
       return undefined;
     }
 
-    case effectTypes.batch:
+    case effectTypes.batch: {
       const { effects } = middleware(effect);
       return effects
         .forEach((fx) => runEffect(dispatch, fx, middleware));
+    }
 
     case effectTypes.defer: {
       const { promise } = middleware(effect);
